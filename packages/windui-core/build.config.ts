@@ -1,23 +1,12 @@
-import { defineBuildConfig } from 'unbuild';
-import { fileURLToPath, URL } from 'url';
+import defineBuildConfig from '../../build.config';
 
-export default defineBuildConfig({
-	entries: [
-		{
-			name: 'types',
-			input: './src/types/index'
-		},
-		{
-			name: 'index',
-			input: './src/index'
-		}
-	],
-	declaration: true,
-	clean: true,
-	rollup: {
-		emitCJS: true,
+export default defineBuildConfig(import.meta.url, [
+	{
+		name: 'types',
+		input: './src/types/index'
 	},
-	alias: {
-		'@': fileURLToPath(new URL('./src', import.meta.url))
+	{
+		name: 'index',
+		input: './src/index'
 	}
-});
+]);

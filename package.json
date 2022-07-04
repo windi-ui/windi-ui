@@ -1,18 +1,20 @@
 {
-  "name": "windui-monorepo",
-  "version": "0.0.0",
-  "description": "",
-  "private": true,
-  "main": "index.js",
-  "scripts": {
-    "build": "pnpm -r --filter !./playground/* run build",
-    "stub": "pnpm -r --parallel run stub",
-    "play": "pnpm -C playground/vue-tailwind run dev"
-  },
-  "keywords": [],
-  "devDependencies": {
-    "unbuild": "^0.7.4"
-  },
-  "author": "",
-  "license": "ISC"
+	"name": "windui-monorepo",
+	"version": "0.0.0",
+	"description": "",
+	"private": true,
+	"main": "index.js",
+	"scripts": {
+		"build": "pnpm -r --filter !./playground/* run build",
+		"stub": "pnpm -r --parallel run stub",
+		"play": "pnpm -C playground/vue-tailwind run dev"
+	},
+	"keywords": [],
+	"devDependencies": {
+		"typescript": "^4.7.4",
+		"unbuild": "^0.7.4",
+		"@types/node": "16.11.43"
+	},
+	"author": "",
+	"license": "ISC"
 }
