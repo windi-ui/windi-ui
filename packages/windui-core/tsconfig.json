@@ -10,16 +10,19 @@
 		"strict": true,
 		"strictNullChecks": true,
 		"moduleResolution": "Node",
+		"isolatedModules": true,
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
 		"noImplicitAny": false,
 		"jsx": "preserve",
+		"baseUrl": ".",
 		"paths": {
 			"@/*": [
 				"./src/*"
 			]
 		}
 	},
+	"include": [ "src/**/*" ],
 	"exclude": [
 		"**/dist",
 		"**/node_modules",

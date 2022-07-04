@@ -1,5 +1,6 @@
 import plugin from 'tailwindcss/plugin';
 
+export { default as ThemeProvider } from './ThemeProvider';
 
 export default plugin(({ addComponents, theme }) => {
 	addComponents({

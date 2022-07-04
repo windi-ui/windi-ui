@@ -13,7 +13,7 @@
 			</nav>
 		</header>
 		<div class="container px-5">
-			<button class="btn">Hello</button>
+			<button class="btn">Default</button>
 		</div>
 	</div>
 </template>
