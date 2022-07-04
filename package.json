@@ -1,0 +1,17 @@
+{
+  "name": "windui-monorepo",
+  "version": "0.0.0",
+  "description": "",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "build": "pnpm -r --filter !./playground/* run build",
+	"stub": "pnpm -r --parallel run stub",
+	"play": "pnpm -C playground/vue-tailwind run dev"
+  },
+  "keywords": [],
+  "devDependencies": {
+  },
+  "author": "",
+  "license": "ISC"
+}
