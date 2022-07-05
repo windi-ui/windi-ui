@@ -1,1 +1,1 @@
-export * as components from './components';
+export { default as Generator } from './Generator';

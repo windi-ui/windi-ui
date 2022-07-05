@@ -1,7 +1,7 @@
 import type { IThemeProvider } from 'windui-core/types';
-import type { Config } from 'tailwindcss/types';
+import type { PluginAPI } from 'tailwindcss/types/config';
 
-type ThemeFunc = <TDefaultValue = Config['theme']>(path?: string, defaultValue?: TDefaultValue) => TDefaultValue;
+type ThemeFunc = PluginAPI['theme'];
 
 export default class TailwindTheme implements IThemeProvider {
 	constructor(private theme: ThemeFunc) { }
