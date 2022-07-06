@@ -1,4 +1,4 @@
-import type { IThemeProvider, ComponentBuilder } from "@/types";
+import type { IThemeProvider, ComponentBuilder, IComponent, CSS } from "@/types";
 import * as components from './components';
 
 export default class Generator {
@@ -17,5 +17,22 @@ export default class Generator {
 
 	build() {
 		return [...this.cmps].map(c => c(this.themeProvider));
+	}
+
+	static componentToCss(component: IComponent, nesting = true) {
+		let cClass = `.${component.name}`;
+		let css: CSS.Rules = { [cClass]: { ...component.style } };
+
+		if (component.pseudos) {
+			for (let pseudo in component.pseudos) {
+				if (nesting) {
+					css[cClass][`&${pseudo}`] = component.pseudos[pseudo];
+				} else {
+					css[`${cClass}${pseudo}`] = component.pseudos[pseudo];
+				}
+			}
+		}
+
+		return css;
 	}
 }

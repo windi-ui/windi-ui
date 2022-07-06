@@ -1,6 +1,14 @@
-import * as CSS from 'csstype';
-import IThemeProvider from './IThemeProvider';
-import { Expand } from './Utilities';
+import type { Expand, IThemeProvider, CSS } from './';
+
+declare module 'csstype' {
+	interface Properties {
+		[key: string]: string | number | Properties;
+	}
+
+	interface Rules {
+		[selector: string]: Properties;
+	}
+}
 
 export type ComponentBuilder = (theme: IThemeProvider) => IComponent;
 
