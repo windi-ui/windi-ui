@@ -1,10 +1,14 @@
 import type { IThemeProvider, ComponentBuilder, IComponent, CSS } from "@/types";
 import * as components from './components';
+import Utilities from "./Utilities";
 
 export default class Generator {
 	private cmps = new Set<ComponentBuilder>();
+	readonly utilities: Utilities;
 
-	constructor(private themeProvider: IThemeProvider) { }
+	constructor(private themeProvider: IThemeProvider) {
+		this.utilities = new Utilities(themeProvider);
+	}
 
 	add(cmp: ComponentBuilder) {
 		this.cmps.add(cmp);
@@ -16,7 +20,7 @@ export default class Generator {
 	}
 
 	build() {
-		return [...this.cmps].map(c => c(this.themeProvider));
+		return [...this.cmps].map(c => c(this.utilities));
 	}
 
 	static componentToCss(component: IComponent, nesting = true) {

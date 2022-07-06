@@ -1,4 +1,5 @@
-import type { Expand, IThemeProvider, CSS } from './';
+import type { Expand, CSS } from './';
+import type Utilities from '../Utilities';
 
 declare module 'csstype' {
 	interface Properties {
@@ -10,7 +11,7 @@ declare module 'csstype' {
 	}
 }
 
-export type ComponentBuilder = (theme: IThemeProvider) => IComponent;
+export type ComponentBuilder = (utilities: Utilities) => IComponent;
 
 export interface IComponent {
 	name: string,
