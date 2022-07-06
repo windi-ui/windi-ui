@@ -1,22 +1,12 @@
 import plugin from 'tailwindcss/plugin';
-
-export { default as ThemeProvider } from './ThemeProvider';
+import ThemeProvider from './ThemeProvider';
+import { Generator } from "windui-core";
 
 export default plugin(({ addComponents, theme }) => {
-	addComponents({
-		'.btn': {
-			padding: `${theme('spacing.2')} ${theme('spacing.3')}`,
-			borderRadius: '.25rem',
-			fontWeight: '600',
-			//
-			color: theme('colors.gray.700'),
-			backgroundColor: theme('colors.white'),
-			borderWidth: '1px',
-			borderColor: theme('colors.gray.300'),
-			'&:hover': {
-				backgroundColor: theme('colors.gray.100'),
-				borderColor: theme('colors.gray.400'),
-			}
-		}
-	})
+	const tp = new ThemeProvider(theme);
+	const gt = (new Generator(tp)).addAll();
+
+	gt.build().forEach(cmp => {
+		addComponents(<any>Generator.componentToCss(cmp));
+	});
 })
