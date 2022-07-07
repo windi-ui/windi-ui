@@ -4,10 +4,15 @@ export default <ComponentBuilder>((utils) => {
 	return {
 		name: "btn",
 		style: {
-			padding: `${utils.themeProvider.spacing('2')} ${utils.themeProvider.spacing('3')}`,
-			borderRadius: '.25rem',
+			display: 'inline-block',
+			padding: `${utils.themeProvider.spacing('1.5')} ${utils.themeProvider.spacing('3')}`,
+			borderRadius: '.375rem',
 			borderWidth: '1px',
 			fontWeight: '600',
+			textAlign: 'center',
+			textDecoration: 'none',
+			verticalAlign: 'middle',
+			userSelect: 'none',
 
 			color: utils.color('700'),
 			backgroundColor: utils.color('white'),

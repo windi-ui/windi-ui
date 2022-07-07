@@ -12,9 +12,14 @@
 				</div>
 			</nav>
 		</header>
-		<div class="container px-5">
+		<div class="container px-5 space-x-4">
 			<button class="btn">Default</button>
-			<button class="ml-2 btn c-blue">Primary</button>
+			<button class="btn c-slate">Default</button>
+			<button class="btn c-blue">Primary</button>
+			<button class="btn c-green">Success</button>
+			<button class="btn c-red">Danger</button>
+			<button class="btn c-amber">Warning</button>
+			<button class="btn c-sky">Info</button>
 		</div>
 	</div>
 </template>

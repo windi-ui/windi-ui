@@ -9,7 +9,7 @@ export default plugin((tw) => {
 	const gt = (new Generator(tp)).addAll();
 
 	tw.addBase({
-		'*, ::before, ::after': gt.utilities.colorRootVars(oneValueColors)
+		':root': gt.utilities.colorRootVars(oneValueColors)
 	});
 
 	const colors = Object.keys(tw.theme('colors')).filter(c => !oneValueColors.includes(c)).reduce((c, v) => { c[v] = v; return c; }, {});

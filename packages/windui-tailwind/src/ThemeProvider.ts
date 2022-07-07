@@ -10,6 +10,6 @@ export default class TailwindTheme implements IThemeProvider {
 		return this.theme(`colors.${name}`);
 	}
 	spacing(name: string) {
-		return this.theme(`spacing.${name}`);
+		return this.theme(`spacing[${name}]`);
 	}
 }
