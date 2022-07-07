@@ -8,15 +8,23 @@ export default plugin((tw) => {
 	const tp = new ThemeProvider(tw.theme);
 	const gt = (new Generator(tp)).addAll();
 
-	tw.addBase({
-		':root': gt.utilities.colorRootVars(oneValueColors)
-	});
+	tw.addBase([
+		{ ':root': gt.utilities.colorRootVars(oneValueColors) },
+		{ '*': gt.utilities.variantRootVars() },
+	]);
 
 	const colors = Object.keys(tw.theme('colors')).filter(c => !oneValueColors.includes(c)).reduce((c, v) => { c[v] = v; return c; }, {});
 	tw.matchUtilities<string>({
 		c: (val) => gt.utilities.colorCssVars(val)
 	}, {
 		values: colors
+	});
+
+	const variants = Object.keys(gt.utilities.variants).reduce((c, v) => { c[v] = v; return c; }, {});
+	tw.matchUtilities<string>({
+		v: (val) => gt.utilities.variantCssVars(val)
+	}, {
+		values: variants
 	});
 
 	gt.build().forEach(cmp => {

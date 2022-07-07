@@ -12,14 +12,33 @@
 				</div>
 			</nav>
 		</header>
-		<div class="container px-5 space-x-4">
-			<button class="btn">Default</button>
-			<button class="btn c-slate">Default</button>
-			<button class="btn c-blue">Primary</button>
-			<button class="btn c-green">Success</button>
-			<button class="btn c-red">Danger</button>
-			<button class="btn c-amber">Warning</button>
-			<button class="btn c-sky">Info</button>
+		<div class="container px-5 space-y-4">
+			<div class="space-x-4">
+				<button class="btn">Default</button>
+				<button class="btn c-blue">Primary</button>
+				<button class="btn c-green">Success</button>
+				<button class="btn c-red">Danger</button>
+				<button class="btn c-amber">Warning</button>
+				<button class="btn c-sky">Info</button>
+			</div>
+			<div class="space-x-4">
+				<button class="btn v-solid">Default</button>
+				<button class="btn v-solid c-blue">Primary</button>
+				<button class="btn v-solid c-green">Success</button>
+				<button class="btn v-solid c-red">Danger</button>
+				<button class="btn v-solid c-amber">Warning</button>
+				<button class="btn v-solid c-sky">Info</button>
+			</div>
+			<div class="space-x-4">
+				<button class="btn v-outline">Default</button>
+				<button class="btn v-outline c-blue">Primary</button>
+				<button class="btn v-outline c-green">Success</button>
+				<button class="btn v-outline c-red">Danger</button>
+				<button class="btn v-outline c-amber">Warning</button>
+				<button class="btn v-outline c-sky">Info</button>
+			</div>
+			<button class="btn v-outline block w-96 hover:v-default hover:c-blue">Default</button>
+
 		</div>
 	</div>
 </template>

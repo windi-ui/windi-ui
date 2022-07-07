@@ -1,5 +1,5 @@
 import type { Expand, CSS } from './';
-import type Utilities from '../Utilities';
+import type Utilities from '@/Utilities';
 
 declare module 'csstype' {
 	interface Properties {

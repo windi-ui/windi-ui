@@ -14,14 +14,15 @@ export default <ComponentBuilder>((utils) => {
 			verticalAlign: 'middle',
 			userSelect: 'none',
 
-			color: utils.color('700'),
-			backgroundColor: utils.color('white'),
-			borderColor: utils.color('300'),
+			color: utils.variant('text'),
+			backgroundColor: utils.variant('background'),
+			borderColor: utils.variant('border'),
 		},
 		pseudos: {
 			':hover': {
-				backgroundColor: utils.color('100'),
-				borderColor: utils.color('400'),
+				color: utils.variant('text-hover'),
+				backgroundColor: utils.variant('background-hover'),
+				borderColor: utils.variant('border-hover'),
 			},
 			':disabled': {
 			}
