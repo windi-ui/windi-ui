@@ -7,18 +7,18 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "unbuild",
-	"stub": "unbuild --stub"
+    "stub": "unbuild --stub"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-	"windui-core": "workspace:*"
+    "windui-core": "workspace:*"
   },
   "peerDependencies": {
     "tailwindcss": ">=3.0.0 || insiders"
   },
   "devDependencies": {
-    "tailwindcss": "^3.1.4"
+    "tailwindcss": "^3.1.5"
   }
 }
