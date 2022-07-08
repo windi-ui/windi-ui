@@ -37,6 +37,21 @@
 				<button class="btn v-outline c-amber">Warning</button>
 				<button class="btn v-outline c-sky">Info</button>
 			</div>
+			<div class="space-x-4">
+				<button class="btn v-light">Default</button>
+				<button class="btn v-light c-blue">Primary</button>
+				<button class="btn v-light c-green">Success</button>
+				<button class="btn v-light c-red">Danger</button>
+				<button class="btn v-light c-amber">Warning</button>
+				<button class="btn v-light c-sky">Info</button>
+			</div>
+			<div class="space-x-4">
+				<button class="btn s-xs v-light c-amber">Warning</button>
+				<button class="btn s-sm v-outline c-sky">Info</button>
+				<button class="btn">Default</button>
+				<button class="btn v-solid c-red s-lg">Danger</button>
+				<button class="btn v-light c-green s-xl">Success</button>
+			</div>
 			<button class="btn v-outline block w-96 hover:v-default hover:c-blue">Default</button>
 
 		</div>

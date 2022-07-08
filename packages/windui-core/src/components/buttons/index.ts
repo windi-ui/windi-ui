@@ -5,15 +5,15 @@ export default <ComponentBuilder>((utils) => {
 		name: "btn",
 		style: {
 			display: 'inline-block',
-			padding: `${utils.themeProvider.spacing('1.5')} ${utils.themeProvider.spacing('3')}`,
+			padding: `calc(${utils.size('spacing')} * 0.75) calc(${utils.size('spacing')} * 1.5)`,
 			borderRadius: '.375rem',
 			borderWidth: '1px',
-			fontWeight: '600',
+			fontSize: utils.size('text'),
+			fontWeight: '500',
 			textAlign: 'center',
 			textDecoration: 'none',
 			verticalAlign: 'middle',
 			userSelect: 'none',
-
 			color: utils.variant('text'),
 			backgroundColor: utils.variant('background'),
 			borderColor: utils.variant('border'),

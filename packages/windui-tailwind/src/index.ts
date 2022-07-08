@@ -10,6 +10,7 @@ export default plugin((tw) => {
 
 	tw.addBase([
 		{ ':root': gt.utilities.colorRootVars(oneValueColors) },
+		{ ':root': gt.utilities.sizeRootVars() },
 		{ '*': gt.utilities.variantRootVars() },
 	]);
 
@@ -25,6 +26,13 @@ export default plugin((tw) => {
 		v: (val) => gt.utilities.variantCssVars(val)
 	}, {
 		values: variants
+	});
+
+	const sizes = Object.keys(gt.utilities.sizes).reduce((c, v) => { c[v] = v; return c; }, {});
+	tw.matchUtilities<string>({
+		s: (val) => gt.utilities.sizeCssVars(val)
+	}, {
+		values: sizes
 	});
 
 	gt.build().forEach(cmp => {

@@ -12,4 +12,7 @@ export default class TailwindTheme implements IThemeProvider {
 	spacing(name: string) {
 		return this.theme(`spacing[${name}]`);
 	}
+	fontSize(name: string) {
+		return this.theme(`fontSize[${name}]`);
+	}
 }
