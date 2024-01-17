@@ -1,0 +1,18 @@
+{
+	"extends": "@tsconfig/node20/tsconfig.json",
+	"compilerOptions": {
+		"composite": true,
+		"noEmit": true,
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"types": ["node"]
+	},
+	"include": [
+		"config",
+		"build.config.ts",
+		"vite.config.*",
+		"postcss.config.*",
+		"tailwind.config.*",
+		".eslintrc.*"
+	]
+}

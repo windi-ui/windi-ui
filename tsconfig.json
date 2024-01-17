@@ -1,22 +1,14 @@
 {
-	"compilerOptions": {
-		"module": "esnext",
-		"target": "es2017",
-		"lib": ["esnext"],
-		"types": ["node"],
-		"esModuleInterop": true,
-		"strict": true,
-		"strictNullChecks": true,
-		"moduleResolution": "node",
-		"isolatedModules": true,
-		"resolveJsonModule": true,
-		"skipLibCheck": true,
-		"noImplicitAny": false
-	},
-	"exclude": [
-		"**/dist",
-		"**/node_modules",
-		"**/test",
-		"dist"
+	"files": [],
+	"references": [
+		{
+			"path": "./tsconfig.node.json"
+		},
+		{
+			"path": "./packages/windui-core/tsconfig.json"
+		},
+		{
+			"path": "./packages/windui-tailwind/tsconfig.json"
+		}
 	]
 }

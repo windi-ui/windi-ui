@@ -1,48 +1,38 @@
 {
 	"name": "windui-core",
 	"version": "0.0.0",
+	"type": "module",
+	"license": "MIT",
+	"author": "Waleed Khaled <https://github.com/Waleed-KH>",
 	"description": "",
-	"main": "dist/index.cjs",
-	"module": "dist/index.mjs",
-	"types": "dist/index.d.ts",
+	"keywords": [],
 	"scripts": {
 		"build": "unbuild",
 		"stub": "unbuild --stub"
 	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
+	"module": "dist/index.mjs",
+	"main": "dist/index.cjs",
+	"types": "dist/index.d.ts",
+
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
+			"import": "./dist/index.mjs",
 			"require": "./dist/index.cjs",
-			"import": "./dist/index.mjs"
+			"types": "./dist/index.d.ts"
 		},
-		"./*": "./*",
 		"./components": {
-			"types": "./dist/components.d.ts",
+			"import": "./dist/components.mjs",
 			"require": "./dist/components.cjs",
-			"import": "./dist/components.mjs"
+			"types": "./dist/components.d.ts"
 		},
 		"./types": {
-			"types": "./dist/types.d.ts",
-			"require": "./dist/types.cjs",
-			"import": "./dist/types.mjs"
+			"types": "./dist/types.d.ts"
 		}
 	},
 	"files": [
 		"dist"
 	],
-	"typesVersions": {
-		"*": {
-			"*": [
-				"./dist/*",
-				"./*"
-			]
-		}
-	},
 	"dependencies": {
-		"csstype": "^3.1.0"
-	},
-	"devDependencies": {}
+		"csstype": "^3.1.3"
+	}
 }

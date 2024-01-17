@@ -14,21 +14,24 @@ export default plugin((tw) => {
 		{ '*': gt.utilities.variantRootVars() },
 	]);
 
-	const colors = Object.keys(tw.theme('colors')).filter(c => !oneValueColors.includes(c)).reduce((c, v) => { c[v] = v; return c; }, {});
+	const colors = Object.keys(tw.theme('colors'))
+		.filter(c => !oneValueColors.includes(c))
+		.reduce((c, v) => { c[v] = v; return c; }, {} as Record<string, string>);
+
 	tw.matchUtilities<string>({
 		c: (val) => gt.utilities.colorCssVars(val)
 	}, {
 		values: colors
 	});
 
-	const variants = Object.keys(gt.utilities.variants).reduce((c, v) => { c[v] = v; return c; }, {});
+	const variants = Object.keys(gt.utilities.variants).reduce((c, v) => { c[v] = v; return c; }, {} as Record<string, string>);
 	tw.matchUtilities<string>({
 		v: (val) => gt.utilities.variantCssVars(val)
 	}, {
 		values: variants
 	});
 
-	const sizes = Object.keys(gt.utilities.sizes).reduce((c, v) => { c[v] = v; return c; }, {});
+	const sizes = Object.keys(gt.utilities.sizes).reduce((c, v) => { c[v] = v; return c; }, {} as Record<string, string>);
 	tw.matchUtilities<string>({
 		s: (val) => gt.utilities.sizeCssVars(val)
 	}, {

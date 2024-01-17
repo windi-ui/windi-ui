@@ -101,18 +101,14 @@ export default class Utilities {
 				case 'string':
 					return { [`${c(name)}`]: color };
 				case 'object':
-					let cssVars = {};
-					for (let p in color) {
-						cssVars[`${c(p)}`] = color[p];
-					}
-					return cssVars;
+					return Object.fromEntries(Object.entries(color).map(([p, value]) => [c(p), value]));;
 			}
 		}
 		return {};
 	}
 
 	colorRootVars(oneValue: string[]) {
-		const rootC = {};
+		const rootC: Record<string, string | Record<string, string>> = {};
 		oneValue.forEach(cn => {
 			rootC[c(cn)] = this.themeProvider.colors(cn);
 		});
@@ -128,11 +124,7 @@ export default class Utilities {
 		const variant = this.variants[name];
 
 		if (variant) {
-			let cssVars = {};
-			for (let p in variant) {
-				cssVars[`${v(p)}`] = variant[p];
-			}
-			return cssVars;
+			return Object.fromEntries(Object.entries(variant).map(([p, value]) => [v(p), value]));;
 		}
 		return {};
 	}
@@ -149,11 +141,7 @@ export default class Utilities {
 		const size = this.sizes[name];
 
 		if (size) {
-			let cssVars = {};
-			for (let p in size) {
-				cssVars[`${s(p)}`] = size[p];
-			}
-			return cssVars;
+			return Object.fromEntries(Object.entries(size).map(([p, value]) => [s(p), value]));;
 		}
 		return {};
 	}

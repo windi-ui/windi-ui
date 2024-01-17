@@ -6,7 +6,13 @@ export default (root: string, entries: BuildConfig['entries'] = ['./src/index'])
 	declaration: true,
 	clean: true,
 	rollup: {
+		inlineDependencies: true,
 		emitCJS: true,
+		dts: {
+			compilerOptions: {
+				composite: false
+			}
+		}
 	},
 	alias: {
 		'@': fileURLToPath(new URL('./src', root))
