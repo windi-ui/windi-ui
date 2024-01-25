@@ -2,6 +2,25 @@ import { IThemeProvider } from "./types";
 
 const prefix = '--wui';
 
+function cssVarEsc(name: string) {
+	return name.replace(/([\.\:])/g, '\\$1');
+}
+
+function cssVars(
+	obj: Record<string, string | Record<string, string>>,
+	keyMap: (p: string) => string,
+	vars: Record<string, string> = {}): Record<string, string> {
+	for (const p in obj) {
+		const val = obj[p];
+		if (typeof val === 'string') {
+			vars[cssVarEsc(keyMap(p))] = val;
+		} else {
+			cssVars(val, (cp) => `${keyMap(p)}-${cp}`, vars);
+		}
+	}
+	return vars;
+}
+
 const C = `${prefix}-c`;
 const c = (name: string) => `${C}-${name}`;
 
@@ -11,19 +30,25 @@ const v = (name: string) => `${V}-${name}`;
 const S = `${prefix}-s`;
 const s = (name: string) => `${S}-${name}`;
 
-export interface Variant {
+type Variant = {
 	text: string;
 	background: string;
 	border: string;
 	'text-hover': string;
 	'background-hover': string;
 	'border-hover': string;
-}
+};
 
-export interface Size {
-	spacing: string;
+type Size = {
+	spacing: {
+		'1': string;
+		'1.5': string;
+		'2': string;
+		'3': string;
+		'4': string;
+	};
 	text: string;
-}
+};
 
 export default class Utilities {
 	readonly variants: { [name: string]: Variant };
@@ -67,30 +92,60 @@ export default class Utilities {
 
 		this.sizes = {
 			default: {
-				spacing: themeProvider.spacing('2'),
+				spacing: {
+					'1': themeProvider.spacing('1'),
+					'1.5': themeProvider.spacing('1.5'),
+					'2': themeProvider.spacing('2'),
+					'3': themeProvider.spacing('3'),
+					'4': themeProvider.spacing('4'),
+				},
 				text: themeProvider.fontSize('base')
 			},
 			xs: {
-				spacing: themeProvider.spacing('1'),
+				spacing: {
+					'1': themeProvider.spacing('px'),
+					'1.5': themeProvider.spacing('0.5'),
+					'2': themeProvider.spacing('1'),
+					'3': themeProvider.spacing('1.5'),
+					'4': themeProvider.spacing('2'),
+				},
 				text: themeProvider.fontSize('xs')
 			},
 			sm: {
-				spacing: themeProvider.spacing('1.5'),
+				spacing: {
+					'1': themeProvider.spacing('0.5'),
+					'1.5': themeProvider.spacing('1'),
+					'2': themeProvider.spacing('1.5'),
+					'3': themeProvider.spacing('2'),
+					'4': themeProvider.spacing('3'),
+				},
 				text: themeProvider.fontSize('sm')
 			},
 			lg: {
-				spacing: themeProvider.spacing('3'),
+				spacing: {
+					'1': themeProvider.spacing('1.5'),
+					'1.5': themeProvider.spacing('2'),
+					'2': themeProvider.spacing('3'),
+					'3': themeProvider.spacing('4'),
+					'4': themeProvider.spacing('5'),
+				},
 				text: themeProvider.fontSize('lg')
 			},
 			xl: {
-				spacing: themeProvider.spacing('4'),
+				spacing: {
+					'1': themeProvider.spacing('2'),
+					'1.5': themeProvider.spacing('3'),
+					'2': themeProvider.spacing('4'),
+					'3': themeProvider.spacing('5'),
+					'4': themeProvider.spacing('6'),
+				},
 				text: themeProvider.fontSize('xl')
 			},
 		};
 	}
 
 	color(name: string) {
-		return `var(${c(name)})`;
+		return `var(${cssVarEsc(c(name))})`;
 	}
 
 	colorCssVars(name: string) {
@@ -101,7 +156,7 @@ export default class Utilities {
 				case 'string':
 					return { [`${c(name)}`]: color };
 				case 'object':
-					return Object.fromEntries(Object.entries(color).map(([p, value]) => [c(p), value]));;
+					return cssVars(color, c);
 			}
 		}
 		return {};
@@ -117,14 +172,14 @@ export default class Utilities {
 	}
 
 	variant(name: keyof Variant) {
-		return `var(${v(name)})`;
+		return `var(${cssVarEsc(v(name))})`;
 	}
 
 	variantCssVars(name: string) {
 		const variant = this.variants[name];
 
 		if (variant) {
-			return Object.fromEntries(Object.entries(variant).map(([p, value]) => [v(p), value]));;
+			return cssVars(variant, v);
 		}
 		return {};
 	}
@@ -133,15 +188,17 @@ export default class Utilities {
 		return this.variantCssVars('default');
 	}
 
-	size(name: keyof Size) {
-		return `var(${s(name)})`;
+	size(name: 'text'): string;
+	size(name: `spacing-${keyof Size['spacing']}`): string;
+	size(name: string) {
+		return `var(${cssVarEsc(s(name))})`;
 	}
 
 	sizeCssVars(name: string) {
 		const size = this.sizes[name];
 
 		if (size) {
-			return Object.fromEntries(Object.entries(size).map(([p, value]) => [s(p), value]));;
+			return cssVars(size, s);
 		}
 		return {};
 	}

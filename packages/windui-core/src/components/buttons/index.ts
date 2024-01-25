@@ -5,7 +5,7 @@ export default <ComponentBuilder>((utils) => {
 		name: "btn",
 		style: {
 			display: 'inline-block',
-			padding: `calc(${utils.size('spacing')} * 0.75) calc(${utils.size('spacing')} * 1.5)`,
+			padding: `${utils.size('spacing-1.5')} ${utils.size('spacing-3')}`,
 			borderRadius: '.375rem',
 			borderWidth: '1px',
 			fontSize: utils.size('text'),
