@@ -1,56 +1,72 @@
 import plugin from 'tailwindcss/plugin';
-import ThemeProvider from './ThemeProvider';
-import { Generator } from "windui-core";
+import { TailwindTheme } from './TailwindTheme';
+import { create, type Config } from "windui-core";
 
 const oneValueColors = ['inherit', 'current', 'transparent', 'black', 'white'];
 
-export default plugin((tw) => {
-	const tp = new ThemeProvider(tw.theme);
-	const gt = (new Generator(tp)).addAll();
+function colorsToRgb(colors: Record<string, string>) {
+	for (const c in colors) {
+		const cr = /^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(colors[c]
+			.replace(/^#?([\da-f])([\da-f])([\da-f])$/i, (_, r, g, b) => r + r + g + g + b + b));
 
-	tw.addBase([
-		{ ':root': gt.utilities.colorRootVars(oneValueColors) },
-		{ ':root': gt.utilities.sizeRootVars() },
-		{ '*': gt.utilities.variantRootVars() },
-	]);
-
-	const colors = Object.keys(tw.theme('colors'))
-		.filter(c => !oneValueColors.includes(c))
-		.reduce((c, v) => { c[v] = v; return c; }, {} as Record<string, string>);
-
-	tw.matchUtilities<string>({
-		c: (val) => gt.utilities.colorCssVars(val)
-	}, {
-		values: colors
-	});
-
-	const variants = Object.keys(gt.utilities.variants).reduce((c, v) => { c[v] = v; return c; }, {} as Record<string, string>);
-	tw.matchUtilities<string>({
-		v: (val) => gt.utilities.variantCssVars(val)
-	}, {
-		values: variants
-	});
-
-	const sizes = Object.keys(gt.utilities.sizes).reduce((c, v) => { c[v] = v; return c; }, {} as Record<string, string>);
-	tw.matchUtilities<string>({
-		s: (val) => gt.utilities.sizeCssVars(val)
-	}, {
-		values: sizes
-	});
-
-	gt.build().forEach(cmp => {
-		tw.addComponents(<any>Generator.componentToCss(cmp));
-	});
-
-	//tw.config('darkMode', 'media')
-
-}, {
-	content: [],
-	theme: {
-		extend: {
-			colors({ colors }) {
-				return { default: colors.gray }
-			},
+		if (cr) {
+			colors[c] = `${parseInt(cr[1], 16)} ${parseInt(cr[2], 16)} ${parseInt(cr[3], 16)}`;
 		}
 	}
-})
+
+	return colors;
+}
+
+export default function WindUITailwindCSS(config: Config = {}) {
+	const wiu = create(config);
+
+	return  plugin((tw) => {
+		const tp = new TailwindTheme(tw);
+		const gt = wiu.generator(tp);
+
+		tw.addBase([
+			{ ':root': colorsToRgb(gt.colorRootVars(oneValueColors)) },
+			{ ':root': gt.sizeRootVars() },
+			{ '*': gt.variantRootVars() },
+		]);
+
+		const colors = Object.keys(tw.theme('colors'))
+			.filter(c => !oneValueColors.includes(c) && c !== 'c')
+			.reduce((c, v) => { c[v] = v; return c; }, {} as Record<string, string>);
+
+		tw.matchUtilities<string>({
+			c: (val) => colorsToRgb(gt.colorCssVars(val))
+		}, {
+			values: colors
+		});
+
+		tw.matchUtilities<string>({
+			v: (val) => gt.variantCssVars(val)
+		}, {
+			values: gt.getVariantNames().reduce((c, v) => { c[v] = v; return c; }, {} as Record<string, string>)
+		});
+
+		tw.matchUtilities<string>({
+			s: (val) => gt.sizeCssVars(val)
+		}, {
+			values: gt.getSizeNames().reduce((c, v) => { c[v] = v; return c; }, {} as Record<string, string>)
+		});
+
+		tw.addComponents(gt.getComponentsCss() as any);
+
+		//tw.config('darkMode', 'media')
+
+	}, {
+		content: [],
+		theme: {
+			extend: {
+				colors({ colors }) {
+					return {
+						c: Object.keys(colors.gray).reduce((c, v) => { c[v] = `rgb(${wiu.cssVars.color(v)} / <alpha-value>)`; return c; }, {} as Record<string, string>),
+						default: colors.gray
+					};
+				},
+			}
+		}
+	});
+}

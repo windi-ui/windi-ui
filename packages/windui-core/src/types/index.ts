@@ -1,4 +1,12 @@
-export * from './Utilities';
-export * from './Component';
-export * as CSS from 'csstype';
-export type { default as IThemeProvider } from './IThemeProvider';
+import type { CSS } from './css';
+
+export interface ThemeProvider {
+	colors(name: string): string | Record<string, string>;
+	spacing(name: string): string;
+	fontSize(name: string): string;
+	applyTextColor(value: string, target: CSS.Properties): void;
+	applyBackgroundColor(value: string, target: CSS.Properties): void;
+	applyBorderColor(value: string, target: CSS.Properties): void;
+}
+
+export { CSS };
