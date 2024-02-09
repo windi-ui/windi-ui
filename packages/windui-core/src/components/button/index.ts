@@ -1,6 +1,6 @@
 import { defineComponent } from "../common";
 
-export default defineComponent((utils) => {
+export default defineComponent((vars) => {
 	return {
 		name: "btn",
 		applyVariant: true,
@@ -8,10 +8,10 @@ export default defineComponent((utils) => {
 
 		style: {
 			display: 'inline-block',
-			padding: `${utils.size('spacing-1.5')} ${utils.size('spacing-3')}`,
-			borderRadius: '.375rem',
+			padding: `${vars.size('spacing-1.5')} ${vars.size('spacing-3')}`,
+			borderRadius: '0.375rem',
 			borderWidth: '1px',
-			fontSize: utils.size('text'),
+			fontSize: vars.size('text'),
 			fontWeight: '500',
 			textAlign: 'center',
 			textDecoration: 'none',

@@ -32,7 +32,7 @@ export class Generator {
 		this._variants = variants(vars);
 		this._sizes = sizes(themeProvider);
 
-		this.addComponent(components.buttons);
+		this.addComponent(components.button);
 	}
 
 	colorCssVars(name: string) {
