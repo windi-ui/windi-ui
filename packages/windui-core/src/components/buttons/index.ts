@@ -1,6 +1,6 @@
-import type { ComponentBuilder } from "../types";
+import { defineComponent } from "../common";
 
-export default <ComponentBuilder>((utils) => {
+export default defineComponent((utils) => {
 	return {
 		name: "btn",
 		applyVariant: true,

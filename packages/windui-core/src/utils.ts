@@ -1,3 +1,3 @@
 export function cssEsc(name: string) {
-	return name.replace(/([\.\:])/g, '\\$1');
+	return name.replace(/([.:])/g, '\\$1');
 }

@@ -12,7 +12,9 @@ node_modules
 dist
 dist-ssr
 coverage
+.eslintcache
 *.local
+*.local.*
 
 /cypress/videos/
 /cypress/screenshots/

@@ -3,21 +3,22 @@
 	"version": "0.0.0",
 	"description": "",
 	"private": true,
-	"main": "index.js",
 	"scripts": {
 		"build": "pnpm -r --filter !./playground/* run build",
 		"stub": "pnpm -r --parallel run stub",
 		"play": "pnpm -C playground/vue-tailwind run dev",
-		"dev": "pnpm stub && pnpm play"
+		"dev": "pnpm stub && pnpm play",
+		"lint": "eslint --cache .",
+		"lint:fix": "pnpm lint --fix"
 	},
-	"keywords": [],
 	"devDependencies": {
 		"@tsconfig/node20": "^20.1.2",
 		"@types/node": "20.11.3",
+		"@typescript-eslint/eslint-plugin": "^6.21.0",
+		"@typescript-eslint/parser": "^6.21.0",
+		"eslint": "^8.56.0",
 		"typescript": "^5.3.3",
 		"unbuild": "^2.0.0",
 		"vite": "^5.0.11"
-	},
-	"author": "",
-	"license": "ISC"
+	}
 }

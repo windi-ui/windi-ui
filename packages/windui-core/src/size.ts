@@ -63,5 +63,5 @@ export function sizes(themeProvider: ThemeProvider) {
 			},
 			text: themeProvider.fontSize('xl')
 		},
-	}
+	};
 }

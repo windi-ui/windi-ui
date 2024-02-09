@@ -3,9 +3,7 @@ declare module 'csstype' {
 		[key: string]: string | number | Properties;
 	}
 
-	interface Rules {
-		[selector: string]: Properties;
-	}
+	type Rules = Record<string, Properties>;
 }
 
 export * as CSS from 'csstype';

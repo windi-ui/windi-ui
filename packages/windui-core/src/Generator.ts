@@ -4,7 +4,6 @@ import type { CSSVarName, VarsProvider } from "./varsProvider";
 import { variants, type Variant } from "./variant";
 import { sizes, type Size } from "./size";
 import * as components from './components';
-import type { ComponentBuilder, IComponent } from './components'
 
 function cssVars<TKey extends string>(
 	obj: Record<string, string | Record<string, string>>,
@@ -22,9 +21,9 @@ function cssVars<TKey extends string>(
 }
 
 export class Generator {
-	private readonly _variants: { [name: string]: Variant };
-	private readonly _sizes: { [name: string]: Size };
-	private readonly _components: { [name: string]: IComponent } = {};
+	private readonly _variants: Record<string, Variant>;
+	private readonly _sizes: Record<string, Size>;
+	private readonly _components: Record<string, components.IComponent> = {};
 
 	constructor(
 		private readonly vars: VarsProvider,
@@ -44,7 +43,7 @@ export class Generator {
 				case 'string':
 					return { [this.vars.c(name)]: color };
 				case 'object':
-					return cssVars(color, this.vars.c);
+					return cssVars(color, n => this.vars.c(n));
 			}
 		}
 
@@ -66,7 +65,7 @@ export class Generator {
 		const variant = this._variants[name];
 
 		if (variant) {
-			return cssVars(variant, this.vars.v);
+			return cssVars(variant,  n => this.vars.v(n));
 		}
 		return {};
 	}
@@ -83,7 +82,7 @@ export class Generator {
 		const size = this._sizes[name];
 
 		if (size) {
-			return cssVars(size, this.vars.s);
+			return cssVars(size, n => this.vars.s(n));
 		}
 		return {};
 	}
@@ -92,7 +91,7 @@ export class Generator {
 		return this.sizeCssVars('default');
 	}
 
-	addComponent(cmp: ComponentBuilder) {
+	addComponent(cmp: components.ComponentBuilder) {
 		const component = cmp(this.vars, this.themeProvider);
 		this._components[component.name] = component;
 		return this;
@@ -113,7 +112,6 @@ export class Generator {
 				}
 			}
 
-			console.log('applying variant', this.vars.variant('text'), css[cClass]);
 			if (component.applyVariant) {
 				this.themeProvider.applyTextColor(this.vars.variant('text'), css[cClass]);
 				this.themeProvider.applyBackgroundColor(this.vars.variant('background'), css[cClass]);
@@ -129,7 +127,6 @@ export class Generator {
 				this.themeProvider.applyBackgroundColor(this.vars.variant('background-hover'), pTarget);
 				this.themeProvider.applyBorderColor(this.vars.variant('border-hover'), pTarget);
 			}
-			console.log('applied variant', css[cClass]);
 
 			return css;
 		});

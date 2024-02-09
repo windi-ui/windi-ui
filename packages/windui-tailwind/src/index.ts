@@ -1,13 +1,14 @@
 import plugin from 'tailwindcss/plugin';
 import { TailwindTheme } from './TailwindTheme';
 import { create, type Config } from "windui-core";
+import { CSSRuleObject } from 'tailwindcss/types/config';
 
 const oneValueColors = ['inherit', 'current', 'transparent', 'black', 'white'];
 
 function colorsToRgb(colors: Record<string, string>) {
 	for (const c in colors) {
 		const cr = /^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(colors[c]
-			.replace(/^#?([\da-f])([\da-f])([\da-f])$/i, (_, r, g, b) => r + r + g + g + b + b));
+			.replace(/^#?([\da-f])([\da-f])([\da-f])$/i, (_, r: string, g: string, b: string) => r + r + g + g + b + b));
 
 		if (cr) {
 			colors[c] = `${parseInt(cr[1], 16)} ${parseInt(cr[2], 16)} ${parseInt(cr[3], 16)}`;
@@ -52,7 +53,7 @@ export default function WindUITailwindCSS(config: Config = {}) {
 			values: gt.getSizeNames().reduce((c, v) => { c[v] = v; return c; }, {} as Record<string, string>)
 		});
 
-		tw.addComponents(gt.getComponentsCss() as any);
+		tw.addComponents(gt.getComponentsCss() as CSSRuleObject[]);
 
 		//tw.config('darkMode', 'media')
 

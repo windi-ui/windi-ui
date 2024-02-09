@@ -8,11 +8,8 @@
 		"types": ["node"]
 	},
 	"include": [
-		"config",
-		"build.config.ts",
-		"vite.config.*",
-		"postcss.config.*",
-		"tailwind.config.*",
-		".eslintrc.*"
+		"*.config.ts",
+		".eslintrc.*",
+		"packages/*/*.config.ts"
 	]
 }

@@ -53,7 +53,7 @@ export class TailwindTheme implements ThemeProvider {
 	private applyColor(args: Parameters<typeof withAlphaVariable>[0], opacityPlugin: string, target: CSS.Properties) {
 		args = {
 			...args,
-			color: parseColorFormat(`rgb(${args.color} / <alpha-value>)`)
+			color: parseColorFormat(`rgb(${args.color as string} / <alpha-value>)`)
 		};
 
 		Object.assign(target, this.corePlugins(opacityPlugin) ? withAlphaVariable(args) : {
