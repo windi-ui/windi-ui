@@ -7,6 +7,7 @@ export interface ThemeProvider {
 	applyTextColor(value: string, target: CSS.Properties): void;
 	applyBackgroundColor(value: string, target: CSS.Properties): void;
 	applyBorderColor(value: string, target: CSS.Properties): void;
+	colorValue(value: string, alpha?: number | string): string;
 }
 
 export { CSS };

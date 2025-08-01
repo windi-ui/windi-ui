@@ -11,6 +11,6 @@ export interface IComponent {
 	name: string,
 	style: CSS.Properties,
 	pseudos?: Expand<Partial<Record<CSS.Pseudos, CSS.Properties>>, string, CSS.Properties>,
-	applyVariant?: boolean,
+	applyVariant?: boolean | ('text' | 'background' | 'border')[],
 	applyVariantPseudos?: boolean,
 }

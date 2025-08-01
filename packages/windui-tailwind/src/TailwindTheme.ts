@@ -26,6 +26,11 @@ export class TailwindTheme implements ThemeProvider {
 		return this.theme<string>(`fontSize[${name}]`);
 	}
 
+	colorValue(value: string, alpha?: number | string): string {
+		const c = this.parseColor(value);
+		return typeof c === 'string' ? c : c({ opacityValue: alpha?.toString() });
+	}
+
 	applyTextColor(value: string, target: CSS.Properties) {
 		this.applyColor({
 			color: value,
@@ -53,11 +58,15 @@ export class TailwindTheme implements ThemeProvider {
 	private applyColor(args: Parameters<typeof withAlphaVariable>[0], opacityPlugin: string, target: CSS.Properties) {
 		args = {
 			...args,
-			color: parseColorFormat(`rgb(${args.color as string} / <alpha-value>)`)
+			color: this.parseColor(args.color),
 		};
 
 		Object.assign(target, this.corePlugins(opacityPlugin) ? withAlphaVariable(args) : {
 			[args.property]: toColorValue(args.color),
 		});
+	}
+
+	private parseColor(color: string | Function) {
+		return parseColorFormat(`rgb(${color} / <alpha-value>)`);
 	}
 }

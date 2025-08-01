@@ -13,6 +13,7 @@
 			</nav>
 		</header>
 		<div class="container px-5 space-y-4">
+			<h3 class="text-lg mb-4">Buttons</h3>
 			<div class="space-x-4">
 				<button class="btn">Default</button>
 				<button class="btn c-blue">Primary</button>
@@ -53,7 +54,15 @@
 				<button class="btn v-light c-green s-xl">Success</button>
 			</div>
 			<button class="btn v-outline block w-96 hover:v-default hover:c-blue">Default</button>
-
+			<h3 class="text-lg my-4">Badges</h3>
+			<div class="space-x-2">
+				<span class="badge c-red">Danger</span>
+				<span class="badge c-green">Success</span>
+				<span class="badge c-blue">Blue</span>
+				<span class="badge c-indigo">Indigo</span>
+				<span class="badge c-purple">Purple</span>
+				<span class="badge c-pink">Pink</span>
+			</div>
 		</div>
 	</div>
 </template>

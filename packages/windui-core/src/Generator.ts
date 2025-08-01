@@ -32,7 +32,8 @@ export class Generator {
 		this._variants = variants(vars);
 		this._sizes = sizes(themeProvider);
 
-		this.addComponent(components.button);
+		this.addComponent(components.button)
+			.addComponent(components.badge);
 	}
 
 	colorCssVars(name: string) {
@@ -113,9 +114,15 @@ export class Generator {
 			}
 
 			if (component.applyVariant) {
-				this.themeProvider.applyTextColor(this.vars.variant('text'), css[cClass]);
-				this.themeProvider.applyBackgroundColor(this.vars.variant('background'), css[cClass]);
-				this.themeProvider.applyBorderColor(this.vars.variant('border'), css[cClass]);
+				if (component.applyVariant === true || component.applyVariant.includes('text')) {
+					this.themeProvider.applyTextColor(this.vars.variant('text'), css[cClass]);
+				}
+				if (component.applyVariant === true || component.applyVariant.includes('background')) {
+					this.themeProvider.applyBackgroundColor(this.vars.variant('background'), css[cClass]);
+				}
+				if (component.applyVariant === true || component.applyVariant.includes('border')) {
+					this.themeProvider.applyBorderColor(this.vars.variant('border'), css[cClass]);
+				}
 			}
 
 			if (component.applyVariantPseudos) {
