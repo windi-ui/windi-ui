@@ -1,6 +1,6 @@
 import { resolveConfig, type Config } from './config';
-import { Generator } from './Generator';
-import { varsProvider } from './varsProvider';
+import { Generator } from './generator';
+import { varsProvider } from './vars';
 import type { ThemeProvider } from './types/';
 
 export function create(config: Config) {

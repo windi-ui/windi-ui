@@ -8,7 +8,7 @@ export type Size = {
 		'3': string;
 		'4': string;
 	};
-	text: string;
+	text: string | [ string, { lineHeight: string } ];
 };
 
 export function sizes(themeProvider: ThemeProvider) {

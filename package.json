@@ -7,18 +7,20 @@
 		"build": "pnpm -r --filter !./playground/* run build",
 		"stub": "pnpm -r --parallel run stub",
 		"play": "pnpm -C playground/vue-tailwind run dev",
+		"playv4": "pnpm -C playground/vue-tailwindv4 run dev",
 		"dev": "pnpm stub && pnpm play",
+		"devv4": "pnpm stub && pnpm playv4",
 		"lint": "eslint --cache .",
 		"lint:fix": "pnpm lint --fix"
 	},
 	"devDependencies": {
 		"@tsconfig/node20": "^20.1.2",
-		"@types/node": "20.11.3",
-		"@typescript-eslint/eslint-plugin": "^6.21.0",
-		"@typescript-eslint/parser": "^6.21.0",
-		"eslint": "^8.56.0",
-		"typescript": "^5.3.3",
-		"unbuild": "^2.0.0",
-		"vite": "^5.0.11"
+		"@types/node": "24.1.0",
+		"@typescript-eslint/eslint-plugin": "^8.38.0",
+		"@typescript-eslint/parser": "^8.38.0",
+		"eslint": "^9.32.0",
+		"typescript": "^5.8.3",
+		"unbuild": "^3.6.0",
+		"vite": "^7.0.6"
 	}
 }

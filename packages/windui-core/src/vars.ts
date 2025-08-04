@@ -7,8 +7,6 @@ export type VarName<T extends VarType = VarType> = `${T}-${string}`;
 export type CSSVarName<T extends VarType = VarType> = `--${string}-${VarName<T>}`;
 
 export interface VarsProvider {
-	name<T extends VarType>(name: VarName<T>): CSSVarName<T>;
-
 	c(n: string): CSSVarName<'c'>;
 	v(n: string): CSSVarName<'v'>;
 	s(n: string): CSSVarName<'s'>;
@@ -32,7 +30,7 @@ export function varsProvider(prefix: string): VarsProvider {
 	const s = (v: string) => vName(`s-${v}`);
 
 	return {
-		name: vName, c, v, s,
+		c, v, s,
 		color(name) {
 			return varFunc(c(name));
 		},

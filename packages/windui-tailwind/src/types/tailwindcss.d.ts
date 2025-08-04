@@ -13,3 +13,7 @@ declare module 'tailwindcss/lib/util/withAlphaVariable' {
 declare module 'tailwindcss/lib/util/pluginUtils' {
 	export function parseColorFormat(value: string | Function): string | ((a: { opacityValue?: string }) => string);
 }
+
+declare module 'tailwindcss/lib/util/flattenColorPalette' {
+	export default function flattenColorPalette(colors: Record<string, any>): Record<string, string>;
+}

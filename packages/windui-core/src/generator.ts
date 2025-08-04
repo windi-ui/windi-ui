@@ -1,12 +1,14 @@
 import { cssEsc } from "./utils";
 import type { ThemeProvider, CSS } from "./types";
-import type { CSSVarName, VarsProvider } from "./varsProvider";
+import type { CSSVarName, VarsProvider } from "./vars";
 import { variants, type Variant } from "./variant";
 import { sizes, type Size } from "./size";
 import * as components from './components';
 
+type CssValues = Record<string, string | Record<string, string>>
+
 function cssVars<TKey extends string>(
-	obj: Record<string, string | Record<string, string>>,
+	obj: CssValues,
 	keyMap: (p: string) => TKey,
 	vars: Record<string, string> = {}): Record<TKey, string> {
 	for (const p in obj) {
@@ -19,6 +21,12 @@ function cssVars<TKey extends string>(
 	}
 	return vars;
 }
+
+const FLAT_COLORS = {
+	transparent: 'transparent',
+	black: '#000',
+	white: '#fff',
+};
 
 export class Generator {
 	private readonly _variants: Record<string, Variant>;
@@ -51,11 +59,13 @@ export class Generator {
 		return {};
 	}
 
-	colorRootVars(oneValue: string[]) {
-		return Object.assign(
-			Object.fromEntries(
-				oneValue.map(cn => [this.vars.c(cn), this.themeProvider.colors(cn)])),
-			this.colorCssVars('default')) as Record<CSSVarName<'c'>, string>;
+	colorRootVars() {
+		const cRoot: Record<CSSVarName<'c'>, string> = {};
+		for (const mn in FLAT_COLORS) {
+			const mc = this.themeProvider.colors(mn);
+			cRoot[this.vars.c(mn)] = (typeof mc === 'string') ? mc : FLAT_COLORS[mn as keyof typeof FLAT_COLORS];
+		}
+		return Object.assign(cRoot, this.colorCssVars('default'));
 	}
 
 	getVariantNames() {
@@ -66,7 +76,7 @@ export class Generator {
 		const variant = this._variants[name];
 
 		if (variant) {
-			return cssVars(variant,  n => this.vars.v(n));
+			return cssVars(variant, n => this.vars.v(n));
 		}
 		return {};
 	}
@@ -80,7 +90,12 @@ export class Generator {
 	}
 
 	sizeCssVars(name: string) {
-		const size = this._sizes[name];
+		const size = { ... this._sizes[name] } as CssValues;
+		const sText = size.text;
+		if (Array.isArray(sText)) {
+			size.text = sText[0];
+			size['line-height'] = sText[1].lineHeight;
+		}
 
 		if (size) {
 			return cssVars(size, n => this.vars.s(n));

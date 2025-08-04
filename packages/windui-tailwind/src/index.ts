@@ -1,59 +1,63 @@
-import plugin from 'tailwindcss/plugin';
-import { TailwindTheme } from './TailwindTheme';
+import { default as createPlugin } from 'tailwindcss/plugin';
+import { createTailwindTheme, flattenColorPalette } from './TailwindTheme';
 import { create, type Config } from "windui-core";
-import { CSSRuleObject } from 'tailwindcss/types/config';
 
-const oneValueColors = ['inherit', 'current', 'transparent', 'black', 'white'];
+const COLOR_PALETTE_REGEX = /^(.+)-(50|950|[1-9]00)$/;
 
-function colorsToRgb(colors: Record<string, string>) {
-	for (const c in colors) {
-		const cr = /^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(colors[c]
-			.replace(/^#?([\da-f])([\da-f])([\da-f])$/i, (_, r: string, g: string, b: string) => r + r + g + g + b + b));
-
-		if (cr) {
-			colors[c] = `${parseInt(cr[1], 16)} ${parseInt(cr[2], 16)} ${parseInt(cr[3], 16)}`;
+function getColors(twc: Record<string, string>) {
+	const cMap = new Map<string, number>();
+	for (const key in twc) {
+		const mRes = COLOR_PALETTE_REGEX.exec(key);
+		if (mRes) {
+			const cName = mRes[1];
+			if (cName === 'c') continue;
+			cMap.set(cName, (cMap.get(cName) ?? 0) + 1);
 		}
 	}
 
-	return colors;
+	for (const [cName, score] of cMap) {
+		if (score !== 11) {
+			console.warn(`Tailwind CSS color palette "${cName}" does not have required 11 shades (50, 100, ..., 950).`);
+			cMap.delete(cName);
+		}
+	}
+
+	return [...cMap.keys()];
 }
 
-export default function WindUITailwindCSS(config: Config = {}) {
+function WindUITailwindCSS(config: Config = {}): ReturnType<typeof createPlugin> {
 	const wiu = create(config);
 
-	return  plugin((tw) => {
-		const tp = new TailwindTheme(tw);
+	return createPlugin((tw) => {
+		const tp = createTailwindTheme(tw);
 		const gt = wiu.generator(tp);
+		const twc = flattenColorPalette(tw.theme('colors'));
 
-		tw.addBase([
-			{ ':root': colorsToRgb(gt.colorRootVars(oneValueColors)) },
-			{ ':root': gt.sizeRootVars() },
-			{ '*': gt.variantRootVars() },
-		]);
+		tw.addBase({ ':root': gt.colorRootVars() });
+		tw.addBase({ ':root': gt.sizeRootVars() });
+		tw.addBase({ '*': gt.variantRootVars() });
 
-		const colors = Object.keys(tw.theme('colors'))
-			.filter(c => !oneValueColors.includes(c) && c !== 'c')
+		const colors = getColors(twc)
 			.reduce((c, v) => { c[v] = v; return c; }, {} as Record<string, string>);
 
-		tw.matchUtilities<string>({
-			c: (val) => colorsToRgb(gt.colorCssVars(val))
-		}, {
-			values: colors
-		});
+		tw.matchUtilities({
+			c: (val) => gt.colorCssVars(val)
+		}, { values: colors });
 
-		tw.matchUtilities<string>({
+		tw.matchUtilities({
 			v: (val) => gt.variantCssVars(val)
 		}, {
 			values: gt.getVariantNames().reduce((c, v) => { c[v] = v; return c; }, {} as Record<string, string>)
 		});
 
-		tw.matchUtilities<string>({
+		tw.matchUtilities({
 			s: (val) => gt.sizeCssVars(val)
 		}, {
 			values: gt.getSizeNames().reduce((c, v) => { c[v] = v; return c; }, {} as Record<string, string>)
 		});
 
-		tw.addComponents(gt.getComponentsCss() as CSSRuleObject[]);
+		// @ts-ignore
+		tw.addComponents(gt.getComponentsCss());
 
 		//tw.config('darkMode', 'media')
 
@@ -71,3 +75,5 @@ export default function WindUITailwindCSS(config: Config = {}) {
 		}
 	});
 }
+
+export default WindUITailwindCSS;

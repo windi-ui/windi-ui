@@ -1,5 +1,5 @@
 import type { ThemeProvider, CSS } from "@/types";
-import type { VarsProvider } from "@/varsProvider";
+import type { VarsProvider } from "@/vars";
 
 type Expand<T, TKey extends string | number | symbol = string, TValue = any> = T & {
 	[key in TKey]: TValue;

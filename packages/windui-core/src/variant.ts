@@ -1,4 +1,4 @@
-import { type VarsProvider } from "./varsProvider";
+import { type VarsProvider } from "./vars";
 
 export type Variant = {
 	text: string;
@@ -22,7 +22,7 @@ export function variants(vars: VarsProvider) {
 		solid: {
 			background: vars.color('600'),
 			border: vars.color('600'),
-			text: vars.color('50'),
+			text: vars.color('white'),
 			'background-hover': vars.color('700'),
 			'border-hover': vars.color('700'),
 			'text-hover': vars.color('50'),
