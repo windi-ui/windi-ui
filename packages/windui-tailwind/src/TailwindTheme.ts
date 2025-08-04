@@ -10,8 +10,10 @@ import type { parseColorFormat as ParseColorFormat } from 'tailwindcss/lib/util/
 import { colorToRgb, colorsToRgb } from './utils';
 
 function _interopDefaultCompat<T>(e: any): T { return e && typeof e === 'object' && 'default' in e ? e.default : e; }
-const require = createRequire(process.cwd());
-const flattenColorPalette = _interopDefaultCompat<typeof FlattenColorPalette>(require('tailwindcss/lib/util/flattenColorPalette'));
+const require = createRequire(import.meta.url);
+
+const flattenColorPalette = _interopDefaultCompat<typeof FlattenColorPalette>(
+	require(require.resolve('tailwindcss/lib/util/flattenColorPalette', { paths: [process.cwd()] })));
 
 type PluginAPI = Parameters<Parameters<typeof Plugin>[0]>[0];
 
@@ -47,7 +49,7 @@ export abstract class TailwindTheme implements ThemeProvider {
 	colors(name: string) {
 		const c = this.theme<string | Record<string, string>>(`colors.${name}`);
 
-		return (typeof c === 'string') ? c : flattenColorPalette(c);
+		return (typeof c === 'object') ? flattenColorPalette(c) : c;
 	}
 
 	spacing(name: string) {
