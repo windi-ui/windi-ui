@@ -53,7 +53,7 @@
 				<button class="btn v-solid c-red s-lg">Danger</button>
 				<button class="btn v-light c-green s-xl">Success</button>
 			</div>
-			<button class="btn v-outline block w-96 hover:v-default hover:c-blue">Default</button>
+			<button class="btn v-outline c-hsx block w-96 hover:v-default ">Default</button>
 			<h3 class="text-lg my-4">Badges</h3>
 			<div class="space-x-2">
 				<span class="badge c-red">Danger</span>

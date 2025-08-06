@@ -17,3 +17,14 @@ declare module 'tailwindcss/lib/util/pluginUtils' {
 declare module 'tailwindcss/lib/util/flattenColorPalette' {
 	export default function flattenColorPalette(colors: Record<string, any>): Record<string, string>;
 }
+
+declare module 'tailwindcss/lib/util/color' {
+	type Color = {
+		mode: 'rgb' | 'rgba' | 'hsl' | 'hsla',
+		color: string[],
+		alpha?: string
+	};
+
+	export function parseColor(value: string, { loose = false } = {}): Color | null;
+	export function formatColor({ mode, color, alpha }: Color): string;
+}

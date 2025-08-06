@@ -7,7 +7,8 @@ import type { default as FlattenColorPalette } from 'tailwindcss/lib/util/flatte
 import type { default as ToColorValue } from 'tailwindcss/lib/util/toColorValue';
 import type { default as WithAlphaVariable } from 'tailwindcss/lib/util/withAlphaVariable';
 import type { parseColorFormat as ParseColorFormat } from 'tailwindcss/lib/util/pluginUtils';
-import { colorToRgb, colorsToRgb } from './utils';
+import type { parseColor as ParseColor } from 'tailwindcss/lib/util/color';
+import { hslToRgb } from './utils';
 
 function _interopDefaultCompat<T>(e: any): T { return e && typeof e === 'object' && 'default' in e ? e.default : e; }
 const require = createRequire(import.meta.url);
@@ -16,6 +17,10 @@ const flattenColorPalette = _interopDefaultCompat<typeof FlattenColorPalette>(
 	require(require.resolve('tailwindcss/lib/util/flattenColorPalette', { paths: [process.cwd()] })));
 
 type PluginAPI = Parameters<Parameters<typeof Plugin>[0]>[0];
+
+const NUM_REGEX = /(\d*\.\d+|\d+)/;
+const ANGLE_REGEX = new RegExp(`^${NUM_REGEX.source}(deg|rad|grad|turn)?$`);
+const PERCENT_REGEX = new RegExp(`^${NUM_REGEX.source}%?$`);
 
 export function createTailwindTheme(tw: PluginAPI): TailwindTheme {
 	try {
@@ -119,6 +124,7 @@ export class TailwindV3Theme extends TailwindTheme {
 	private readonly toColorValue = _interopDefaultCompat<typeof ToColorValue>(require('tailwindcss/lib/util/flattenColorPalette'));
 	private readonly withAlphaVariable = _interopDefaultCompat<typeof WithAlphaVariable>(require('tailwindcss/lib/util/withAlphaVariable'));
 	private readonly parseColorFormat: typeof ParseColorFormat = require('tailwindcss/lib/util/pluginUtils').parseColorFormat;
+	private readonly parseColor: typeof ParseColor = require('tailwindcss/lib/util/color').parseColor;
 
 	private corePlugins: PluginAPI['corePlugins'];
 
@@ -129,11 +135,11 @@ export class TailwindV3Theme extends TailwindTheme {
 
 	colors(name: string) {
 		const c = super.colors(name);
-		return (typeof c === 'string') ? colorToRgb(c) : colorsToRgb(c);
+		return (typeof c === 'string') ? this.colorToRgb(c) : this.colorsToRgb(c);
 	}
 
 	colorValue(value: string, alpha?: number | string): string {
-		const c = this.parseColor(value);
+		const c = this.parseRgbFormat(value);
 		return typeof c === 'string' ? c : c({ opacityValue: alpha?.toString() });
 	}
 
@@ -164,7 +170,7 @@ export class TailwindV3Theme extends TailwindTheme {
 	private applyColor(args: Parameters<typeof WithAlphaVariable>[0], opacityPlugin: string, target: CSS.Properties) {
 		args = {
 			...args,
-			color: this.parseColor(args.color),
+			color: this.parseRgbFormat(args.color as string),
 		};
 
 		Object.assign(target, this.corePlugins?.(opacityPlugin) ? this.withAlphaVariable(args) : {
@@ -172,8 +178,47 @@ export class TailwindV3Theme extends TailwindTheme {
 		});
 	}
 
-	private parseColor(color: string | Function) {
+	private parseRgbFormat(color: string) {
 		return this.parseColorFormat(`rgb(${color} / <alpha-value>)`);
+	}
+
+	private colorsToRgb(colors: Record<string, string>) {
+		for (const c in colors) {
+			if (c === 'black' || c === 'white' || (!c.startsWith('c-') && c.match(/^(?:.+-)?(?:50|950|[1-9]00)$/)))
+				colors[c] = this.colorToRgb(colors[c]);
+		}
+
+		return colors;
+	}
+
+	private colorToRgb(color: string): string {
+		const parsed = this.parseColor(color, { loose: true });
+
+		if (parsed?.mode.startsWith('rgb')) {
+			return parsed.color.join(' ');
+		} else if (parsed?.mode.startsWith('hsl')) {
+			// Convert HSL to RGB
+			if (parsed.color.length === 3) {
+				const rh = ANGLE_REGEX.exec(parsed.color[0]);
+				const rs = PERCENT_REGEX.exec(parsed.color[1]);
+				const rl = PERCENT_REGEX.exec(parsed.color[2]);
+
+				if (rh && rs && rl) {
+					const h = parseFloat(rh[1]) / (
+						rh[2] === 'rad' ? 2 * Math.PI :
+						rh[2] === 'grad' ? 400 :
+						rh[2] === 'turn' ? 1 : 360
+					);
+					const s = parseFloat(rs[1]) / 100;
+					const l = parseFloat(rl[1]) / 100;
+
+					return hslToRgb(h, s, l).join(' ');
+				}
+			}
+		}
+
+		console.warn(`Unsupported color format: ${color}`);
+		return color;
 	}
 }
 
