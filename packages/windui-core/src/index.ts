@@ -1,16 +1,16 @@
 import { resolveConfig, type Config } from './config';
-import { Generator } from './generator';
 import { varsProvider } from './vars';
-import type { ThemeProvider } from './types/';
+import { Generator } from './generator';
+import type { ThemeProvider } from './types';
 
 export function create(config: Config) {
 	const rConfig = resolveConfig(config);
-	const cssVars = varsProvider(rConfig.prefix);
+	const vars = varsProvider(rConfig.prefix);
 
 	return {
-		cssVars,
+		vars,
 		generator(themeProvider: ThemeProvider) {
-			return new Generator(cssVars, themeProvider);
+			return new Generator(vars, themeProvider);
 		}
 	};
 }

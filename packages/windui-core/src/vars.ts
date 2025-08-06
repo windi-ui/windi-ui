@@ -5,6 +5,7 @@ import { type Variant } from './variant';
 export type VarType = 'c' | 'v' | 's';
 export type VarName<T extends VarType = VarType> = `${T}-${string}`;
 export type CSSVarName<T extends VarType = VarType> = `--${string}-${VarName<T>}`;
+export type CSSValues = Record<string, string | Record<string, string>>;
 
 export interface VarsProvider {
 	c(n: string): CSSVarName<'c'>;
@@ -41,4 +42,21 @@ export function varsProvider(prefix: string): VarsProvider {
 			return varFunc(s(name));
 		}
 	};
+}
+
+export function cssVars<TKey extends string>(
+	obj: CSSValues,
+	keyMap: (p: string) => TKey,
+	vars: Record<string, string> = {}
+): Record<TKey, string> {
+	for (const p in obj) {
+		const val = obj[p];
+		if (typeof val === 'string') {
+			vars[cssEsc(keyMap(p))] = val;
+		} else {
+			cssVars(val, (cp) => `${keyMap(p)}-${cp}`, vars);
+		}
+	}
+
+	return vars;
 }

@@ -1,72 +1,28 @@
-import { cssEsc } from "./utils";
 import type { ThemeProvider, CSS } from "./types";
-import type { CSSVarName, VarsProvider } from "./vars";
+import { cssVars, type VarsProvider, type CSSValues } from "./vars";
+import { colorsProvider, type ColorProvider } from "./colors";
 import { variants, type Variant } from "./variant";
 import { sizes, type Size } from "./size";
 import * as components from './components';
-
-type CssValues = Record<string, string | Record<string, string>>
-
-function cssVars<TKey extends string>(
-	obj: CssValues,
-	keyMap: (p: string) => TKey,
-	vars: Record<string, string> = {}): Record<TKey, string> {
-	for (const p in obj) {
-		const val = obj[p];
-		if (typeof val === 'string') {
-			vars[cssEsc(keyMap(p))] = val;
-		} else {
-			cssVars(val, (cp) => `${keyMap(p)}-${cp}`, vars);
-		}
-	}
-	return vars;
-}
-
-const FLAT_COLORS = {
-	transparent: 'transparent',
-	black: '#000',
-	white: '#fff',
-};
 
 export class Generator {
 	private readonly _variants: Record<string, Variant>;
 	private readonly _sizes: Record<string, Size>;
 	private readonly _components: Record<string, components.IComponent> = {};
+	readonly colors: ColorProvider;
 
 	constructor(
-		private readonly vars: VarsProvider,
-		private readonly themeProvider: ThemeProvider
+		readonly vars: VarsProvider,
+		readonly theme: ThemeProvider
 	) {
+		this.colors = colorsProvider(this.theme.colors(), this.vars);
 		this._variants = variants(vars);
-		this._sizes = sizes(themeProvider);
+		this._sizes = sizes(theme);
 
 		this.addComponent(components.button)
 			.addComponent(components.badge);
 	}
 
-	colorCssVars(name: string) {
-		const color = this.themeProvider.colors(name);
-
-		if (color) {
-			switch (typeof color) {
-				case 'string':
-					return { [this.vars.c(name)]: color };
-				case 'object':
-					return cssVars(color, n => this.vars.c(n));
-			}
-		}
-
-		return {};
-	}
-
-	colorRootVars() {
-		const cRoot: Record<CSSVarName<'c'>, string> = {};
-		for (const mn in FLAT_COLORS) {
-			const mc = this.themeProvider.colors(mn);
-			cRoot[this.vars.c(mn)] = (typeof mc === 'string') ? mc : FLAT_COLORS[mn as keyof typeof FLAT_COLORS];
-		}
-		return Object.assign(cRoot, this.colorCssVars('default'));
-	}
 
 	getVariantNames() {
 		return Object.keys(this._variants);
@@ -90,7 +46,7 @@ export class Generator {
 	}
 
 	sizeCssVars(name: string) {
-		const size = { ... this._sizes[name] } as CssValues;
+		const size = { ... this._sizes[name] } as CSSValues;
 		const sText = size.text;
 		if (Array.isArray(sText)) {
 			size.text = sText[0];
@@ -108,7 +64,7 @@ export class Generator {
 	}
 
 	addComponent(cmp: components.ComponentBuilder) {
-		const component = cmp(this.vars, this.themeProvider);
+		const component = cmp(this.vars, this.theme);
 		this._components[component.name] = component;
 		return this;
 	}
@@ -130,13 +86,13 @@ export class Generator {
 
 			if (component.applyVariant) {
 				if (component.applyVariant === true || component.applyVariant.includes('text')) {
-					this.themeProvider.applyTextColor(this.vars.variant('text'), css[cClass]);
+					this.theme.applyTextColor(this.vars.variant('text'), css[cClass]);
 				}
 				if (component.applyVariant === true || component.applyVariant.includes('background')) {
-					this.themeProvider.applyBackgroundColor(this.vars.variant('background'), css[cClass]);
+					this.theme.applyBackgroundColor(this.vars.variant('background'), css[cClass]);
 				}
 				if (component.applyVariant === true || component.applyVariant.includes('border')) {
-					this.themeProvider.applyBorderColor(this.vars.variant('border'), css[cClass]);
+					this.theme.applyBorderColor(this.vars.variant('border'), css[cClass]);
 				}
 			}
 
@@ -145,9 +101,9 @@ export class Generator {
 					? css[cClass][`&:hover`] ??= {}
 					: css[`${cClass}:hover`] ??= {}) as CSS.Properties;
 
-				this.themeProvider.applyTextColor(this.vars.variant('text-hover'), pTarget);
-				this.themeProvider.applyBackgroundColor(this.vars.variant('background-hover'), pTarget);
-				this.themeProvider.applyBorderColor(this.vars.variant('border-hover'), pTarget);
+				this.theme.applyTextColor(this.vars.variant('text-hover'), pTarget);
+				this.theme.applyBackgroundColor(this.vars.variant('background-hover'), pTarget);
+				this.theme.applyBorderColor(this.vars.variant('border-hover'), pTarget);
 			}
 
 			return css;

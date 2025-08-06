@@ -51,8 +51,12 @@ export abstract class TailwindTheme implements ThemeProvider {
 		this.theme = pluginApi.theme;
 	}
 
-	colors(name: string) {
-		const c = this.theme<string | Record<string, string>>(`colors.${name}`);
+	colors(): Record<string, string>;
+	colors(name: string): string | Record<string, string>;
+	colors(name?: string): string | Record<string, string>;
+	colors(name?: string) {
+		const cname = name ? `colors.${name}` : 'colors';
+		const c = this.theme<string | Record<string, string>>(cname);
 
 		return (typeof c === 'object') ? flattenColorPalette(c) : c;
 	}
@@ -133,7 +137,9 @@ export class TailwindV3Theme extends TailwindTheme {
 		this.corePlugins = pluginApi.corePlugins;
 	}
 
-	colors(name: string) {
+	colors(): Record<string, string>;
+	colors(name: string): string | Record<string, string>;
+	colors(name?: string) {
 		const c = super.colors(name);
 		return (typeof c === 'string') ? this.colorToRgb(c) : this.colorsToRgb(c);
 	}
