@@ -28,7 +28,7 @@ export function variants(vars: VarsProvider) {
 			'text-hover': vars.color('50'),
 		},
 		outline: {
-			background: vars.color('transparent'),
+			background: 'transparent',
 			border: vars.color('600'),
 			text: vars.color('600'),
 			'background-hover': vars.color('600'),

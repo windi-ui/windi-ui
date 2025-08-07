@@ -15,4 +15,6 @@ export function create(config: Config) {
 	};
 }
 
-export { Config, ThemeProvider };
+export type { Config };
+export type * from './types';
+export type { ColorShade, ExColorShade } from './colors';

@@ -1,6 +1,6 @@
 import { default as createPlugin } from 'tailwindcss/plugin';
 import { createTailwindTheme, flattenColorPalette } from './TailwindTheme';
-import { create, type Config } from "windui-core";
+import { create, type Config, type ColorShade } from "windui-core";
 
 function keyValuePairs(
 	keys: string[],
@@ -51,8 +51,10 @@ function WindUITailwindCSS(config: Config = {}): ReturnType<typeof createPlugin>
 			extend: {
 				colors({ colors }) {
 					return {
-						c: keyValuePairs(Object.keys(colors.gray), v => `rgb(${wiu.vars.color(v)} / <alpha-value>)`),
-						default: colors.gray
+						c: keyValuePairs(Object.keys(colors.gray), v => `rgb(${wiu.vars.color(v as ColorShade)} / <alpha-value>)`),
+						// TODO: add as configurable option
+						default: colors.gray,
+						accent: colors.blue,
 					};
 				},
 			}

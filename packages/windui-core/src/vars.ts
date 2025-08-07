@@ -1,10 +1,13 @@
 import { cssEsc } from './utils';
-import { type Size } from './size';
-import { type Variant } from './variant';
+import type { ColorShade, ExColorShade } from './colors';
+import type { Size } from './size';
+import type { Variant } from './variant';
+
 
 export type VarType = 'c' | 'v' | 's';
 export type VarName<T extends VarType = VarType> = `${T}-${string}`;
 export type CSSVarName<T extends VarType = VarType> = `--${string}-${VarName<T>}`;
+export type CSSVarValue<T extends VarType = VarType> = `var(${CSSVarName<T>})`;
 export type CSSValues = Record<string, string | Record<string, string>>;
 
 export interface VarsProvider {
@@ -12,9 +15,13 @@ export interface VarsProvider {
 	v(n: string): CSSVarName<'v'>;
 	s(n: string): CSSVarName<'s'>;
 
-	color(name: string): string;
-	size(name: 'text' | `spacing-${keyof Size['spacing']}`): string;
-	variant(name: keyof Variant): string;
+	color: {
+		(name: ExColorShade): CSSVarValue<'c'>;
+		default(name: string): CSSVarValue<'c'>;
+		accent(name: string): CSSVarValue<'c'>;
+	};
+	size(name: 'text' | `spacing-${keyof Size['spacing']}`): CSSVarValue<'s'>;
+	variant(name: keyof Variant): CSSVarValue<'v'>;
 }
 
 export function varsProvider(prefix: string): VarsProvider {
@@ -22,7 +29,7 @@ export function varsProvider(prefix: string): VarsProvider {
 		return `--${prefix}-${name}`;
 	}
 
-	function varFunc(v: CSSVarName) {
+	function varFunc<T extends VarType>(v: CSSVarName<T>): CSSVarValue<T> {
 		return `var(${cssEsc(v)})`;
 	}
 
@@ -30,11 +37,16 @@ export function varsProvider(prefix: string): VarsProvider {
 	const v = (v: string) => vName(`v-${v}`);
 	const s = (v: string) => vName(`s-${v}`);
 
+	function color(name: ExColorShade) {
+		return varFunc(c(name));
+	}
+
+	color.default = (name: ColorShade) => color(`default-${name}`);
+	color.accent = (name: ColorShade) => color(`accent-${name}`);
+
 	return {
 		c, v, s,
-		color(name) {
-			return varFunc(c(name));
-		},
+		color,
 		variant(name) {
 			return varFunc(v(name));
 		},
