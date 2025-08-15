@@ -1,7 +1,7 @@
 import { findPackageJSON, createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import type { ThemeProvider } from 'windui-core';
-import type { CSS } from 'windui-core/types';
+import type { CSS } from 'windui-core';
 import type { default as Plugin } from 'tailwindcss/plugin';
 import type { default as FlattenColorPalette } from 'tailwindcss/lib/util/flattenColorPalette';
 import type { default as ToColorValue } from 'tailwindcss/lib/util/toColorValue';

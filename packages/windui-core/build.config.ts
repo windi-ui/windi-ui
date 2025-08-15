@@ -8,9 +8,5 @@ export default defineBuildConfig(import.meta.url, [
 	{
 		name: 'components',
 		input: './src/components/index'
-	},
-	{
-		name: 'types',
-		input: './src/types/index'
-	},
+	}
 ]);

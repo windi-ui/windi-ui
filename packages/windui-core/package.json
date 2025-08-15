@@ -25,9 +25,6 @@
 			"import": "./dist/components.mjs",
 			"require": "./dist/components.cjs",
 			"types": "./dist/components.d.ts"
-		},
-		"./types": {
-			"types": "./dist/types.d.ts"
 		}
 	},
 	"files": ["dist"],
