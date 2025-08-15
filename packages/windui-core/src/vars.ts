@@ -1,8 +1,8 @@
 import { cssEsc } from './utils';
 import type { ColorShade, ExColorShade } from './colors';
 import type { Size } from './size';
-import type { Variant } from './variant';
-
+import type { VariantProps } from './variants';
+import { CSS } from './types';
 
 export type VarType = 'c' | 'v' | 's';
 export type VarName<T extends VarType = VarType> = `${T}-${string}`;
@@ -16,12 +16,12 @@ export interface VarsProvider {
 	s(n: string): CSSVarName<'s'>;
 
 	color: {
-		(name: ExColorShade): CSSVarValue<'c'>;
-		default(name: string): CSSVarValue<'c'>;
-		accent(name: string): CSSVarValue<'c'>;
+		(name: ExColorShade, fallback?: string): CSSVarValue<'c'>;
+		default(name: ColorShade, fallback?: string): CSSVarValue<'c'>;
+		accent(name: ColorShade, fallback?: string): CSSVarValue<'c'>;
 	};
-	size(name: 'text' | `spacing-${keyof Size['spacing']}`): CSSVarValue<'s'>;
-	variant(name: keyof Variant): CSSVarValue<'v'>;
+	size(name: 'text' | `spacing-${keyof Size['spacing']}`, fallback?: string): CSSVarValue<'s'>;
+	variant(name: keyof VariantProps | `${keyof VariantProps}-${CSS.SimplePseudos}`, fallback?: string): CSSVarValue<'v'>;
 }
 
 export function varsProvider(prefix: string): VarsProvider {
@@ -29,16 +29,16 @@ export function varsProvider(prefix: string): VarsProvider {
 		return `--${prefix}-${name}`;
 	}
 
-	function varFunc<T extends VarType>(v: CSSVarName<T>): CSSVarValue<T> {
-		return `var(${cssEsc(v)})`;
+	function varFunc<T extends VarType>(v: CSSVarName<T>, fallback?: string): CSSVarValue<T> {
+		return `var(${cssEsc(v)}${fallback ? `, ${fallback}` : ''})`;
 	}
 
 	const c = (v: string) => vName(`c-${v}`);
 	const v = (v: string) => vName(`v-${v}`);
 	const s = (v: string) => vName(`s-${v}`);
 
-	function color(name: ExColorShade) {
-		return varFunc(c(name));
+	function color(name: ExColorShade, fallback?: string) {
+		return varFunc(c(name), fallback);
 	}
 
 	color.default = (name: ColorShade) => color(`default-${name}`);
@@ -47,11 +47,12 @@ export function varsProvider(prefix: string): VarsProvider {
 	return {
 		c, v, s,
 		color,
-		variant(name) {
-			return varFunc(v(name));
+
+		variant(name, fallback) {
+			return varFunc(v(name), fallback);
 		},
-		size(name) {
-			return varFunc(s(name));
+		size(name, fallback) {
+			return varFunc(s(name), fallback);
 		}
 	};
 }

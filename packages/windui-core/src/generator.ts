@@ -1,44 +1,26 @@
 import type { ThemeProvider, CSS } from "./types";
 import { cssVars, type VarsProvider, type CSSValues } from "./vars";
 import { colorsProvider, type ColorProvider } from "./colors";
-import { variants, type Variant } from "./variant";
+import { variantsProvider, type VariantProvider } from "./variants";
 import { sizes, type Size } from "./size";
 import * as components from './components';
 
 export class Generator {
-	private readonly _variants: Record<string, Variant>;
 	private readonly _sizes: Record<string, Size>;
 	private readonly _components: Record<string, components.IComponent> = {};
 	readonly colors: ColorProvider;
+	readonly variants: VariantProvider;
 
 	constructor(
 		readonly vars: VarsProvider,
 		readonly theme: ThemeProvider
 	) {
 		this.colors = colorsProvider(this.vars, this.theme);
-		this._variants = variants(vars);
+		this.variants = variantsProvider(this.vars, this.theme);
 		this._sizes = sizes(theme);
 
 		this.addComponent(components.button)
 			.addComponent(components.badge);
-	}
-
-
-	getVariantNames() {
-		return Object.keys(this._variants);
-	}
-
-	variantCssVars(name: string) {
-		const variant = this._variants[name];
-
-		if (variant) {
-			return cssVars(variant, n => this.vars.v(n));
-		}
-		return {};
-	}
-
-	variantRootVars() {
-		return this.variantCssVars('default');
 	}
 
 	getSizeNames() {
@@ -84,26 +66,8 @@ export class Generator {
 				}
 			}
 
-			if (component.applyVariant) {
-				if (component.applyVariant === true || component.applyVariant.includes('text')) {
-					this.theme.applyTextColor(this.vars.variant('text'), css[cClass]);
-				}
-				if (component.applyVariant === true || component.applyVariant.includes('background')) {
-					this.theme.applyBackgroundColor(this.vars.variant('background'), css[cClass]);
-				}
-				if (component.applyVariant === true || component.applyVariant.includes('border')) {
-					this.theme.applyBorderColor(this.vars.variant('border'), css[cClass]);
-				}
-			}
-
-			if (component.applyVariantPseudos) {
-				const pTarget = (nesting
-					? css[cClass][`&:hover`] ??= {}
-					: css[`${cClass}:hover`] ??= {}) as CSS.Properties;
-
-				this.theme.applyTextColor(this.vars.variant('text-hover'), pTarget);
-				this.theme.applyBackgroundColor(this.vars.variant('background-hover'), pTarget);
-				this.theme.applyBorderColor(this.vars.variant('border-hover'), pTarget);
+			if (component.applyVariant || component.applyVariantPseudos) {
+				this.variants.apply(component.applyVariant, component.applyVariantPseudos, css[cClass]);
 			}
 
 			return css;

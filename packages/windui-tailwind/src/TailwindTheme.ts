@@ -4,7 +4,6 @@ import type { ThemeProvider } from 'windui-core';
 import type { CSS } from 'windui-core';
 import type { default as Plugin } from 'tailwindcss/plugin';
 import type { default as FlattenColorPalette } from 'tailwindcss/lib/util/flattenColorPalette';
-import type { default as ToColorValue } from 'tailwindcss/lib/util/toColorValue';
 import type { default as WithAlphaVariable } from 'tailwindcss/lib/util/withAlphaVariable';
 import type { parseColorFormat as ParseColorFormat } from 'tailwindcss/lib/util/pluginUtils';
 import type { parseColor as ParseColor } from 'tailwindcss/lib/util/color';
@@ -71,11 +70,11 @@ export abstract class TailwindTheme implements ThemeProvider {
 
 	abstract colorValue(value: string, alpha?: number | string): string;
 
-	abstract applyTextColor(value: string, target: CSS.Properties): void;
+	abstract applyTextColor(value: string, target: CSS.Properties, alpha?: number | string): void;
 
-	abstract applyBackgroundColor(value: string, target: CSS.Properties): void;
+	abstract applyBackgroundColor(value: string, target: CSS.Properties, alpha?: number | string): void;
 
-	abstract applyBorderColor(value: string, target: CSS.Properties): void;
+	abstract applyBorderColor(value: string, target: CSS.Properties, alpha?: number | string): void;
 }
 
 export class TailwindV4Theme extends TailwindTheme {
@@ -89,43 +88,46 @@ export class TailwindV4Theme extends TailwindTheme {
 		return this.withAlpha(value, alpha);
 	}
 
-	applyTextColor(value: string, target: CSS.Properties): void {
-		target.color = value;
+	applyTextColor(value: string, target: CSS.Properties, alpha?: number | string): void {
+		target.color = this.withAlpha(value, alpha);
 	}
 
-	applyBackgroundColor(value: string, target: CSS.Properties): void {
-		target.backgroundColor = value;
+	applyBackgroundColor(value: string, target: CSS.Properties, alpha?: number | string): void {
+		target.backgroundColor = this.withAlpha(value, alpha);
 	}
 
-	applyBorderColor(value: string, target: CSS.Properties): void {
-		target.borderColor = value;
+	applyBorderColor(value: string, target: CSS.Properties, alpha?: number | string): void {
+		target.borderColor = this.withAlpha(value, alpha);
 	}
 
 	// https://github.com/tailwindlabs/tailwindcss/blob/main/packages/tailwindcss/src/utilities.ts#L165C1-L182C2
 	private withAlpha(value: string, alpha?: string | number): string {
-		if (alpha == null || alpha == '') return value
+		if (alpha == null || alpha === '') return value;
 
 		// Convert numeric values (like `0.5`) to percentages (like `50%`) so they
 		// work properly with `color-mix`. Assume anything that isn't a number is
 		// safe to pass through as-is, like `var(--my-opacity)`.
-		let alphaAsNumber = Number(alpha)
+		let alphaAsNumber = Number(alpha);
 		if (!Number.isNaN(alphaAsNumber)) {
-			alpha = `${alphaAsNumber * 100}%`
+			alpha = `${alphaAsNumber * 100}%`;
 		}
 
 		// No need for `color-mix` if the alpha is `100%`
 		if (alpha === '100%') {
-			return value
+			return value;
 		}
 
-		return `color-mix(in oklab, ${value} ${alpha}, transparent)`
+		if (typeof alpha === 'string' && alpha.startsWith('var(')) {
+			alpha = `calc(${alpha} * 100%)`;
+		}
+
+		return `color-mix(in oklab, ${value} ${alpha}, transparent)`;
 	}
 }
 
 export class TailwindV3Theme extends TailwindTheme {
 	readonly ver = 3;
 
-	private readonly toColorValue = _interopDefaultCompat<typeof ToColorValue>(require('tailwindcss/lib/util/flattenColorPalette'));
 	private readonly withAlphaVariable = _interopDefaultCompat<typeof WithAlphaVariable>(require('tailwindcss/lib/util/withAlphaVariable'));
 	private readonly parseColorFormat: typeof ParseColorFormat = require('tailwindcss/lib/util/pluginUtils').parseColorFormat;
 	private readonly parseColor: typeof ParseColor = require('tailwindcss/lib/util/color').parseColor;
@@ -149,39 +151,50 @@ export class TailwindV3Theme extends TailwindTheme {
 		return typeof c === 'string' ? c : c({ opacityValue: alpha?.toString() });
 	}
 
-	applyTextColor(value: string, target: CSS.Properties) {
+	applyTextColor(value: string, target: CSS.Properties, alpha?: number | string) {
 		this.applyColor({
 			color: value,
 			property: 'color',
 			variable: '--tw-text-opacity'
-		}, 'textOpacity', target);
+		}, 'textOpacity', target, alpha);
 	}
 
-	applyBackgroundColor(value: string, target: CSS.Properties) {
+	applyBackgroundColor(value: string, target: CSS.Properties, alpha?: number | string) {
 		this.applyColor({
 			color: value,
 			property: 'background-color',
 			variable: '--tw-bg-opacity'
-		}, 'backgroundOpacity', target);
+		}, 'backgroundOpacity', target, alpha);
 	}
 
-	applyBorderColor(value: string, target: CSS.Properties) {
+	applyBorderColor(value: string, target: CSS.Properties, alpha?: number | string) {
 		this.applyColor({
 			color: value,
 			property: 'border-color',
 			variable: '--tw-border-opacity'
-		}, 'borderOpacity', target);
+		}, 'borderOpacity', target, alpha);
 	}
 
-	private applyColor(args: Parameters<typeof WithAlphaVariable>[0], opacityPlugin: string, target: CSS.Properties) {
+	private applyColor(args: Parameters<typeof WithAlphaVariable>[0], opacityPlugin: string, target: CSS.Properties, alpha?: number | string) {
 		args = {
 			...args,
 			color: this.parseRgbFormat(args.color as string),
 		};
 
-		Object.assign(target, this.corePlugins?.(opacityPlugin) ? this.withAlphaVariable(args) : {
-			[args.property]: this.toColorValue(args.color),
-		});
+		Object.assign(target, this.corePlugins?.(opacityPlugin)
+			? this.withAlphaVariable(args)
+			: { [args.property]: this.toColorValue(args.color, alpha) });
+
+		if (alpha != null && alpha !== '' && args.variable in target) {
+			const alphaValue = alpha.toString();
+			target[args.variable] = alphaValue;
+		}
+	}
+
+	private toColorValue(maybeFunction: string | ((a: { opacityValue?: string }) => string), alpha?: number | string): string {
+		return typeof maybeFunction === 'function'
+			? maybeFunction((alpha != null && alpha !== '') ? { opacityValue: alpha.toString() } : {})
+			: maybeFunction;
 	}
 
 	private parseRgbFormat(color: string) {

@@ -3,7 +3,7 @@ import { defineComponent } from "../common";
 export default defineComponent((vars, theme) => {
 	return {
 		name: "badge",
-		applyVariant: ['text', 'background'],
+		applyVariant: ['text', 'bg'],
 
 		style: {
 			display: 'inline-block',

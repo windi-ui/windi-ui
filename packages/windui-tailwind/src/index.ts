@@ -18,21 +18,19 @@ function WindUITailwindCSS(config: Config = {}): ReturnType<typeof createPlugin>
 	return createPlugin((tw) => {
 		const tp = createTailwindTheme(tw);
 		const gt = wiu.generator(tp);
-		const twc = flattenColorPalette(tw.theme('colors'));
+		//const twc = flattenColorPalette(tw.theme('colors'));
 
 		tw.addBase({ ':root': gt.colors.rootVars() });
 		tw.addBase({ ':root': gt.sizeRootVars() });
-		tw.addBase({ '*': gt.variantRootVars() });
+		tw.addBase({ '*': gt.variants.rootVars() });
 
 		tw.matchUtilities({
 			c: (val) => gt.colors.cssVars(val)
 		}, { values: keyValuePairs(gt.colors.names()) });
 
 		tw.matchUtilities({
-			v: (val) => gt.variantCssVars(val)
-		}, {
-			values: keyValuePairs(gt.getVariantNames())
-		});
+			v: (val) => gt.variants.cssVars(val)
+		}, { values: keyValuePairs(gt.variants.names()) });
 
 		tw.matchUtilities({
 			s: (val) => gt.sizeCssVars(val)
