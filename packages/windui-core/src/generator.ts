@@ -15,7 +15,7 @@ export class Generator {
 		readonly vars: VarsProvider,
 		readonly theme: ThemeProvider
 	) {
-		this.colors = colorsProvider(this.theme.colors(), this.vars);
+		this.colors = colorsProvider(this.vars, this.theme);
 		this._variants = variants(vars);
 		this._sizes = sizes(theme);
 
