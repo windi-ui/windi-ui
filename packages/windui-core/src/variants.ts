@@ -85,7 +85,7 @@ export function defaultVariant(vars: VarsProvider): Variant {
 				'border-accent': vars.color.accent('500'),
 			}
 		}
-	}
+	};
 }
 
 export function mainVariants(vars: VarsProvider): Record<string, Variant> {
@@ -192,7 +192,7 @@ export function mainVariants(vars: VarsProvider): Record<string, Variant> {
 				}
 			}
 		}
-	}
+	};
 }
 
 export function variantsProvider(vars: VarsProvider, theme: ThemeProvider): VariantProvider {
@@ -257,7 +257,7 @@ export function variantsProvider(vars: VarsProvider, theme: ThemeProvider): Vari
 					func(
 						vars.variant(pseudo ? `${vp}-${pseudo}` : vp), pTarget,
 						vars.variant(pseudo ? `${mvp}-opacity-${pseudo}` : `${mvp}-opacity`,
-							pseudo ? vars.variant(`${mvp}-opacity`, '1') : '1'))
+							pseudo ? vars.variant(`${mvp}-opacity`, '1') : '1'));
 				}
 
 				applProp('bg', theme.applyBackgroundColor.bind(theme));

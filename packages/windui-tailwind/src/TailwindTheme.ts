@@ -5,10 +5,9 @@ import type { CSS } from 'windui-core';
 import type { default as Plugin } from 'tailwindcss/plugin';
 import type { default as FlattenColorPalette } from 'tailwindcss/lib/util/flattenColorPalette';
 import type { default as WithAlphaVariable } from 'tailwindcss/lib/util/withAlphaVariable';
-import type { parseColorFormat as ParseColorFormat } from 'tailwindcss/lib/util/pluginUtils';
-import type { parseColor as ParseColor } from 'tailwindcss/lib/util/color';
 import { hslToRgb } from './utils';
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
 function _interopDefaultCompat<T>(e: any): T { return e && typeof e === 'object' && 'default' in e ? e.default : e; }
 const require = createRequire(import.meta.url);
 
@@ -25,7 +24,7 @@ export function createTailwindTheme(tw: PluginAPI): TailwindTheme {
 	try {
 		const twPkgPath = findPackageJSON(import.meta.resolve('tailwindcss', process.cwd()));
 		if (twPkgPath) {
-			const twPkg = JSON.parse(readFileSync(twPkgPath, { encoding: 'utf8' }));
+			const twPkg = JSON.parse(readFileSync(twPkgPath, { encoding: 'utf8' })) as { version: string };
 			if (twPkg.version.startsWith('4.')) {
 				return new TailwindV4Theme(tw);
 			} else if (twPkg.version.startsWith('3.')) {
@@ -107,7 +106,7 @@ export class TailwindV4Theme extends TailwindTheme {
 		// Convert numeric values (like `0.5`) to percentages (like `50%`) so they
 		// work properly with `color-mix`. Assume anything that isn't a number is
 		// safe to pass through as-is, like `var(--my-opacity)`.
-		let alphaAsNumber = Number(alpha);
+		const alphaAsNumber = Number(alpha);
 		if (!Number.isNaN(alphaAsNumber)) {
 			alpha = `${alphaAsNumber * 100}%`;
 		}
@@ -129,14 +128,14 @@ export class TailwindV3Theme extends TailwindTheme {
 	readonly ver = 3;
 
 	private readonly withAlphaVariable = _interopDefaultCompat<typeof WithAlphaVariable>(require('tailwindcss/lib/util/withAlphaVariable'));
-	private readonly parseColorFormat: typeof ParseColorFormat = require('tailwindcss/lib/util/pluginUtils').parseColorFormat;
-	private readonly parseColor: typeof ParseColor = require('tailwindcss/lib/util/color').parseColor;
+	private readonly parseColorFormat = require('tailwindcss/lib/util/pluginUtils').parseColorFormat;
+	private readonly parseColor = require('tailwindcss/lib/util/color').parseColor;
 
-	private corePlugins: PluginAPI['corePlugins'];
+	private corePlugins: (p: string) => boolean;
 
 	constructor(pluginApi: PluginAPI) {
 		super(pluginApi);
-		this.corePlugins = pluginApi.corePlugins;
+		this.corePlugins = (p) => pluginApi.corePlugins(p);
 	}
 
 	colors(): Record<string, string>;
@@ -203,7 +202,7 @@ export class TailwindV3Theme extends TailwindTheme {
 
 	private colorsToRgb(colors: Record<string, string>) {
 		for (const c in colors) {
-			if (c === 'black' || c === 'white' || (!c.startsWith('c-') && c.match(/^(?:.+-)?(?:50|950|[1-9]00)$/)))
+			if (c === 'black' || c === 'white' || (!c.startsWith('c-') && (/^(?:.+-)?(?:50|950|[1-9]00)$/.exec(c))))
 				colors[c] = this.colorToRgb(colors[c]);
 		}
 
@@ -223,11 +222,7 @@ export class TailwindV3Theme extends TailwindTheme {
 				const rl = PERCENT_REGEX.exec(parsed.color[2]);
 
 				if (rh && rs && rl) {
-					const h = parseFloat(rh[1]) / (
-						rh[2] === 'rad' ? 2 * Math.PI :
-						rh[2] === 'grad' ? 400 :
-						rh[2] === 'turn' ? 1 : 360
-					);
+					const h = parseFloat(rh[1]) / (rh[2] === 'rad' ? 2 * Math.PI : rh[2] === 'grad' ? 400 : rh[2] === 'turn' ? 1 : 360);
 					const s = parseFloat(rs[1]) / 100;
 					const l = parseFloat(rl[1]) / 100;
 

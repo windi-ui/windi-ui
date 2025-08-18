@@ -28,15 +28,16 @@ export class Generator {
 	}
 
 	sizeCssVars(name: string) {
-		const size = { ... this._sizes[name] } as CSSValues;
+		const size = { ...this._sizes[name] };
+		const rSize = size as CSSValues;
 		const sText = size.text;
 		if (Array.isArray(sText)) {
-			size.text = sText[0];
-			size['line-height'] = sText[1].lineHeight;
+			rSize.text = sText[0];
+			rSize['line-height'] = sText[1].lineHeight;
 		}
 
 		if (size) {
-			return cssVars(size, n => this.vars.s(n));
+			return cssVars(rSize, n => this.vars.s(n));
 		}
 		return {};
 	}

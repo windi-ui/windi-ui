@@ -1,5 +1,5 @@
 import { default as createPlugin } from 'tailwindcss/plugin';
-import { createTailwindTheme, flattenColorPalette } from './TailwindTheme';
+import { createTailwindTheme } from './TailwindTheme';
 import { create, type Config, type ColorShade } from "windui-core";
 
 function keyValuePairs(
@@ -18,7 +18,6 @@ function WindUITailwindCSS(config: Config = {}): ReturnType<typeof createPlugin>
 	return createPlugin((tw) => {
 		const tp = createTailwindTheme(tw);
 		const gt = wiu.generator(tp);
-		//const twc = flattenColorPalette(tw.theme('colors'));
 
 		tw.addBase({ ':root': gt.colors.rootVars() });
 		tw.addBase({ ':root': gt.sizeRootVars() });

@@ -28,7 +28,7 @@ function getColorMap(colors: Record<string, string>) {
 	const cMap = {
 		palette: new Map<string, Map<ColorShade, string>>(),
 		custom: new Map<string, string>()
-	}
+	};
 
 	for (const key in colors) {
 		const value = colors[key];
@@ -100,7 +100,7 @@ export function colorsProvider(vars: VarsProvider, theme: ThemeProvider): ColorP
 		rootVars() {
 			const cRoot: ColorVars = {};
 			for (const mn in FLAT_COLORS) {
-				cRoot[vars.c(mn)] = colorMap.custom.get(mn) || FLAT_COLORS[mn];
+				cRoot[vars.c(mn)] = colorMap.custom.get(mn) ?? FLAT_COLORS[mn];
 			}
 
 			const dc = cCssVars('default');
@@ -112,14 +112,14 @@ export function colorsProvider(vars: VarsProvider, theme: ThemeProvider): ColorP
 				}
 			}
 
-			addPalette('default', colorMap.palette.get('default') || new Map());
-			addPalette('accent', colorMap.palette.get('accent') || new Map());
+			addPalette('default', colorMap.palette.get('default') ?? new Map<ColorShade, string>());
+			addPalette('accent', colorMap.palette.get('accent') ?? new Map<ColorShade, string>());
 
 			return cRoot;
 		},
 
 		toValue(name, alpha) {
-			return theme.colorValue(name.match(COLOR_SHADE_EX_REGEX) ? vars.color(name as ExColorShade) : name, alpha);
+			return theme.colorValue((COLOR_SHADE_EX_REGEX.exec(name)) ? vars.color(name as ExColorShade) : name, alpha);
 		}
-	}
+	};
 }

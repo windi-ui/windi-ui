@@ -1,6 +1,4 @@
-type Expand<T, TKey extends string | number | symbol = string, TValue = any> = T & {
-	[key in TKey]: TValue;
-};
+type Expand<T, TKey extends string | number | symbol = string, TValue = any> = T & Record<TKey, TValue>;
 
 declare module 'csstype' {
 	export interface Properties {
