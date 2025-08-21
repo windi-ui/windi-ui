@@ -29,11 +29,9 @@ export interface Variant extends VariantProps {
 	//dark?: Omit<Variant, 'dark'>;
 }
 
-type ApplyVariantMainProp = 'bg' | 'border' | 'text';
-type ApplyVariantProp = ApplyVariantMainProp |
-	'bg-soft' | 'bg-muted' | 'bg-accent' |
-	'border-soft' | 'border-muted' | 'border-accent' |
-	'text-soft' | 'text-muted' | 'text-accent';
+export type ApplyVariantMainProp = 'bg' | 'border' | 'text';
+export type ApplyVariantSubProp = 'soft' | 'muted' | 'accent'| 'default';
+export type ApplyVariantProp = ApplyVariantMainProp | `${ApplyVariantMainProp}-${Exclude<ApplyVariantSubProp, 'default'>}`;
 
 export type ApplyVariant = boolean | ApplyVariantProp[];
 export type ApplyVariantPseudos = Partial<Record<CSS.SimplePseudos, ApplyVariant>> | CSS.SimplePseudos[] | false;

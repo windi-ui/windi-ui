@@ -3,16 +3,15 @@ import { readFileSync } from 'node:fs';
 import type { ThemeProvider } from 'windui-core';
 import type { CSS } from 'windui-core';
 import type { default as Plugin } from 'tailwindcss/plugin';
-import type { default as FlattenColorPalette } from 'tailwindcss/lib/util/flattenColorPalette';
 import type { default as WithAlphaVariable } from 'tailwindcss/lib/util/withAlphaVariable';
 import { hslToRgb } from './utils';
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-function _interopDefaultCompat<T>(e: any): T { return e && typeof e === 'object' && 'default' in e ? e.default : e; }
+type MDefault<T> = T extends { default: infer U } ? U : T;
+function _interopDefaultCompat<T, TR = MDefault<T>>(e: T): TR { return ((e && typeof e === 'object' && 'default' in e) ? e.default : e) as TR; }
 const require = createRequire(import.meta.url);
 
-const flattenColorPalette = _interopDefaultCompat<typeof FlattenColorPalette>(
-	require(require.resolve('tailwindcss/lib/util/flattenColorPalette', { paths: [process.cwd()] })));
+const flattenColorPalette = _interopDefaultCompat(
+	require(require.resolve('tailwindcss/lib/util/flattenColorPalette', { paths: [process.cwd()] }) as 'tailwindcss/lib/util/flattenColorPalette'));
 
 type PluginAPI = Parameters<Parameters<typeof Plugin>[0]>[0];
 
@@ -127,7 +126,7 @@ export class TailwindV4Theme extends TailwindTheme {
 export class TailwindV3Theme extends TailwindTheme {
 	readonly ver = 3;
 
-	private readonly withAlphaVariable = _interopDefaultCompat<typeof WithAlphaVariable>(require('tailwindcss/lib/util/withAlphaVariable'));
+	private readonly withAlphaVariable = _interopDefaultCompat(require('tailwindcss/lib/util/withAlphaVariable'));
 	private readonly parseColorFormat = require('tailwindcss/lib/util/pluginUtils').parseColorFormat;
 	private readonly parseColor = require('tailwindcss/lib/util/color').parseColor;
 
