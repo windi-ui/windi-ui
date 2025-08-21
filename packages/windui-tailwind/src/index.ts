@@ -1,6 +1,6 @@
 import { default as createPlugin } from 'tailwindcss/plugin';
 import { createTailwindTheme } from './TailwindTheme';
-import { create, type Config, type ColorShade } from "windui-core";
+import { create, type Config, type ColorShade, type ApplyVariantSubProp } from "windui-core";
 
 function keyValuePairs(
 	keys: string[],
@@ -30,6 +30,21 @@ function WindUITailwindCSS(config: Config = {}): ReturnType<typeof createPlugin>
 		tw.matchUtilities({
 			v: (val) => gt.variants.cssVars(val)
 		}, { values: keyValuePairs(gt.variants.names()) });
+
+		tw.matchUtilities<ApplyVariantSubProp>({
+			'bg': (val, ext) => {
+				return gt.variants.utilCss('bg', val as ApplyVariantSubProp, ext.modifier!) as Record<string, string>;
+			},
+			'border': (val, ext) => {
+				return gt.variants.utilCss('border', val as ApplyVariantSubProp, ext.modifier!) as Record<string, string>;
+			},
+			'text': (val, ext) => {
+				return gt.variants.utilCss('text', val as ApplyVariantSubProp, ext.modifier!) as Record<string, string>;
+			}
+		}, {
+			values: { v: 'default', 'v-soft': 'soft', 'v-muted': 'muted', 'v-accent': 'accent' },
+			modifiers: tw.theme('opacity')
+		});
 
 		tw.matchUtilities({
 			s: (val) => gt.sizeCssVars(val)

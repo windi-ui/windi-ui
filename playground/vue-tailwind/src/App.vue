@@ -63,6 +63,14 @@
 				<span class="badge c-purple">Purple</span>
 				<span class="badge c-pink">Pink</span>
 			</div>
+			<div>
+				<h3>Utils</h3>
+				<div class="bg-v border border-v text-v px-5 pt-5">
+					<h1 class="pb-2 border-b border-v/75">Hello <span class="text-v-accent">there</span></h1>
+					<span class="inline-block bg-v-muted text-v-muted border border-v-muted py-1 px-2 rounded my-4">Muted</span>
+					<h1 class="border-t border-v-soft text-v-soft bg-v-soft -mx-5 px-5 py-2">Soft</h1>
+				</div>
+			</div>
 		</div>
 	</div>
 </template>

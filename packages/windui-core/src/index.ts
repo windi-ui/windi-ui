@@ -18,3 +18,4 @@ export function create(config: Config) {
 export type { Config };
 export type * from './types';
 export type { ColorShade, ExColorShade } from './colors';
+export type { Variant, VariantProps, ApplyVariant, ApplyVariantMainProp, ApplyVariantSubProp, ApplyVariantProp } from './variants';

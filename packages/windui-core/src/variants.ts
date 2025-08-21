@@ -46,28 +46,30 @@ export interface VariantContext {
 
 export interface VariantProvider extends VariantContext {
 	names(): string[];
-	cssVars(name: string): Record<string, string>;
 	rootVars(): Record<string, string>;
+	cssVars(name: string): Record<string, string>;
+	utilCss(v: ApplyVariantMainProp, prop?: ApplyVariantSubProp, alpha?: string): CSS.Properties;
+
 }
 
 export function defaultVariant(vars: VarsProvider): Variant {
 	return {
 		'bg': vars.color('50'),
 		'bg-soft': vars.color('100'),
-		'bg-muted': vars.color('300'),
+		'bg-muted': vars.color('200'),
 		'bg-accent': vars.color.accent('100'),
 		'bg-opacity': '1',
 
-		'border': vars.color('400'),
-		'border-soft': vars.color('300'),
-		'border-muted': vars.color('200'),
+		'border': vars.color('500'),
+		'border-soft': vars.color('400'),
+		'border-muted': vars.color('300'),
 		'border-accent': vars.color.accent('400'),
 		'border-opacity': '1',
 
 		'fg': vars.color('800'),
-		'fg-soft': vars.color('700'),
-		'fg-muted': vars.color('600'),
-		'fg-accent': vars.color.accent('500'),
+		'fg-soft': vars.color('500'),
+		'fg-muted': vars.color('400'),
+		'fg-accent': vars.color.accent('700'),
 		'fg-opacity': '1',
 
 		pseudos: {
@@ -102,9 +104,9 @@ export function mainVariants(vars: VarsProvider): Record<string, Variant> {
 			'border-opacity': '1',
 
 			'fg': vars.color('white'),
-			'fg-soft': vars.color('50'),
-			'fg-muted': vars.color('100'),
-			'fg-accent': vars.color.accent('50'),
+			'fg-soft': vars.color('200'),
+			'fg-muted': vars.color('300'),
+			'fg-accent': vars.color.accent('200'),
 			'fg-opacity': '1',
 
 			pseudos: {
@@ -225,16 +227,41 @@ export function variantsProvider(vars: VarsProvider, theme: ThemeProvider): Vari
 		return cssVars(cssObj, n => vars.v(n));
 	}
 
+	function vApplyProp(mProp: ApplyVariantMainProp, sProp?: ApplyVariantSubProp, target: CSS.Properties = {}, pseudo?: CSS.SimplePseudos, alpha?: string) {
+		const mvp = mProp === 'text' ? 'fg' : mProp;
+		const vp = (sProp && sProp !== 'default') ? `${mvp}-${sProp}` as const : mvp;
+
+		const aVar = pseudo ? `${mvp}-opacity-${pseudo}` as const : `${mvp}-opacity` as const;
+
+		const vVal = vars.variant(pseudo ? `${vp}-${pseudo}` : vp);
+		const vAlpha = vars.variant(aVar, pseudo ? vars.variant(`${mvp}-opacity`, '1') : '1');
+
+		switch (mProp) {
+			case 'bg': theme.applyBackgroundColor(vVal, target, vAlpha); break;
+			case 'border': theme.applyBorderColor(vVal, target, vAlpha); break;
+			case 'text': theme.applyTextColor(vVal, target, vAlpha); break;
+		}
+
+		if (alpha && alpha.toString() !== '1') {
+			target[vars.v(aVar)] = alpha;
+		}
+
+		return target;
+	}
+
 	return {
 		names() {
 			return [...variants.keys()];
+		},
+		rootVars() {
+			return vCssVars('default');
 		},
 		cssVars(name) {
 			// TODO: handle accent color conditionally
 			return vCssVars(name);
 		},
-		rootVars() {
-			return vCssVars('default');
+		utilCss(v, sProp?, alpha?) {
+			return vApplyProp(v, sProp, {}, undefined, alpha);
 		},
 		apply(v = true, pseudos?, target = {}) {
 			function appl(pV: ApplyVariant, pTarget: CSS.Properties, pseudo?: CSS.SimplePseudos) {
@@ -244,23 +271,17 @@ export function variantsProvider(vars: VarsProvider, theme: ThemeProvider): Vari
 					pV = ['bg', 'border', 'text'];
 
 				const aV = pV;
+				function applProp(mProp: ApplyVariantMainProp) {
+					const vP = aV.find(p => p.startsWith(mProp));
+					if (!vP) return;
 
-				function applProp(mProp: ApplyVariantMainProp, func: (value: string, target: CSS.Properties, alpha?: string) => void) {
-					const sP = aV.find(p => p.startsWith(mProp));
-					if (!sP) return;
-
-					const mvp = mProp === 'text' ? 'fg' : mProp;
-					const vp = (mProp === 'text' ? sP.replace(/^text/, 'fg') : sP) as keyof VariantProps;
-
-					func(
-						vars.variant(pseudo ? `${vp}-${pseudo}` : vp), pTarget,
-						vars.variant(pseudo ? `${mvp}-opacity-${pseudo}` : `${mvp}-opacity`,
-							pseudo ? vars.variant(`${mvp}-opacity`, '1') : '1'));
+					const sProp = vP.replace(new RegExp(`^${mProp}-?`), '') as ApplyVariantSubProp;
+					vApplyProp(mProp, sProp, pTarget, pseudo);
 				}
 
-				applProp('bg', theme.applyBackgroundColor.bind(theme));
-				applProp('border', theme.applyBorderColor.bind(theme));
-				applProp('text', theme.applyTextColor.bind(theme));
+				applProp('bg');
+				applProp('border');
+				applProp('text');
 
 				return pTarget;
 			}
