@@ -4,7 +4,7 @@ import type { ThemeProvider } from 'windui-core';
 import type { CSS } from 'windui-core';
 import type { default as Plugin } from 'tailwindcss/plugin';
 import type { default as WithAlphaVariable } from 'tailwindcss/lib/util/withAlphaVariable';
-import { hslToRgb } from './utils';
+import { hslToRgb } from './utils/color';
 
 type MDefault<T> = T extends { default: infer U } ? U : T;
 function _interopDefaultCompat<T, TR = MDefault<T>>(e: T): TR { return ((e && typeof e === 'object' && 'default' in e) ? e.default : e) as TR; }

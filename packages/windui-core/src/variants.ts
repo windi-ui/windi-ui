@@ -24,17 +24,22 @@ export interface VariantProps {
 	'fg-opacity'?: string;
 }
 
+type VariantPseudos = Partial<Record<CSS.SimplePseudos, Partial<VariantProps>>>;
 export interface Variant extends VariantProps {
-	pseudos?: Partial<Record<CSS.SimplePseudos, Partial<VariantProps>>>;
-	//dark?: Omit<Variant, 'dark'>;
+	pseudos?: VariantPseudos;
+	dark?: Omit<Partial<Variant>, 'dark'>;
 }
 
 export type ApplyVariantMainProp = 'bg' | 'border' | 'text';
-export type ApplyVariantSubProp = 'soft' | 'muted' | 'accent'| 'default';
+export type ApplyVariantSubProp = 'soft' | 'muted' | 'accent' | 'default';
 export type ApplyVariantProp = ApplyVariantMainProp | `${ApplyVariantMainProp}-${Exclude<ApplyVariantSubProp, 'default'>}`;
 
 export type ApplyVariant = boolean | ApplyVariantProp[];
 export type ApplyVariantPseudos = Partial<Record<CSS.SimplePseudos, ApplyVariant>> | CSS.SimplePseudos[] | false;
+
+export interface VariantCssVars extends VariantVars {
+	'@dark'?: VariantVars;
+}
 
 export interface VariantContext {
 	apply(
@@ -46,15 +51,14 @@ export interface VariantContext {
 
 export interface VariantProvider extends VariantContext {
 	names(): string[];
-	rootVars(): Record<string, string>;
-	cssVars(name: string): Record<string, string>;
+	rootVars(): VariantCssVars;
+	cssVars(name: string): VariantCssVars;
 	utilCss(v: ApplyVariantMainProp, prop?: ApplyVariantSubProp, alpha?: string): CSS.Properties;
-
 }
 
 export function defaultVariant(vars: VarsProvider): Variant {
 	return {
-		'bg': vars.color('50'),
+		'bg': vars.color('white'),
 		'bg-soft': vars.color('100'),
 		'bg-muted': vars.color('200'),
 		'bg-accent': vars.color.accent('100'),
@@ -63,7 +67,7 @@ export function defaultVariant(vars: VarsProvider): Variant {
 		'border': vars.color('500'),
 		'border-soft': vars.color('400'),
 		'border-muted': vars.color('300'),
-		'border-accent': vars.color.accent('400'),
+		'border-accent': vars.color.accent('500'),
 		'border-opacity': '1',
 
 		'fg': vars.color('800'),
@@ -76,13 +80,34 @@ export function defaultVariant(vars: VarsProvider): Variant {
 			':hover': {
 				'bg': vars.color('100'),
 				'bg-soft': vars.color('200'),
-				'bg-muted': vars.color('400'),
+				'bg-muted': vars.color('300'),
 				'bg-accent': vars.color.accent('200'),
+			}
+		},
 
-				'border': vars.color('500'),
-				'border-soft': vars.color('400'),
-				'border-muted': vars.color('300'),
-				'border-accent': vars.color.accent('500'),
+		dark: {
+			'bg': vars.color('950'),
+			'bg-soft': vars.color('900'),
+			'bg-muted': vars.color('800'),
+			'bg-accent': vars.color.accent('900'),
+
+			'border': vars.color('700'),
+			'border-soft': vars.color('600'),
+			'border-muted': vars.color('500'),
+			'border-accent': vars.color.accent('700'),
+
+			'fg': vars.color('200'),
+			'fg-soft': vars.color('300'),
+			'fg-muted': vars.color('400'),
+			'fg-accent': vars.color.accent('200'),
+
+			'pseudos': {
+				':hover': {
+					'bg': vars.color('900'),
+					'bg-soft': vars.color('800'),
+					'bg-muted': vars.color('700'),
+					'bg-accent': vars.color.accent('900'),
+				}
 			}
 		}
 	};
@@ -150,8 +175,31 @@ export function mainVariants(vars: VarsProvider): Record<string, Variant> {
 					'bg-soft': vars.color('100'),
 					'bg-muted': vars.color('100'),
 					'bg-accent': vars.color.accent('100'),
-					'bg-opacity': '1',
+					'bg-opacity': '0.75',
 				}
+			},
+
+			dark: {
+				'border': vars.color('400'),
+				'border-soft': vars.color('500'),
+				'border-muted': vars.color('600'),
+				'border-accent': vars.color.accent('400'),
+
+				'fg': vars.color('400'),
+				'fg-soft': vars.color('500'),
+				'fg-muted': vars.color('600'),
+				'fg-accent': vars.color.accent('400'),
+				'fg-opacity': '1',
+
+				pseudos: {
+					':hover': {
+						'bg': vars.color('900'),
+						'bg-soft': vars.color('900'),
+						'bg-muted': vars.color('900'),
+						'bg-accent': vars.color.accent('900'),
+						'bg-opacity': '0.50',
+					}
+				},
 			}
 		},
 		light: {
@@ -190,6 +238,41 @@ export function mainVariants(vars: VarsProvider): Record<string, Variant> {
 					'fg-muted': vars.color('200'),
 					'fg-accent': vars.color.accent('50'),
 				}
+			},
+
+			dark: {
+				'bg': vars.color('900'),
+				'bg-soft': vars.color('700'),
+				'bg-muted': vars.color('600'),
+				'bg-accent': vars.color.accent('900'),
+				'bg-opacity': '1',
+
+				'border': vars.color('900'),
+				'border-soft': vars.color('700'),
+				'border-muted': vars.color('600'),
+				'border-accent': vars.color.accent('900'),
+				'border-opacity': '1',
+
+				'fg': vars.color('300'),
+				'fg-soft': vars.color('400'),
+				'fg-muted': vars.color('500'),
+				'fg-accent': vars.color.accent('300'),
+
+				pseudos: {
+					':hover': {
+						'bg': vars.color('600'),
+						'bg-soft': vars.color('500'),
+						'bg-muted': vars.color('400'),
+						'bg-accent': vars.color.accent('600'),
+
+						'border': vars.color('600'),
+						'border-soft': vars.color('500'),
+						'border-muted': vars.color('400'),
+						'border-accent': vars.color.accent('600'),
+
+						'fg': vars.color('50'),
+					}
+				}
 			}
 		}
 	};
@@ -201,14 +284,8 @@ export function variantsProvider(vars: VarsProvider, theme: ThemeProvider): Vari
 		...Object.entries(mainVariants(vars))
 	]);
 
-	function vCssVars(name: string) {
-		const variant = variants.get(name);
-		if (!variant) {
-			console.error(`Variant "${name}" not found.`);
-			return {};
-		}
-
-		const { pseudos: vPseudos, ...vProps } = variant;
+	function getCssVars(props: Omit<Partial<Variant>, 'dark'>) {
+		const { pseudos: vPseudos, ...vProps } = props;
 		const cssObj = vProps as CSSValues;
 
 		if (vPseudos) {
@@ -225,6 +302,22 @@ export function variantsProvider(vars: VarsProvider, theme: ThemeProvider): Vari
 		}
 
 		return cssVars(cssObj, n => vars.v(n));
+	}
+
+	function vCssVars(name: string) {
+		const variant = variants.get(name);
+		if (!variant) {
+			console.error(`Variant "${name}" not found.`);
+			return {};
+		}
+
+		const { dark: vDark, ...vProps } = variant;
+		const cssVars: VariantCssVars = getCssVars(vProps);
+		if (vDark) {
+			cssVars['@dark'] = getCssVars(vDark);
+		}
+
+		return cssVars;
 	}
 
 	function vApplyProp(mProp: ApplyVariantMainProp, sProp?: ApplyVariantSubProp, target: CSS.Properties = {}, pseudo?: CSS.SimplePseudos, alpha?: string) {
