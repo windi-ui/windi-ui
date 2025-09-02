@@ -2,7 +2,7 @@ import { defineComponent } from "../common";
 
 // todo: adaptive styles based on context (the parent element, button type, etc)
 
-export default defineComponent((vars) => {
+export default defineComponent(({ vars }) => {
 	return {
 		name: "btn",
 		applyVariant: true,

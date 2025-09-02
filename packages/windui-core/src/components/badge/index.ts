@@ -1,6 +1,6 @@
 import { defineComponent } from "../common";
 
-export default defineComponent((vars, theme) => {
+export default defineComponent(({ vars, colors }) => {
 	return {
 		name: "badge",
 		applyVariant: ['text', 'bg'],
@@ -12,7 +12,7 @@ export default defineComponent((vars, theme) => {
 			outlineStyle: 'solid',
 			outlineWidth: '1px',
 			outlineOffset: '-1px',
-			outlineColor: theme.colorValue(vars.variant('border')),
+			outlineColor: colors.toValue(vars.variant('border')),
 			fontSize: '0.75em',
 			fontWeight: '500',
 			lineHeight: '1',

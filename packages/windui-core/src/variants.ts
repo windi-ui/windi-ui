@@ -1,27 +1,29 @@
 import { type VarsProvider, type CSSVarName, type CSSVarValue, type CSSValues, cssVars } from "./vars";
 import type { CSS, ThemeProvider } from "./types";
+import { VarsGeneratorBase } from "./base";
 
 export type VariantVars = Record<CSSVarName<'v'>, string>;
 export type VariantPropValue = CSSVarValue<'c'> | CSSVarValue<'v'>;
+export type OpacityValue = '1' | '0' | `0.${number}`;
 
 export interface VariantProps {
 	'bg': VariantPropValue;
 	'bg-soft'?: VariantPropValue;
 	'bg-muted'?: VariantPropValue;
 	'bg-accent'?: VariantPropValue;
-	'bg-opacity'?: string;
+	'bg-opacity'?: OpacityValue;
 
 	'border': VariantPropValue;
 	'border-soft'?: VariantPropValue;
 	'border-muted'?: VariantPropValue;
 	'border-accent'?: VariantPropValue;
-	'border-opacity'?: string;
+	'border-opacity'?: OpacityValue;
 
 	'fg': VariantPropValue;
 	'fg-soft'?: VariantPropValue;
 	'fg-muted'?: VariantPropValue;
 	'fg-accent'?: VariantPropValue;
-	'fg-opacity'?: string;
+	'fg-opacity'?: OpacityValue;
 }
 
 type VariantPseudos = Partial<Record<CSS.SimplePseudos, Partial<VariantProps>>>;
@@ -47,13 +49,6 @@ export interface VariantContext {
 		pseudos?: ApplyVariantPseudos,
 		target?: CSS.Properties
 	): CSS.Properties;
-}
-
-export interface VariantProvider extends VariantContext {
-	names(): string[];
-	rootVars(): VariantCssVars;
-	cssVars(name: string): VariantCssVars;
-	utilCss(v: ApplyVariantMainProp, prop?: ApplyVariantSubProp, alpha?: string): CSS.Properties;
 }
 
 export function defaultVariant(vars: VarsProvider): Variant {
@@ -278,129 +273,123 @@ export function mainVariants(vars: VarsProvider): Record<string, Variant> {
 	};
 }
 
-export function variantsProvider(vars: VarsProvider, theme: ThemeProvider): VariantProvider {
-	const variants = new Map<string, Variant>([
-		['default', defaultVariant(vars)],
-		...Object.entries(mainVariants(vars))
-	]);
+function getCssVars(vars: VarsProvider, props: Omit<Partial<Variant>, 'dark'>) {
+	const { pseudos: vPseudos, ...vProps } = props;
+	const cssObj = vProps as CSSValues;
 
-	function getCssVars(props: Omit<Partial<Variant>, 'dark'>) {
-		const { pseudos: vPseudos, ...vProps } = props;
-		const cssObj = vProps as CSSValues;
-
-		if (vPseudos) {
-			const propKeys = new Set(Object.keys(vProps) as (keyof VariantProps)[]);
-			for (const vpk in vPseudos) {
-				const vp = vPseudos[vpk as CSS.SimplePseudos];
-				if (vp) {
-					const vpPropKeys = (new Set(Object.keys(vp) as (keyof VariantProps)[])).union(propKeys);
-					for (const vppk of vpPropKeys) {
-						cssObj[`${vppk}-${vpk}`] = (vppk in vp) ? vp[vppk]! : vProps[vppk]!;
-					}
+	if (vPseudos) {
+		const propKeys = new Set(Object.keys(vProps) as (keyof VariantProps)[]);
+		for (const vpk in vPseudos) {
+			const vp = vPseudos[vpk as CSS.SimplePseudos];
+			if (vp) {
+				const vpPropKeys = (new Set(Object.keys(vp) as (keyof VariantProps)[])).union(propKeys);
+				for (const vppk of vpPropKeys) {
+					cssObj[`${vppk}-${vpk}`] = (vppk in vp) ? vp[vppk]! : vProps[vppk]!;
 				}
 			}
 		}
-
-		return cssVars(cssObj, n => vars.v(n));
 	}
 
-	function vCssVars(name: string) {
-		const variant = variants.get(name);
+	return cssVars(cssObj, n => vars.v(n));
+}
+
+export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars> implements VariantContext {
+	protected readonly data: Map<string, Variant>;
+
+	constructor(vars: VarsProvider, theme: ThemeProvider) {
+		super(vars, theme);
+		this.data = new Map([
+			['default', defaultVariant(vars)],
+			...Object.entries(mainVariants(vars))
+		]);
+	}
+
+	cssVars(name: string): VariantCssVars {
+		const variant = this.data.get(name);
 		if (!variant) {
 			console.error(`Variant "${name}" not found.`);
 			return {};
 		}
 
 		const { dark: vDark, ...vProps } = variant;
-		const cssVars: VariantCssVars = getCssVars(vProps);
+		const cssVars: VariantCssVars = getCssVars(this.vars, vProps);
 		if (vDark) {
-			cssVars['@dark'] = getCssVars(vDark);
+			cssVars['@dark'] = getCssVars(this.vars, vDark);
 		}
 
 		return cssVars;
 	}
 
-	function vApplyProp(mProp: ApplyVariantMainProp, sProp?: ApplyVariantSubProp, target: CSS.Properties = {}, pseudo?: CSS.SimplePseudos, alpha?: string) {
-		const mvp = mProp === 'text' ? 'fg' : mProp;
-		const vp = (sProp && sProp !== 'default') ? `${mvp}-${sProp}` as const : mvp;
+	utilCss(v: ApplyVariantMainProp, prop?: ApplyVariantSubProp, alpha?: string) {
+		return this.vApplyProp(v, prop, {}, undefined, alpha);
+	}
 
-		const aVar = pseudo ? `${mvp}-opacity-${pseudo}` as const : `${mvp}-opacity` as const;
+	apply(v: ApplyVariant = true, pseudos?: ApplyVariantPseudos, target: CSS.Properties = {}) {
+		const appl = (pV: ApplyVariant, pTarget: CSS.Properties, pseudo?: CSS.SimplePseudos) => {
+			if (pV === false)
+				return pTarget;
+			if (pV === true)
+				pV = ['bg', 'border', 'text'];
 
-		const vVal = vars.variant(pseudo ? `${vp}-${pseudo}` : vp);
-		const vAlpha = vars.variant(aVar, pseudo ? vars.variant(`${mvp}-opacity`, '1') : '1');
+			const aV = pV;
+			const applProp = (mProp: ApplyVariantMainProp) => {
+				const vP = aV.find(p => p.startsWith(mProp));
+				if (!vP) return;
 
-		switch (mProp) {
-			case 'bg': theme.applyBackgroundColor(vVal, target, vAlpha); break;
-			case 'border': theme.applyBorderColor(vVal, target, vAlpha); break;
-			case 'text': theme.applyTextColor(vVal, target, vAlpha); break;
+				const sProp = vP.replace(new RegExp(`^${mProp}-?`), '') as ApplyVariantSubProp;
+				this.vApplyProp(mProp, sProp, pTarget, pseudo);
+			};
+
+			applProp('bg');
+			applProp('border');
+			applProp('text');
+
+			return pTarget;
+		};
+
+		if (v) {
+			appl(v, target);
 		}
 
-		if (alpha && alpha.toString() !== '1') {
-			target[vars.v(aVar)] = alpha;
+		if (pseudos) {
+			if (Array.isArray(pseudos)) {
+				pseudos = pseudos.reduce((acc, p) => {
+					acc[p] = true;
+					return acc;
+				}, {} as Record<CSS.SimplePseudos, ApplyVariant>);
+			}
+
+			for (const pseudo in pseudos) {
+				const pV = pseudos[pseudo as CSS.SimplePseudos];
+				if (pV) {
+					const pTarget = (target[`&${pseudo}`] ??= {}) as CSS.Properties;
+					appl(pV, pTarget, pseudo as CSS.SimplePseudos);
+				}
+			}
 		}
 
 		return target;
 	}
 
-	return {
-		names() {
-			return [...variants.keys()];
-		},
-		rootVars() {
-			return vCssVars('default');
-		},
-		cssVars(name) {
-			// TODO: handle accent color conditionally
-			return vCssVars(name);
-		},
-		utilCss(v, sProp?, alpha?) {
-			return vApplyProp(v, sProp, {}, undefined, alpha);
-		},
-		apply(v = true, pseudos?, target = {}) {
-			function appl(pV: ApplyVariant, pTarget: CSS.Properties, pseudo?: CSS.SimplePseudos) {
-				if (pV === false)
-					return pTarget;
-				if (pV === true)
-					pV = ['bg', 'border', 'text'];
+	private vApplyProp(mProp: ApplyVariantMainProp, sProp?: ApplyVariantSubProp, target: CSS.Properties = {}, pseudo?: CSS.SimplePseudos, alpha?: string) {
+		const mvp = mProp === 'text' ? 'fg' : mProp;
+		const vp = (sProp && sProp !== 'default') ? `${mvp}-${sProp}` as const : mvp;
 
-				const aV = pV;
-				function applProp(mProp: ApplyVariantMainProp) {
-					const vP = aV.find(p => p.startsWith(mProp));
-					if (!vP) return;
+		const aVar = pseudo ? `${mvp}-opacity-${pseudo}` as const : `${mvp}-opacity` as const;
 
-					const sProp = vP.replace(new RegExp(`^${mProp}-?`), '') as ApplyVariantSubProp;
-					vApplyProp(mProp, sProp, pTarget, pseudo);
-				}
+		const vVal = this.vars.variant(pseudo ? `${vp}-${pseudo}` : vp);
+		const vAlpha = this.vars.variant(aVar, pseudo ? this.vars.variant(`${mvp}-opacity`, '1') : '1');
 
-				applProp('bg');
-				applProp('border');
-				applProp('text');
-
-				return pTarget;
-			}
-
-			if (v) {
-				appl(v, target);
-			}
-
-			if (pseudos) {
-				if (Array.isArray(pseudos)) {
-					pseudos = pseudos.reduce((acc, p) => {
-						acc[p] = true;
-						return acc;
-					}, {} as Record<CSS.SimplePseudos, ApplyVariant>);
-				}
-
-				for (const pseudo in pseudos) {
-					const pV = pseudos[pseudo as CSS.SimplePseudos];
-					if (pV) {
-						const pTarget = (target[`&${pseudo}`] ??= {}) as CSS.Properties;
-						appl(pV, pTarget, pseudo as CSS.SimplePseudos);
-					}
-				}
-			}
-
-			return target;
+		switch (mProp) {
+			case 'bg': this.theme.applyBackgroundColor(vVal, target, vAlpha); break;
+			case 'border': this.theme.applyBorderColor(vVal, target, vAlpha); break;
+			case 'text': this.theme.applyTextColor(vVal, target, vAlpha); break;
 		}
-	};
+
+		if (alpha && alpha.toString() !== '1') {
+			target[this.vars.v(aVar)] = alpha;
+		}
+
+		return target;
+	}
 }

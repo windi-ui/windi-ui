@@ -1,4 +1,4 @@
-import type { CSS } from './css';
+import * as CSS from './css';
 
 export interface ThemeProvider {
 	colors(): Record<string, string>;

@@ -2,7 +2,7 @@ import { cssEsc } from './utils';
 import type { ColorShade, ExColorShade } from './colors';
 import type { Size } from './size';
 import type { VariantProps } from './variants';
-import { CSS } from './types';
+import type { CSS } from './types';
 
 export type VarType = 'c' | 'v' | 's';
 export type VarName<T extends VarType = VarType> = `${T}-${string}`;

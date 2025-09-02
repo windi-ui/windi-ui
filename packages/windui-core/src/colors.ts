@@ -1,5 +1,6 @@
-import { ThemeProvider } from './types';
 import { cssVars, type VarsProvider, type CSSVarName } from './vars';
+import type { ThemeProvider } from './types';
+import { VarsGeneratorBase } from "./base";
 
 export type ColorShade = '50' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900' | '950';
 export type ExColorShade = ColorShade | `default-${ColorShade}` | `accent-${ColorShade}` | 'black' | 'white';
@@ -7,12 +8,6 @@ export type ColorVars = Record<CSSVarName<'c'>, string>;
 
 export interface ColorContext {
 	toValue(name: ExColorShade | (string & {}), alpha?: number | string): string;
-}
-
-export interface ColorProvider extends ColorContext {
-	names(): string[];
-	cssVars(name: string): ColorVars;
-	rootVars(): ColorVars;
 }
 
 const COLOR_SHADE_REGEX = /50|950|[1-9]00/;
@@ -60,17 +55,30 @@ function getColorMap(colors: Record<string, string>) {
 	return cMap;
 }
 
-export function colorsProvider(vars: VarsProvider, theme: ThemeProvider): ColorProvider {
-	const colorMap = getColorMap(theme.colors());
+export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, ColorVars> implements ColorContext {
+	private readonly colors: ReturnType<typeof getColorMap>;
+	protected readonly data: Map<string, Map<ColorShade, string>>;
 
-	function cCssVars(name: string) {
-		let palette = colorMap.palette.get(name);
+	constructor(vars: VarsProvider, theme: ThemeProvider) {
+		super(vars, theme);
+		this.colors = getColorMap(theme.colors());
+		this.data = this.colors.palette;
+	}
+
+	names() {
+		const cNames = super.names();
+		cNames.push(...cNames.map(c => `accent-${c}`));
+		return cNames;
+	}
+
+	cssVars(name: string) {
+		let palette = this.data.get(name);
 		let accentVars = false;
 
 		if (!palette) {
 			if (name.startsWith('accent-')) {
 				name = name.replace(/^accent-/, '');
-				palette = colorMap.palette.get(name);
+				palette = this.data.get(name);
 				if (palette) {
 					accentVars = true;
 				} else {
@@ -85,41 +93,31 @@ export function colorsProvider(vars: VarsProvider, theme: ThemeProvider): ColorP
 		}
 
 		const cObj = Object.fromEntries(palette.entries());
-		return cssVars(cObj, n => vars.c(accentVars ? `accent-${n}` : n));
+		return cssVars(cObj, n => this.vars.c(accentVars ? `accent-${n}` : n));
 	}
 
-	return {
-		names() {
-			const cNames = [...colorMap.palette.keys()];
-			cNames.push(...cNames.map(c => `accent-${c}`));
-			return cNames;
-		},
-		cssVars(name: string) {
-			return cCssVars(name);
-		},
-		rootVars() {
-			const cRoot: ColorVars = {};
-			for (const mn in FLAT_COLORS) {
-				cRoot[vars.c(mn)] = colorMap.custom.get(mn) ?? FLAT_COLORS[mn];
-			}
-
-			const dc = cCssVars('default');
-			Object.assign(cRoot, dc);
-
-			function addPalette(suffix: string, palette: Map<ColorShade, string>) {
-				for (const [shade, color] of palette) {
-					cRoot[vars.c(`${suffix}-${shade}`)] = color;
-				}
-			}
-
-			addPalette('default', colorMap.palette.get('default') ?? new Map<ColorShade, string>());
-			addPalette('accent', colorMap.palette.get('accent') ?? new Map<ColorShade, string>());
-
-			return cRoot;
-		},
-
-		toValue(name, alpha) {
-			return theme.colorValue((COLOR_SHADE_EX_REGEX.exec(name)) ? vars.color(name as ExColorShade) : name, alpha);
+	rootVars() {
+		const cRoot: ColorVars = {};
+		for (const mn in FLAT_COLORS) {
+			cRoot[this.vars.c(mn)] = this.colors.custom.get(mn) ?? FLAT_COLORS[mn];
 		}
-	};
+
+		const dc = super.rootVars();
+		Object.assign(cRoot, dc);
+
+		const addPalette = (suffix: string, palette: Map<ColorShade, string>) => {
+			for (const [shade, color] of palette) {
+				cRoot[this.vars.c(`${suffix}-${shade}`)] = color;
+			}
+		};
+
+		addPalette('default', this.data.get('default') ?? new Map<ColorShade, string>());
+		addPalette('accent', this.data.get('accent') ?? new Map<ColorShade, string>());
+
+		return cRoot;
+	}
+
+	toValue(name: ExColorShade | (string & {}), alpha?: number | string) {
+		return this.theme.colorValue(COLOR_SHADE_EX_REGEX.exec(name) ? this.vars.color(name as ExColorShade) : name, alpha);
+	}
 }

@@ -1,7 +1,7 @@
 import { default as createPlugin } from 'tailwindcss/plugin';
 import { DarkModeConfig } from 'tailwindcss/types/config';
 import { create, type Config, type ColorShade, type ApplyVariantSubProp } from "windui-core";
-import { createTailwindTheme } from './TailwindTheme';
+import { createTailwindTheme } from './theme';
 import { getDarkSelector, applyDark } from './utils/darkMode';
 
 function keyValuePairs(
@@ -25,7 +25,7 @@ function WindUITailwindCSS(config: Config = {}): ReturnType<typeof createPlugin>
 		const darkSelector = getDarkSelector(darkMode);
 
 		tw.addBase({ ':root': gt.colors.rootVars() });
-		tw.addBase({ ':root': gt.sizeRootVars() });
+		tw.addBase({ ':root': gt.sizes.rootVars() });
 		tw.addBase({ '*': applyDark(darkSelector, gt.variants.rootVars()) });
 
 		tw.matchUtilities({
@@ -52,13 +52,12 @@ function WindUITailwindCSS(config: Config = {}): ReturnType<typeof createPlugin>
 		});
 
 		tw.matchUtilities({
-			s: (val) => gt.sizeCssVars(val)
+			s: (val) => gt.sizes.cssVars(val)
 		}, {
-			values: keyValuePairs(gt.getSizeNames())
+			values: keyValuePairs(gt.sizes.names())
 		});
 
-		// @ts-ignore
-		tw.addComponents(gt.getComponentsCss());
+		tw.addComponents([...gt.components.css()]);
 	}, {
 		content: [],
 		theme: {
