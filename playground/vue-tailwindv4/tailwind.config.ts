@@ -11,7 +11,14 @@ const config: Config = {
 	},
 	plugins: [
 		// @ts-ignore
-		windui()
+		windui({
+			build(builder) {
+				builder
+					.updateVariant('light', (variant) => {
+						variant['bg-opacity'] = '0.30';
+					});
+			}
+		})
 	],
 }
 

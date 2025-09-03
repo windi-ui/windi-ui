@@ -1,12 +1,10 @@
-import type { ThemeProvider, CSS } from "@/types";
+import type { CSS } from "@/types";
+import type { BuilderContext } from "@/base";
 import type { ApplyVariant, ApplyVariantPseudos } from "@/variants";
-import type { VarsProvider } from "@/vars";
 import type { ColorContext } from "@/colors";
 import type { VariantContext } from "@/variants";
 
-export interface ComponentBuilderContext {
-	readonly vars: VarsProvider;
-	readonly theme: ThemeProvider;
+export interface ComponentBuilderContext extends BuilderContext {
 	readonly colors: ColorContext;
 	readonly variants: VariantContext;
 }

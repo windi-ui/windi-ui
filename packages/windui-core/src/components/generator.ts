@@ -1,19 +1,21 @@
-import { CSS } from '@/types';
+import type { CSS } from '@/types';
+import type { IComponent, ComponentBuilderContext } from './types';
+import { BuilderBase } from '@/base';
 import { default as button } from './button';
 import { default as badge } from './badge';
-import type { IComponent, ComponentBuilderContext } from './types';
 
-export class ComponentsGenerator {
-	private readonly components = new Map<string, IComponent>();
+export class ComponentsGenerator extends BuilderBase<IComponent, ComponentBuilderContext> {
+	protected readonly items = new Map<string, IComponent>();
 
-	constructor(public readonly context: ComponentBuilderContext) {
+	constructor(context: ComponentBuilderContext) {
+		super(context);
 		[button(context), badge(context)].forEach((component) => {
-			this.components.set(component.name, component);
+			this.items.set(component.name, component);
 		});
 	}
 
 	*css() {
-		for (const [cName, component] of this.components) {
+		for (const [cName, component] of this.items) {
 			const cClass = `.${cName}`;
 			const css: CSS.Rules = { [cClass]: { ...component.style } };
 
@@ -24,7 +26,7 @@ export class ComponentsGenerator {
 			}
 
 			if (component.applyVariant || component.applyVariantPseudos) {
-				this.context.variants.apply(component.applyVariant, component.applyVariantPseudos, css[cClass]);
+				this.ctx.variants.apply(component.applyVariant, component.applyVariantPseudos, css[cClass]);
 			}
 
 			yield css;

@@ -1,6 +1,6 @@
-import { VarsGeneratorBase } from "./base";
-import { ThemeProvider, FontSize } from "./types";
-import { CSSValues, CSSVarName, VarsProvider, cssVars } from "./vars";
+import type { ThemeProvider, FontSize } from "./types";
+import { type CSSValues, type CSSVarName, cssVars } from "./vars";
+import { type BuilderContext, VarsGeneratorBase } from "./base";
 
 export type SizeVars = Record<CSSVarName<'s'>, string>;
 export type SizeProperty = 'text' | `spacing-${keyof Size['spacing']}` | 'line-height';
@@ -72,15 +72,15 @@ export function sizes(themeProvider: ThemeProvider) {
 }
 
 export class SizesGenerator extends VarsGeneratorBase<Size, SizeVars> {
-	protected readonly data: Map<string, Size>;
+	protected readonly items: Map<string, Size>;
 
-	constructor(vars: VarsProvider, theme: ThemeProvider) {
-		super(vars, theme);
-		this.data = new Map(Object.entries(sizes(theme)));
+	constructor(ctx: BuilderContext) {
+		super(ctx);
+		this.items = new Map(Object.entries(sizes(this.theme)));
 	}
 
 	cssVars(name: string): SizeVars {
-		const size = this.data.get(name);
+		const size = this.items.get(name);
 		if (!size) {
 			console.error(`Size "${name}" not found.`);
 			return {};

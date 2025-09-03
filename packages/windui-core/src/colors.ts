@@ -1,6 +1,5 @@
-import { cssVars, type VarsProvider, type CSSVarName } from './vars';
-import type { ThemeProvider } from './types';
-import { VarsGeneratorBase } from "./base";
+import { cssVars, type CSSVarName } from './vars';
+import { type BuilderContext, VarsGeneratorBase } from "./base";
 
 export type ColorShade = '50' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900' | '950';
 export type ExColorShade = ColorShade | `default-${ColorShade}` | `accent-${ColorShade}` | 'black' | 'white';
@@ -57,12 +56,12 @@ function getColorMap(colors: Record<string, string>) {
 
 export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, ColorVars> implements ColorContext {
 	private readonly colors: ReturnType<typeof getColorMap>;
-	protected readonly data: Map<string, Map<ColorShade, string>>;
+	protected readonly items: Map<string, Map<ColorShade, string>>;
 
-	constructor(vars: VarsProvider, theme: ThemeProvider) {
-		super(vars, theme);
-		this.colors = getColorMap(theme.colors());
-		this.data = this.colors.palette;
+	constructor(ctx: BuilderContext) {
+		super(ctx);
+		this.colors = getColorMap(this.theme.colors());
+		this.items = this.colors.palette;
 	}
 
 	names() {
@@ -72,13 +71,13 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 	}
 
 	cssVars(name: string) {
-		let palette = this.data.get(name);
+		let palette = this.items.get(name);
 		let accentVars = false;
 
 		if (!palette) {
 			if (name.startsWith('accent-')) {
 				name = name.replace(/^accent-/, '');
-				palette = this.data.get(name);
+				palette = this.items.get(name);
 				if (palette) {
 					accentVars = true;
 				} else {
@@ -111,8 +110,8 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 			}
 		};
 
-		addPalette('default', this.data.get('default') ?? new Map<ColorShade, string>());
-		addPalette('accent', this.data.get('accent') ?? new Map<ColorShade, string>());
+		addPalette('default', this.items.get('default') ?? new Map<ColorShade, string>());
+		addPalette('accent', this.items.get('accent') ?? new Map<ColorShade, string>());
 
 		return cRoot;
 	}

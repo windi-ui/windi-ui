@@ -5,6 +5,7 @@ import { ColorsGenerator } from "./colors";
 import { VariantsGenerator } from "./variants";
 import { SizesGenerator } from "./size";
 import { ComponentsGenerator } from './components/generator';
+import { createBuilder } from './builder';
 
 export interface Generator {
 	readonly colors: ColorsGenerator;
@@ -20,10 +21,16 @@ export function create(config: Config) {
 	return {
 		vars,
 		generator(theme: ThemeProvider): Generator {
-			const colors = new ColorsGenerator(vars, theme);
-			const variants = new VariantsGenerator(vars, theme);
-			const sizes = new SizesGenerator(vars, theme);
-			const components = new ComponentsGenerator({ vars, theme, colors, variants });
+			const ctx = { vars, theme };
+			const colors = new ColorsGenerator(ctx);
+			const variants = new VariantsGenerator(ctx);
+			const sizes = new SizesGenerator(ctx);
+			const components = new ComponentsGenerator({ ...ctx, colors, variants });
+
+			if (rConfig.build) {
+				const builder = createBuilder(colors, variants, sizes, components);
+				rConfig.build(builder);
+			}
 
 			return { colors, variants, sizes, components };
 		}

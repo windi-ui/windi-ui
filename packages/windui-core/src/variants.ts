@@ -1,6 +1,6 @@
+import type { CSS } from "./types";
 import { type VarsProvider, type CSSVarName, type CSSVarValue, type CSSValues, cssVars } from "./vars";
-import type { CSS, ThemeProvider } from "./types";
-import { VarsGeneratorBase } from "./base";
+import { type BuilderContext, VarsGeneratorBase } from "./base";
 
 export type VariantVars = Record<CSSVarName<'v'>, string>;
 export type VariantPropValue = CSSVarValue<'c'> | CSSVarValue<'v'>;
@@ -185,7 +185,6 @@ export function mainVariants(vars: VarsProvider): Record<string, Variant> {
 				'fg-soft': vars.color('500'),
 				'fg-muted': vars.color('600'),
 				'fg-accent': vars.color.accent('400'),
-				'fg-opacity': '1',
 
 				pseudos: {
 					':hover': {
@@ -241,13 +240,11 @@ export function mainVariants(vars: VarsProvider): Record<string, Variant> {
 				'bg-soft': vars.color('700'),
 				'bg-muted': vars.color('600'),
 				'bg-accent': vars.color.accent('900'),
-				'bg-opacity': '1',
 
 				'border': vars.color('900'),
 				'border-soft': vars.color('700'),
 				'border-muted': vars.color('600'),
 				'border-accent': vars.color.accent('900'),
-				'border-opacity': '1',
 
 				'fg': vars.color('300'),
 				'fg-soft': vars.color('400'),
@@ -295,18 +292,18 @@ function getCssVars(vars: VarsProvider, props: Omit<Partial<Variant>, 'dark'>) {
 }
 
 export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars> implements VariantContext {
-	protected readonly data: Map<string, Variant>;
+	protected readonly items: Map<string, Variant>;
 
-	constructor(vars: VarsProvider, theme: ThemeProvider) {
-		super(vars, theme);
-		this.data = new Map([
-			['default', defaultVariant(vars)],
-			...Object.entries(mainVariants(vars))
+	constructor(ctx: BuilderContext) {
+		super(ctx);
+		this.items = new Map([
+			['default', defaultVariant(this.vars)],
+			...Object.entries(mainVariants(this.vars))
 		]);
 	}
 
 	cssVars(name: string): VariantCssVars {
-		const variant = this.data.get(name);
+		const variant = this.items.get(name);
 		if (!variant) {
 			console.error(`Variant "${name}" not found.`);
 			return {};
