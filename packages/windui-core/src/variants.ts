@@ -6,7 +6,7 @@ export type VariantVars = Record<CSSVarName<'v'>, string>;
 export type VariantPropValue = CSSVarValue<'c'> | CSSVarValue<'v'>;
 export type OpacityValue = '1' | '0' | `0.${number}`;
 
-export interface VariantProps {
+export interface VariantProperties {
 	'bg': VariantPropValue;
 	'bg-soft'?: VariantPropValue;
 	'bg-muted'?: VariantPropValue;
@@ -26,12 +26,13 @@ export interface VariantProps {
 	'fg-opacity'?: OpacityValue;
 }
 
-type VariantPseudos = Partial<Record<CSS.SimplePseudos, Partial<VariantProps>>>;
-export interface Variant extends VariantProps {
+type VariantPseudos = Partial<Record<CSS.SimplePseudos, Partial<VariantProperties>>>;
+export interface Variant extends VariantProperties {
 	pseudos?: VariantPseudos;
 	dark?: Omit<Partial<Variant>, 'dark'>;
 }
 
+export type VariantProperty = keyof VariantProperties | `${keyof VariantProperties}-${CSS.SimplePseudos}`;
 export type ApplyVariantMainProp = 'bg' | 'border' | 'text';
 export type ApplyVariantSubProp = 'soft' | 'muted' | 'accent' | 'default';
 export type ApplyVariantProp = ApplyVariantMainProp | `${ApplyVariantMainProp}-${Exclude<ApplyVariantSubProp, 'default'>}`;
@@ -278,11 +279,11 @@ function getCssVars(vars: VarsProvider, props: Omit<Partial<Variant>, 'dark'>) {
 	const cssObj = vProps as CSSValues;
 
 	if (vPseudos) {
-		const propKeys = new Set(Object.keys(vProps) as (keyof VariantProps)[]);
+		const propKeys = new Set(Object.keys(vProps) as (keyof VariantProperties)[]);
 		for (const vpk in vPseudos) {
 			const vp = vPseudos[vpk as CSS.SimplePseudos];
 			if (vp) {
-				const vpPropKeys = (new Set(Object.keys(vp) as (keyof VariantProps)[])).union(propKeys);
+				const vpPropKeys = (new Set(Object.keys(vp) as (keyof VariantProperties)[])).union(propKeys);
 				for (const vppk of vpPropKeys) {
 					cssObj[`${vppk}-${vpk}`] = (vppk in vp) ? vp[vppk]! : vProps[vppk]!;
 				}

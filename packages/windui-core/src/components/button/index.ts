@@ -9,15 +9,17 @@ export default defineComponent(({ vars }) => {
 		applyVariantPseudos: [':hover'],
 
 		style: {
-			display: 'inline-block',
-			padding: `${vars.size('spacing-1.5')} ${vars.size('spacing-3')}`,
+			position: 'relative',
+			display: 'inline-flex',
+			alignItems: 'baseline',
+			justifyContent: 'center',
+			padding: `calc(${vars.size('spacing-1.5')} - 1px) calc(${vars.size('spacing-3')} - 1px)`,
 			borderRadius: '0.375rem',
 			borderWidth: '1px',
 			fontSize: vars.size('text'),
-			fontWeight: '500',
-			textAlign: 'center',
+			lineHeight: vars.size('line-height'),
+			fontWeight: '600',
 			textDecoration: 'none',
-			verticalAlign: 'middle',
 			userSelect: 'none',
 		},
 		pseudos: {

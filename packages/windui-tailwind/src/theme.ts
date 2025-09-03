@@ -1,6 +1,6 @@
 import { findPackageJSON, createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
-import type { ThemeProvider } from 'windui-core';
+import type { ThemeProvider, FontSize } from 'windui-core';
 import type { CSS } from 'windui-core';
 import type { default as Plugin } from 'tailwindcss/plugin';
 import type { default as WithAlphaVariable } from 'tailwindcss/lib/util/withAlphaVariable';
@@ -42,10 +42,12 @@ export function createTailwindTheme(tw: PluginAPI): TailwindTheme {
 export abstract class TailwindTheme implements ThemeProvider {
 	abstract readonly ver: 3 | 4;
 
-	protected theme: PluginAPI['theme'];
+	protected readonly theme: PluginAPI['theme'];
+	private readonly fSize: Record<string, FontSize>;
 
 	constructor(pluginApi: PluginAPI) {
 		this.theme = pluginApi.theme;
+		this.fSize = this.theme<Record<string, FontSize>>("fontSize");
 	}
 
 	colors(): Record<string, string>;
@@ -63,7 +65,7 @@ export abstract class TailwindTheme implements ThemeProvider {
 	}
 
 	fontSize(name: string) {
-		return this.theme<string>(`fontSize[${name}]`);
+		return this.fSize[name];
 	}
 
 	abstract colorValue(value: string, alpha?: number | string): string;

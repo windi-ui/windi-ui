@@ -1,8 +1,9 @@
 import { VarsGeneratorBase } from "./base";
-import { ThemeProvider } from "./types";
+import { ThemeProvider, FontSize } from "./types";
 import { CSSValues, CSSVarName, VarsProvider, cssVars } from "./vars";
 
 export type SizeVars = Record<CSSVarName<'s'>, string>;
+export type SizeProperty = 'text' | `spacing-${keyof Size['spacing']}` | 'line-height';
 
 export type Size = {
 	spacing: {
@@ -12,11 +13,7 @@ export type Size = {
 		'3': string;
 		'4': string;
 	};
-	text: string | [string, string | {
-		lineHeight?: string,
-		letterSpacing?: string,
-		fontWeight?: string
-	}];
+	text: FontSize;
 };
 
 export function sizes(themeProvider: ThemeProvider) {

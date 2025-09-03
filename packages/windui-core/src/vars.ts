@@ -1,8 +1,7 @@
 import { cssEsc } from './utils';
 import type { ColorShade, ExColorShade } from './colors';
-import type { Size } from './size';
-import type { VariantProps } from './variants';
-import type { CSS } from './types';
+import type { SizeProperty } from './size';
+import type { VariantProperty } from './variants';
 
 export type VarType = 'c' | 'v' | 's';
 export type VarName<T extends VarType = VarType> = `${T}-${string}`;
@@ -20,8 +19,8 @@ export interface VarsProvider {
 		default(name: ColorShade, fallback?: string): CSSVarValue<'c'>;
 		accent(name: ColorShade, fallback?: string): CSSVarValue<'c'>;
 	};
-	size(name: 'text' | `spacing-${keyof Size['spacing']}`, fallback?: string): CSSVarValue<'s'>;
-	variant(name: keyof VariantProps | `${keyof VariantProps}-${CSS.SimplePseudos}`, fallback?: string): CSSVarValue<'v'>;
+	size(name: SizeProperty, fallback?: string): CSSVarValue<'s'>;
+	variant(name: VariantProperty, fallback?: string): CSSVarValue<'v'>;
 }
 
 export function varsProvider(prefix: string): VarsProvider {

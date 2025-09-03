@@ -63,6 +63,33 @@
 				<span class="badge c-purple">Purple</span>
 				<span class="badge c-pink">Pink</span>
 			</div>
+			<div class="space-x-2">
+				<span class="badge c-red v-solid">Danger</span>
+				<span class="badge c-green v-solid">Success</span>
+				<span class="badge c-blue v-solid">Blue</span>
+				<span class="badge c-indigo v-solid">Indigo</span>
+				<span class="badge c-purple v-solid">Purple</span>
+				<span class="badge c-pink v-solid">Pink</span>
+			</div>
+			<div class="space-x-2">
+				<span class="badge c-red v-outline">Danger</span>
+				<span class="badge c-green v-outline">Success</span>
+				<span class="badge c-blue v-outline">Blue</span>
+				<span class="badge c-indigo v-outline">Indigo</span>
+				<span class="badge c-purple v-outline">Purple</span>
+				<span class="badge c-pink v-outline">Pink</span>
+			</div>
+			<div class="space-x-2">
+				<span class="badge c-red v-light">Danger</span>
+				<span class="badge c-green v-light">Success</span>
+				<span class="badge c-blue v-light">Blue</span>
+				<span class="badge c-indigo v-light">Indigo</span>
+				<span class="badge c-purple v-light">Purple</span>
+				<span class="badge c-pink v-light">Pink</span>
+			</div>
+			<div class="space-x-2">
+				Notifications <span class="badge v-solid leading-none rounded-full">4</span>
+			</div>
 			<div>
 				<h3>Utils</h3>
 				<div class="bg-v border border-v text-v px-5 pt-5">
