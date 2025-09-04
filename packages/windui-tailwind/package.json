@@ -1,6 +1,6 @@
 {
-	"name": "windui-tailwind",
-	"version": "0.0.0",
+	"name": "@windi-ui/tailwind",
+	"version": "0.7.0",
 	"license": "MIT",
 	"author": "Waleed Khaled <https://github.com/Waleed-KH>",
 	"description": "",
@@ -24,7 +24,7 @@
 		"dist"
 	],
 	"dependencies": {
-		"windui-core": "workspace:*"
+		"@windi-ui/core": "workspace:*"
 	},
 	"peerDependencies": {
 		"tailwindcss": ">=3.3.0"

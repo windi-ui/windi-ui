@@ -1,6 +1,6 @@
 {
-	"name": "windui-core",
-	"version": "0.0.0",
+	"name": "@windi-ui/core",
+	"version": "0.7.0",
 	"license": "MIT",
 	"author": "Waleed Khaled <https://github.com/Waleed-KH>",
 	"description": "",

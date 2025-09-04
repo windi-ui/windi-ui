@@ -1,7 +1,7 @@
 import { findPackageJSON, createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
-import type { ThemeProvider, FontSize } from 'windui-core';
-import type { CSS } from 'windui-core';
+import type { ThemeProvider, FontSize } from '@windi-ui/core';
+import type { CSS } from '@windi-ui/core';
 import type { default as Plugin } from 'tailwindcss/plugin';
 import type { default as WithAlphaVariable } from 'tailwindcss/lib/util/withAlphaVariable';
 import { hslToRgb } from './utils/color';

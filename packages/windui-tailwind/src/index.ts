@@ -1,6 +1,6 @@
 import { default as createPlugin } from 'tailwindcss/plugin';
 import { DarkModeConfig } from 'tailwindcss/types/config';
-import { create, type Config, type ColorShade, type ApplyVariantSubProp } from "windui-core";
+import { create, type Config, type ColorShade, type ApplyVariantSubProp } from "@windi-ui/core";
 import { createTailwindTheme, TailwindVer } from './theme';
 import { getDarkSelector, applyDark } from './utils/darkMode';
 
