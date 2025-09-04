@@ -20,6 +20,7 @@ export default defineComponent(({ vars }) => {
 			lineHeight: vars.size('line-height'),
 			fontWeight: '600',
 			textDecoration: 'none',
+			verticalAlign: 'middle',
 			userSelect: 'none',
 		},
 		pseudos: {

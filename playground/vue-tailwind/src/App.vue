@@ -71,6 +71,7 @@
 					<h1 class="border-t border-v-soft text-v-soft bg-v-soft -mx-5 px-5 py-2">Soft</h1>
 				</div>
 			</div>
+			<div class="c-blue bg-c-800/50 text-c-300 border border-c-500 p-5">Hello World</div>
 		</div>
 	</div>
 </template>

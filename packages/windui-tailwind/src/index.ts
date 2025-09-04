@@ -1,7 +1,7 @@
 import { default as createPlugin } from 'tailwindcss/plugin';
 import { DarkModeConfig } from 'tailwindcss/types/config';
 import { create, type Config, type ColorShade, type ApplyVariantSubProp } from "windui-core";
-import { createTailwindTheme } from './theme';
+import { createTailwindTheme, TailwindVer } from './theme';
 import { getDarkSelector, applyDark } from './utils/darkMode';
 
 function keyValuePairs(
@@ -64,7 +64,10 @@ function WindUITailwindCSS(config: Config = {}): ReturnType<typeof createPlugin>
 			extend: {
 				colors({ colors }) {
 					return {
-						c: keyValuePairs(Object.keys(colors.gray), v => `rgb(${wiu.vars.color(v as ColorShade)} / <alpha-value>)`),
+						c: keyValuePairs(Object.keys(colors.gray), v => {
+							const c = wiu.vars.color(v as ColorShade);
+							return TailwindVer === 4 ? c : `rgb(${c} / <alpha-value>)`;
+						}),
 						// TODO: add as configurable option
 						default: colors.gray,
 						accent: colors.blue,

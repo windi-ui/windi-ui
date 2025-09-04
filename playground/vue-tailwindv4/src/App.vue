@@ -53,7 +53,10 @@
 				<button class="btn v-solid c-red s-lg">Danger</button>
 				<button class="btn v-light c-green s-xl">Success</button>
 			</div>
-			<button class="btn v-outline block w-96 hover:v-default hover:c-blue">Default</button>
+			<button class="btn v-outline block w-96 hover:v-default hover:c-blue">
+				Default
+				<span class="badge v-solid c-red leading-none rounded-full absolute -translate-1/2 top-0 start-full">99+</span>
+			</button>
 			<h3 class="text-lg my-4">Badges</h3>
 			<div class="space-x-2">
 				<span class="badge c-red">Danger</span>
@@ -90,6 +93,9 @@
 			<div class="space-x-2">
 				Notifications <span class="badge v-solid leading-none rounded-full">4</span>
 			</div>
+			<div class="space-x-2">
+				<span class="badge c-green text-sm">Added in v5.2.0</span>
+			</div>
 			<div>
 				<h3>Utils</h3>
 				<div class="bg-v border border-v text-v px-5 pt-5">
@@ -98,6 +104,7 @@
 					<h1 class="border-t border-v-soft text-v-soft bg-v-soft -mx-5 px-5 py-2">Soft</h1>
 				</div>
 			</div>
+			<div class="c-blue bg-c-800/50 text-c-300 border border-c-500 p-5">Hello World</div>
 		</div>
 	</div>
 </template>

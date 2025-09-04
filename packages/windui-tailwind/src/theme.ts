@@ -19,24 +19,29 @@ const NUM_REGEX = /(\d*\.\d+|\d+)/;
 const ANGLE_REGEX = new RegExp(`^${NUM_REGEX.source}(deg|rad|grad|turn)?$`);
 const PERCENT_REGEX = new RegExp(`^${NUM_REGEX.source}%?$`);
 
-export function createTailwindTheme(tw: PluginAPI): TailwindTheme {
-	try {
-		const twPkgPath = findPackageJSON(import.meta.resolve('tailwindcss', process.cwd()));
-		if (twPkgPath) {
-			const twPkg = JSON.parse(readFileSync(twPkgPath, { encoding: 'utf8' })) as { version: string };
-			if (twPkg.version.startsWith('4.')) {
-				return new TailwindV4Theme(tw);
-			} else if (twPkg.version.startsWith('3.')) {
-				return new TailwindV3Theme(tw);
-			}
+let twPkgPath: string | undefined;
+let twPkg: { version: string } | undefined;
 
-			console.warn(`Unsupported Tailwind CSS version: ${twPkg.version}. Expected 3.x or 4.x.`);
-		}
-	} catch (e) {
-		console.error('Failed to read Tailwind CSS package.json:', e);
+try {
+	twPkgPath = findPackageJSON(import.meta.resolve('tailwindcss', process.cwd()));
+	if (twPkgPath) {
+		twPkg = JSON.parse(readFileSync(twPkgPath, { encoding: 'utf8' })) as { version: string };
 	}
+} catch (e) {
+	console.error('Failed to read Tailwind CSS package.json:', e);
+}
 
-	return new TailwindV3Theme(tw);
+const TW_VER_REGEX = /^(3|4)\./;
+const match = twPkg?.version.match(TW_VER_REGEX);
+
+if (!match) {
+	console.warn(`Unsupported Tailwind CSS version: ${twPkg?.version}. Expected 3.x or 4.x.`);
+}
+
+export const TailwindVer = match ? Number(match[1]) as 3 | 4 : 3;
+
+export function createTailwindTheme(tw: PluginAPI): TailwindTheme {
+	return TailwindVer === 4 ? new TailwindV4Theme(tw) : new TailwindV3Theme(tw);
 }
 
 export abstract class TailwindTheme implements ThemeProvider {
