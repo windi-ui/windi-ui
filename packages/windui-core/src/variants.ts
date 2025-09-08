@@ -122,7 +122,7 @@ export function mainVariants(vars: VarsProvider): Record<string, Variant> {
 			'border-soft': vars.color('500'),
 			'border-muted': vars.color('400'),
 			'border-accent': vars.color.accent('600'),
-			'border-opacity': '1',
+			'border-opacity': '0',
 
 			'fg': vars.color('white'),
 			'fg-soft': vars.color('200'),
@@ -208,7 +208,7 @@ export function mainVariants(vars: VarsProvider): Record<string, Variant> {
 			'border-soft': vars.color('200'),
 			'border-muted': vars.color('300'),
 			'border-accent': vars.color.accent('100'),
-			'border-opacity': '1',
+			'border-opacity': '0',
 
 			'fg': vars.color('600'),
 			'fg-soft': vars.color('500'),
@@ -240,6 +240,7 @@ export function mainVariants(vars: VarsProvider): Record<string, Variant> {
 				'bg-soft': vars.color('700'),
 				'bg-muted': vars.color('600'),
 				'bg-accent': vars.color.accent('900'),
+				'bg-opacity': '0.5',
 
 				'border': vars.color('900'),
 				'border-soft': vars.color('700'),
@@ -257,6 +258,7 @@ export function mainVariants(vars: VarsProvider): Record<string, Variant> {
 						'bg-soft': vars.color('500'),
 						'bg-muted': vars.color('400'),
 						'bg-accent': vars.color.accent('600'),
+						'bg-opacity': '1',
 
 						'border': vars.color('600'),
 						'border-soft': vars.color('500'),
@@ -384,8 +386,8 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 			case 'text': this.theme.applyTextColor(vVal, target, vAlpha); break;
 		}
 
-		if (alpha && alpha.toString() !== '1') {
-			target[this.vars.v(aVar)] = alpha;
+		if (alpha) {
+			target[this.vars.v(aVar)] = `${alpha} !important`;
 		}
 
 		return target;
