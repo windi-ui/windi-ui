@@ -1,10 +1,17 @@
 {
 	"name": "@windi-ui/core",
-	"version": "0.7.0",
+	"version": "0.7.1",
 	"license": "MIT",
 	"author": "Waleed Khaled <https://github.com/Waleed-KH>",
-	"description": "",
-	"keywords": [],
+	"description": "Modern, modular, and customizable UI component library",
+	"keywords": ["ui", "component"],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/windi-ui/windi-ui.git"
+	},
+	"bugs": {
+		"url": "https://github.com/windi-ui/windi-ui/issues"
+	},
 
 	"type": "module",
 	"scripts": {

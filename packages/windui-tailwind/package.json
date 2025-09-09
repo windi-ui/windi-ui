@@ -1,15 +1,24 @@
 {
 	"name": "@windi-ui/tailwind",
-	"version": "0.7.0",
+	"version": "0.7.1",
 	"license": "MIT",
 	"author": "Waleed Khaled <https://github.com/Waleed-KH>",
-	"description": "",
-	"keywords": [],
+	"description": "Modern, modular, and customizable UI component library",
+	"keywords": ["ui", "component", "tailwindcss"],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/windi-ui/windi-ui.git"
+	},
+	"bugs": {
+		"url": "https://github.com/windi-ui/windi-ui/issues"
+	},
+
 	"type": "module",
 	"scripts": {
 		"build": "unbuild",
 		"stub": "unbuild --stub"
 	},
+
 	"module": "dist/index.mjs",
 	"main": "dist/index.cjs",
 	"types": "dist/index.d.ts",
