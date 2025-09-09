@@ -1,14 +1,8 @@
 {
 	"files": [],
 	"references": [
-		{
-			"path": "./tsconfig.node.json"
-		},
-		{
-			"path": "./packages/windui-core/tsconfig.json"
-		},
-		{
-			"path": "./packages/windui-tailwind/tsconfig.json"
-		}
+		{ "path": "./tsconfig.node.json" },
+		{ "path": "./packages/windui-tailwind" },
+		{ "path": "./packages/windui-core" }
 	]
 }

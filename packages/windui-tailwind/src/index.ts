@@ -57,6 +57,7 @@ function WindUITailwindCSS(config: Config = {}): ReturnType<typeof createPlugin>
 			values: keyValuePairs(gt.sizes.names())
 		});
 
+		// @ts-ignore
 		tw.addComponents([...gt.components.css()]);
 	}, {
 		content: [],

@@ -10,12 +10,13 @@
 		"playv4": "pnpm -C playground/vue-tailwindv4 run dev",
 		"dev": "pnpm stub && pnpm play",
 		"devv4": "pnpm stub && pnpm playv4",
+		"typecheck": "tsc --build --force",
 		"lint": "eslint --cache .",
 		"lint:fix": "pnpm lint --fix"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.33.0",
-		"@tsconfig/node20": "^20.1.2",
+		"@tsconfig/node22": "^22.0.2",
 		"@types/node": "24.1.0",
 		"eslint": "^9.32.0",
 		"typescript": "^5.8.3",
