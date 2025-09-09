@@ -27,9 +27,9 @@
 		"@windi-ui/core": "workspace:*"
 	},
 	"peerDependencies": {
-		"tailwindcss": ">=3.3.0"
+		"tailwindcss": ">=4.1.13"
 	},
 	"devDependencies": {
-		"tailwindcss": "^3.4.17"
+		"tailwindcss": "^4.1.13"
 	}
 }
