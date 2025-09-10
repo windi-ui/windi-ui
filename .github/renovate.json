@@ -7,5 +7,10 @@
 	],
 	"rangeStrategy": "bump",
 	"automerge": true,
-	"automergeStrategy": "squash"
+	"automergeStrategy": "squash",
+	"packageRules": [{
+		"matchDepTypes": ["peerDependencies"],
+		"enabled": false
+	}]
 }
+
