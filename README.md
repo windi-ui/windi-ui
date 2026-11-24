@@ -108,6 +108,25 @@ Contributions are welcome! Please submit issues or pull requests.
 
    The playgrounds use the built packages. To rebuild them on change, run `pnpm watch` in a second terminal.
 
+### Tests
+
+```bash
+pnpm build       # the tests load the built packages
+pnpm test        # run once
+pnpm test -u     # rewrite the snapshots after an intended change in the output
+```
+
+The tests are in `test/` and run on Vitest.
+
+- **Snapshots.** `test/__snapshots__/<fixture>/*.css` hold the CSS the plugin emits on each supported Tailwind:
+  `tw3` (3.4, through PostCSS), `tw4.1` (the oldest supported v4) and `tw4` (the current v4), both through
+  Tailwind's `compile()`. Each is a package in `test/fixtures/` that pins its Tailwind version.
+  A change in the output fails the test; if the change is intended, run `pnpm test -u` and commit the
+  snapshot diff with the code, so the review shows what changed for users.
+- **Browser.** `test/browser.test.ts` checks what a snapshot cannot: how the CSS cascades and inherits.
+  It drives the Chrome or Edge already installed on the machine, and is skipped locally if there is neither.
+- A test file works with one fixture only, because the plugin picks its Tailwind version when it is first loaded.
+
 ### Project Structure
 
 The repository is organized as a monorepo with the following packages:
@@ -121,6 +140,10 @@ The repository is organized as a monorepo with the following packages:
 
 - **`vue-tailwind`**: A Vue 3 project showcasing WindUI with Tailwind CSS v3.
 - **`vue-tailwindv4`**: Another Vue 3 project demonstrating WindUI with Tailwind CSS v4.
+
+#### Tests
+
+- **`test`**: The test harness, with one fixture package per supported Tailwind version in `test/fixtures`.
 
 #### Docs
 

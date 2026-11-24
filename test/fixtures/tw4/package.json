@@ -1,0 +1,8 @@
+{
+	"name": "windui-test-tw4",
+	"private": true,
+	"devDependencies": {
+		"@windi-ui/tailwind": "workspace:*",
+		"tailwindcss": "^4.3.5"
+	}
+}

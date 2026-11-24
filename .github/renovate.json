@@ -12,6 +12,15 @@
 		"matchDepTypes": ["peerDependencies"],
 		"enabled": false
 	}, {
+		"description": "The test fixtures pin the Tailwind versions the snapshots are for",
+		"matchFileNames": ["test/fixtures/tw3/package.json"],
+		"matchPackageNames": ["tailwindcss"],
+		"allowedVersions": "<4"
+	}, {
+		"matchFileNames": ["test/fixtures/tw4.1/package.json"],
+		"matchPackageNames": ["tailwindcss"],
+		"allowedVersions": "~4.1.0"
+	}, {
 		"description": "typescript-eslint and tsdown's dts generator do not support TypeScript 7 yet",
 		"matchPackageNames": ["typescript"],
 		"allowedVersions": "<7"

@@ -1,0 +1,9 @@
+{
+	"name": "windui-test-tw3",
+	"private": true,
+	"devDependencies": {
+		"@windi-ui/tailwind": "workspace:*",
+		"postcss": "^8.5.33",
+		"tailwindcss": "^3.4.19"
+	}
+}

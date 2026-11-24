@@ -10,6 +10,7 @@
 	},
 	"include": [
 		"*.config.ts",
-		"packages/*/*.config.ts"
+		"packages/*/*.config.ts",
+		"test/**/*.ts"
 	]
 }
