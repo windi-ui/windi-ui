@@ -20,7 +20,7 @@
 		"@eslint/js": "^9.39.5",
 		"@tsconfig/node22": "^22.0.7",
 		"@types/node": "24.19.2",
-		"changelogithub": "^13.16.1",
+		"changelogithub": "^15.0.5",
 		"eslint": "^9.39.5",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.74.0",
