@@ -28,13 +28,26 @@
 			"import": "./dist/index.mjs",
 			"require": "./dist/index.cjs"
 		},
+		"./config": {
+			"import": "./dist/config.mjs",
+			"require": "./dist/config.cjs"
+		},
+		"./v3": {
+			"import": "./dist/v3.mjs",
+			"require": "./dist/v3.cjs"
+		},
+		"./v4": {
+			"import": "./dist/v4.mjs",
+			"require": "./dist/v4.cjs"
+		},
 		"./package.json": "./package.json"
 	},
 	"files": [
 		"dist"
 	],
 	"dependencies": {
-		"@windi-ui/core": "workspace:*"
+		"@windi-ui/core": "workspace:*",
+		"unconfig": "^7.5.0"
 	},
 	"peerDependencies": {
 		"tailwindcss": ">=3.3.0"

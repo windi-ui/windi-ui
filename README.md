@@ -29,7 +29,17 @@ WindiUI is a modern, modular, and customizable UI component library designed to 
 npm install -D @windi-ui/tailwind
 ```
 
-Then, add the plugin to your `tailwind.config.ts` / `tailwind.config.js` file:
+On Tailwind v4, load it from your stylesheet:
+
+```css
+@import "tailwindcss";
+@plugin "@windi-ui/tailwind";
+```
+
+Options go in the `@plugin` block, or in a `windui.config.ts` that you load with `@plugin "./windui.config.ts"`;
+see [Installation](docs/guide/installation.md) and [Config file](docs/reference/config-file.md).
+
+On Tailwind v3, add the plugin to your `tailwind.config.ts` / `tailwind.config.js` file:
 
 ```ts
 import type { Config } from 'tailwindcss';

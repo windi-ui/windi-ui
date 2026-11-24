@@ -23,20 +23,70 @@ yarn add -D @windi-ui/tailwind
 
 :::
 
-The default export is a function that takes the [options](/reference/options) and returns a Tailwind
-plugin. The package is published as both ESM and CommonJS.
+The package is published as both ESM and CommonJS.
 
 ## Tailwind CSS v4
 
-Today WindUI is loaded on v4 through a JavaScript config file referenced with `@config`.
+Load WindUI from your stylesheet with `@plugin`. There are three forms; pick the first one that covers what
+you need.
+
+**Zero config.** The built-in colors, variants, sizes and components:
+
+```css [main.css]
+@import "tailwindcss";
+@plugin "@windi-ui/tailwind";
+```
+
+**Options in the stylesheet.** The [options](/reference/options) that are plain values, with their names in
+kebab-case:
+
+```css [main.css]
+@import "tailwindcss";
+@plugin "@windi-ui/tailwind" {
+	prefix: app;
+	variant-scope: inherit;
+}
+```
+
+**A config module.** For the [builder API](/guide/customizing), point `@plugin` at a module of your own that
+exports the configured plugin. The path is relative to the stylesheet, and Tailwind rebuilds when the module
+changes:
+
+::: code-group
+
+```css [main.css]
+@import "tailwindcss";
+@plugin "./windui.config.ts";
+```
+
+```ts [windui.config.ts]
+import windui from '@windi-ui/tailwind';
+
+export default windui({
+	build(builder) {
+		// ...
+	}
+});
+```
+
+:::
+
+With the first two forms WindUI also looks for a `windui.config.*` file by itself. See
+[Config file](/reference/config-file) for the lookup rules and its limits.
+
+### In a JavaScript config
+
+A Tailwind config loaded with `@config` keeps working. Import from `@windi-ui/tailwind/v4` there: it is the
+same plugin, typed for Tailwind v4's `Config`.
+
+::: code-group
 
 ```ts [tailwind.config.ts]
 import type { Config } from 'tailwindcss';
-import windui from '@windi-ui/tailwind';
+import windui from '@windi-ui/tailwind/v4';
 
 export default {
 	plugins: [
-		// @ts-expect-error the plugin is typed against Tailwind v3
 		windui()
 	],
 } satisfies Config;
@@ -47,10 +97,6 @@ export default {
 @config "../tailwind.config.ts";
 ```
 
-::: info `@plugin` is not supported yet
-`@plugin "@windi-ui/tailwind";` compiles but emits nothing, because the export is a plugin factory rather
-than a plugin. Native `@plugin` loading with options is tracked in
-[#33](https://github.com/windi-ui/windi-ui/issues/33).
 :::
 
 ## Tailwind CSS v3
@@ -94,8 +140,7 @@ module.exports = {
 
 ## Known limitations
 
-- **Types on Tailwind v4.** The plugin's return type comes from Tailwind v3, so v4's `Config` type rejects it.
-  It works at runtime; silence the error as shown above. A typed `/v4` entry point is tracked in
-  [#33](https://github.com/windi-ui/windi-ui/issues/33).
+- **Types on Tailwind v4.** The default entry is typed against Tailwind v3, so v4's `Config` type rejects
+  `windui()` from it. Import from `@windi-ui/tailwind/v4` in a v4 JavaScript config.
 - **Preflight.** `btn` sets a border width but relies on Tailwind's preflight for `border-style: solid`.
   If you disable preflight, add the border style yourself.

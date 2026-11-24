@@ -1,9 +1,11 @@
 # Options
 
-`@windi-ui/tailwind` default-exports a function. Call it with an options object and pass the result to
-Tailwind's `plugins`.
+`@windi-ui/tailwind` default-exports a function that takes the options and returns a Tailwind plugin. The
+same options can be given in three places:
 
-```ts
+::: code-group
+
+```ts [JavaScript]
 import windui from '@windi-ui/tailwind';
 
 windui({
@@ -14,6 +16,32 @@ windui({
 	}
 });
 ```
+
+```css [@plugin block (Tailwind v4)]
+@plugin "@windi-ui/tailwind" {
+	prefix: wui;
+	variant-scope: element;
+}
+```
+
+```ts [windui.config.ts]
+import { defineConfig } from '@windi-ui/tailwind/config';
+
+export default defineConfig({
+	prefix: 'wui',
+	variantScope: 'element',
+	build(builder) {
+		// ...
+	}
+});
+```
+
+:::
+
+- An `@plugin` block takes the options that are plain values, with their names in kebab-case. `build` is a
+  function, so it needs JavaScript: a [config module or a config file](/reference/config-file).
+- Options given inline, in JavaScript or in the block, override those of a config file.
+- An option name WindUI does not know is an error.
 
 All options are optional. The type is exported from `@windi-ui/core` as `Config`.
 
@@ -108,6 +136,33 @@ Things to know about `'element'` and `'inherit'`:
 Called once per compilation, after the built-in variants, sizes and components are registered and before CSS is
 generated. Use the [builder](/reference/builder) to add, update or remove them. See
 [Customizing](/guide/customizing) for a walkthrough.
+
+## `config`
+
+- Type: `string | false`
+- Default: none
+- Not read from a config file
+
+The [config file](/reference/config-file) to load, relative to the working directory. Without it, a call that
+passes no `build` searches for `windui.config.*` and `package.json#windui`. `false` turns that search off.
+
+```css
+@plugin "@windi-ui/tailwind" {
+	config: "./config/windui.ts";
+}
+```
+
+## Entry points
+
+| Import | What it is |
+| --- | --- |
+| `@windi-ui/tailwind` | The plugin. It builds for the Tailwind that runs it. |
+| `@windi-ui/tailwind/v4` | The same, always building for Tailwind v4 and typed for v4's `Config`. |
+| `@windi-ui/tailwind/v3` | The same, always building for Tailwind v3. |
+| `@windi-ui/tailwind/config` | `defineConfig` and [`loadWindUIConfig`](/reference/config-file#loadwinduiconfig). Node.js only. |
+
+The `/v3` and `/v4` entries are for a setup where the automatic choice is wrong. All three plugin entries
+work with `@plugin` and take the same options.
 
 ## What the plugin reads from Tailwind
 

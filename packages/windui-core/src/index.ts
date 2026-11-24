@@ -1,5 +1,5 @@
 import type { ThemeProvider } from './types';
-import { resolveConfig, type Config, type VariantScope } from './config';
+import { resolveConfig, defineConfig, type Config, type VariantScope } from './config';
 import { varsProvider } from './vars';
 import { ColorsGenerator } from "./colors";
 import { VariantsGenerator } from "./variants";
@@ -39,6 +39,7 @@ export function create(config: Config) {
 }
 
 export { varsProvider, type VarsProvider } from './vars';
+export { defineConfig };
 export type { Config, VariantScope };
 export type * from './types';
 export type { ColorShade, ExColorShade } from './colors';

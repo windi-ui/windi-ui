@@ -66,3 +66,37 @@ Also new: the `v-scope` utility, `varsProvider` exported from `@windi-ui/core`, 
    Components added with the builder need no change: bare reads in their `style` get the fallback.
 2. **A rule gets its variant from `@apply v-*`.** Its children now inherit that variant, because the element
    has no `v-` in its `class` attribute. Add `v-scope`: `@apply v-solid v-scope`.
+
+## Tailwind v4 loads WindUI with `@plugin`
+
+In 0.7, `@plugin "@windi-ui/tailwind";` compiled and emitted nothing: Tailwind v4 took the plugin factory for
+a plugin ([#33](https://github.com/windi-ui/windi-ui/issues/33)). It now loads WindUI, in three forms:
+
+```css
+@plugin "@windi-ui/tailwind";                      /* zero config */
+@plugin "@windi-ui/tailwind" { prefix: app; }      /* options, in kebab-case */
+@plugin "./windui.config.ts";                      /* a module that exports windui({ ... }) */
+```
+
+Also new:
+
+- [Config files](/reference/config-file): `windui.config.{ts,mts,cts,js,mjs,cjs,json}` and
+  `package.json#windui` are found from the working directory, or named with the new
+  [`config`](/reference/options#config) option. Inline options override the file.
+- `@windi-ui/tailwind/v4` and `@windi-ui/tailwind/v3`, which build for one Tailwind major whatever runs them.
+  `/v4` is typed for Tailwind v4's `Config`, so a v4 JavaScript config no longer needs `@ts-expect-error`.
+- `defineConfig`, from `@windi-ui/core` and `@windi-ui/tailwind/config`.
+- `loadWindUIConfig()` from `@windi-ui/tailwind/config`, for tools that need the config the plugin uses.
+
+`plugins: [windui()]` and `plugins: [windui({...})]` work as before, on Tailwind v3 and v4.
+
+**Migration:** none is required. Two things can be observed in an existing setup:
+
+1. **A call without `build` now looks for a config file.** If a `windui.config.*` file or a `windui` key in
+   `package.json` already exists for another purpose, `windui()` and `windui({ prefix })` read it. Pass
+   `config: false` to keep them from looking.
+2. **An unknown option name is an error.** `windui({ prefx: 'app' })` was ignored and now throws
+   `WindUI: unknown option "prefx"`.
+
+On Tailwind v4 you can replace `@config` with `@plugin "./windui.config.ts"` if the JavaScript config only
+existed to load WindUI.

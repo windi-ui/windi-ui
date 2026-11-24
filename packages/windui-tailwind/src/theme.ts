@@ -33,9 +33,9 @@ const NUM_REGEX = /(\d*\.\d+|\d+)/;
 const ANGLE_REGEX = new RegExp(`^${NUM_REGEX.source}(deg|rad|grad|turn)?$`);
 const PERCENT_REGEX = new RegExp(`^${NUM_REGEX.source}%?$`);
 
-/** Picks the theme by what the plugin API offers: only Tailwind 3 has `corePlugins`. */
-export function createTailwindTheme(tw: PluginAPI): TailwindTheme {
-	return typeof tw.corePlugins === 'function' ? new TailwindV3Theme(tw) : new TailwindV4Theme(tw);
+/** Picks the theme by what the plugin API offers, unless `ver` says which: only Tailwind 3 has `corePlugins`. */
+export function createTailwindTheme(tw: PluginAPI, ver?: 3 | 4): TailwindTheme {
+	return (ver ? ver === 3 : typeof tw.corePlugins === 'function') ? new TailwindV3Theme(tw) : new TailwindV4Theme(tw);
 }
 
 export abstract class TailwindTheme implements ThemeProvider {

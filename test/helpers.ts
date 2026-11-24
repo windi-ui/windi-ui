@@ -13,7 +13,7 @@ interface Loaded { path: string, base: string }
 interface Tailwind4 {
 	compile: (css: string, options: {
 		base: string,
-		loadModule: (id: string, base: string) => Promise<Loaded & { module: unknown }>,
+		loadModule: (id: string, base: string, hint: 'plugin' | 'config') => Promise<Loaded & { module: unknown }>,
 		loadStylesheet: (id: string, base: string) => Promise<Loaded & { content: string }>,
 	}) => Promise<{ build: (candidates: string[]) => string }>;
 }
@@ -27,6 +27,9 @@ export type Compile = (
 	css?: string
 ) => Promise<string>;
 
+/** Compiles a stylesheet that loads WindUI itself, with `@plugin`. The paths in it are relative to the fixture. */
+export type CompileCss = (css: string, candidates: string[]) => Promise<string>;
+
 /**
  * Loads from a fixture package, which pins one Tailwind version, while the working directory is a fixture of the
  * other major: the plugin must follow the Tailwind that runs it, not the one the working directory resolves (#32).
@@ -38,27 +41,27 @@ function enter(fixture: Fixture) {
 }
 
 /** Tailwind v4: `compile()`, with the plugin loaded through jiti as `@tailwindcss/node` loads it. */
-export function tailwind4(fixture: Exclude<Fixture, 'tw3'>): Compile {
+export function tailwind4(fixture: Exclude<Fixture, 'tw3'>): Compile & { css: CompileCss } {
 	const { dir, require } = enter(fixture);
 	const { compile } = require('tailwindcss') as Tailwind4;
-	const plugin = createJiti(resolve(dir, 'package.json')).import<WindUI>('@windi-ui/tailwind', { default: true });
+	const jiti = createJiti(resolve(dir, 'package.json'));
+	const plugin = jiti.import<WindUI>('@windi-ui/tailwind', { default: true });
 
 	// No preflight: the output should hold what WindUI emits and the theme variables it uses, nothing else.
 	const css = [
 		'@layer theme, base, components, utilities;',
 		'@import "tailwindcss/theme.css" layer(theme);',
 		'@import "tailwindcss/utilities.css" layer(utilities);',
-		'@config "./tailwind.config.js";',
 	].join('\n');
 
-	return async (candidates, config = {}, options, extra = '') => {
+	const run = async (extra: string, candidates: string[], config?: TailwindConfig) => {
 		const { build } = await compile(`${css}\n${extra}`, {
 			base: dir,
-			// The config is built in the test, so `@config` gets it whatever path it names.
-			loadModule: async (id, base) => ({
+			// `@config` gets the config built in the test, whatever path it names; `@plugin` loads what it names.
+			loadModule: async (id, base, hint) => ({
 				path: resolve(base, id),
 				base,
-				module: { ...config, plugins: [(await plugin)(options)] },
+				module: hint === 'config' ? config : await jiti.import(id.startsWith('.') ? resolve(base, id) : id, { default: true }),
 			}),
 			loadStylesheet: async (id, base) => {
 				const path = id.startsWith('.') ? resolve(base, id) : require.resolve(id);
@@ -69,14 +72,23 @@ export function tailwind4(fixture: Exclude<Fixture, 'tw3'>): Compile {
 		// Without Tailwind's banner, which would change the snapshot on every Tailwind patch release.
 		return build(candidates).replace(/^\/\*!.*\n/, '');
 	};
+
+	return Object.assign<Compile, { css: CompileCss }>(
+		async (candidates, config = {}, options, extra = '') => run(
+			`@config "./tailwind.config.js";\n${extra}`,
+			candidates,
+			{ ...config, plugins: [(await plugin)(options)] }
+		),
+		{ css: run }
+	);
 }
 
 /** Tailwind v3: PostCSS with a JS config and the CommonJS build of the plugin, as a `.cjs` config loads it. */
-export function tailwind3(): Compile {
+export function tailwind3(entry = '@windi-ui/tailwind'): Compile {
 	const { require } = enter('tw3');
 	const postcss = require('postcss') as PostCSS;
 	const tailwindcss = require('tailwindcss') as (config: TailwindConfig) => unknown;
-	const plugin = require('@windi-ui/tailwind') as WindUI;
+	const plugin = require(entry) as WindUI;
 
 	let run = 0;
 

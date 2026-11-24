@@ -29,3 +29,8 @@ export function resolveConfig(config: Config): ResolvedConfig {
 		build
 	};
 }
+
+/** Types a config object, so that one object can be shared by the plugin, a config file and other tools. */
+export function defineConfig(config: Config): Config {
+	return config;
+}

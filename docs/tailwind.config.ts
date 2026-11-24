@@ -1,11 +1,10 @@
 import type { Config } from 'tailwindcss';
-import windui from '@windi-ui/tailwind';
+import windui from '@windi-ui/tailwind/v4';
 
 const config: Config = {
 	// VitePress toggles a `.dark` class on <html>
 	darkMode: ['selector', '.dark'],
 	plugins: [
-		// @ts-expect-error the plugin is typed against Tailwind v3
 		windui({
 			// The examples of guide/customizing.md, live. Keep the two in sync.
 			build(builder) {
