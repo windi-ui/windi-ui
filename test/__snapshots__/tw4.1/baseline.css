@@ -78,6 +78,9 @@
       border-color: color-mix(in oklab, var(--wui-v-border, var(--wui-v-on-light, var(--wui-c-500)) var(--wui-v-on-dark, var(--wui-c-700))) calc(var(--wui-v-border-opacity, 1) * 100%), transparent);
     }
     --wui-v-border-opacity: 0.3 !important;
+    :where(&) > * {
+      --wui-v-border-opacity: initial;
+    }
   }
   .border-c-300 {
     border-color: var(--wui-c-300);
@@ -100,6 +103,9 @@
       background-color: color-mix(in oklab, var(--wui-v-bg-soft, var(--wui-v-on-light, var(--wui-c-100)) var(--wui-v-on-dark, var(--wui-c-900))) calc(var(--wui-v-bg-opacity, 1) * 100%), transparent);
     }
     --wui-v-bg-opacity: 0.6 !important;
+    :where(&) > * {
+      --wui-v-bg-opacity: initial;
+    }
   }
   .bg-v\/50 {
     background-color: var(--wui-v-bg, var(--wui-v-on-light, var(--wui-c-white)) var(--wui-v-on-dark, var(--wui-c-950)));
@@ -107,6 +113,9 @@
       background-color: color-mix(in oklab, var(--wui-v-bg, var(--wui-v-on-light, var(--wui-c-white)) var(--wui-v-on-dark, var(--wui-c-950))) calc(var(--wui-v-bg-opacity, 1) * 100%), transparent);
     }
     --wui-v-bg-opacity: 0.5 !important;
+    :where(&) > * {
+      --wui-v-bg-opacity: initial;
+    }
   }
   .bg-v\/\[0\.3\] {
     background-color: var(--wui-v-bg, var(--wui-v-on-light, var(--wui-c-white)) var(--wui-v-on-dark, var(--wui-c-950)));
@@ -114,6 +123,9 @@
       background-color: color-mix(in oklab, var(--wui-v-bg, var(--wui-v-on-light, var(--wui-c-white)) var(--wui-v-on-dark, var(--wui-c-950))) calc(var(--wui-v-bg-opacity, 1) * 100%), transparent);
     }
     --wui-v-bg-opacity: 0.3 !important;
+    :where(&) > * {
+      --wui-v-bg-opacity: initial;
+    }
   }
   .bg-\[\#123456\] {
     background-color: #123456;
@@ -157,6 +169,9 @@
       color: color-mix(in oklab, var(--wui-v-fg, var(--wui-v-on-light, var(--wui-c-800)) var(--wui-v-on-dark, var(--wui-c-200))) calc(var(--wui-v-fg-opacity, 1) * 100%), transparent);
     }
     --wui-v-fg-opacity: 0.75 !important;
+    :where(&) > * {
+      --wui-v-fg-opacity: initial;
+    }
   }
   .text-\[red\] {
     color: red;
@@ -562,7 +577,7 @@
   }
 }
 @layer base {
-  :root {
+  :where(:root) {
     --wui-v-on-dark: var(--wui-v-nil,);
   }
 }

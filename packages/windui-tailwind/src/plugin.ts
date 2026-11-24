@@ -148,7 +148,8 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 			tw.addBase({ '*': applyDark(darkSelector, gt.variants.rootVars()) });
 		} else {
 			const mode = gt.variants.modeVars();
-			tw.addBase({ ':root': mode.light });
+			// Without specificity, so that the dark rule below also wins on the root element itself.
+			tw.addBase({ ':where(:root)': mode.light });
 			tw.addBase({ '*': applyDark(darkSelector, { '@dark': mode.dark }) });
 
 			const reset = gt.variants.resetVars();

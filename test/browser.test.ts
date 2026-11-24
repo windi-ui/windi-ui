@@ -15,6 +15,7 @@ const html = `
 	<span id="plain" class="bg-v text-v border border-v"></span>
 	<span id="soft" class="bg-v-soft text-v-muted border border-v-accent"></span>
 	<span id="modifier" class="c-red v-outline bg-v/50 text-v"></span>
+	<div id="faded" class="bg-v/50 text-v/75 border border-v/30"><span id="faded-child" class="bg-v text-v border border-v"></span></div>
 	<button id="btn" class="btn">btn</button>
 	<button id="btn-solid" class="btn c-blue v-solid"><span id="badge-in" class="badge">badge</span></button>
 	<span id="badge" class="badge">badge</span>
@@ -48,7 +49,8 @@ describe.skipIf(!browser)('in a browser', () => {
 		`getComputedStyle(document.getElementById('${id}'), '${pseudo}').${property}`
 	);
 
-	const painted = (page: Page) => page.evaluate<string>(`JSON.stringify([...document.querySelectorAll('[id]')].map(e => {
+	// The root element too: it is where the light mode is set, and a page may put its variant utilities there.
+	const painted = (page: Page) => page.evaluate<string>(`JSON.stringify([document.documentElement, ...document.querySelectorAll('[id]')].map(e => {
 		const s = getComputedStyle(e);
 		return [e.id, s.backgroundColor, s.color, s.borderTopColor, s.outlineColor, getComputedStyle(e, '::before').backgroundColor];
 	}), null, 1)`);
@@ -85,6 +87,14 @@ describe.skipIf(!browser)('in a browser', () => {
 	});
 
 	describe('with the element scope', () => {
+		it('keeps an opacity modifier to its element', async () => {
+			const page = pages.element;
+			for (const property of ['backgroundColor', 'color', 'borderTopColor']) {
+				expect(await style(page, 'faded-child', property)).toBe(await style(page, 'plain', property));
+				expect(await style(page, 'faded-child', property)).not.toBe(await style(page, 'faded', property));
+			}
+		});
+
 		it('gives a child of an `@apply v-* v-scope` host the default variant', async () => {
 			const page = pages.element;
 			expect(await style(page, 'applied', 'backgroundColor')).toBe(await style(page, 'plain', 'backgroundColor'));
@@ -93,7 +103,7 @@ describe.skipIf(!browser)('in a browser', () => {
 
 		it.each(['light', 'dark'] as const)('paints like the universal scope in %s mode', async (colorScheme) => {
 			for (const page of [pages.universal, pages.element]) {
-				await page.evaluate(`document.documentElement.className = '${colorScheme}'`);
+				await page.evaluate(`document.documentElement.className = '${colorScheme} bg-v text-v before:bg-v'`);
 			}
 
 			// The inherit page stays light: the dark fallback is in use, also in a pseudo-element, which a nested dark selector cannot reach.

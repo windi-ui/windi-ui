@@ -147,6 +147,8 @@
     --wui-s-spacing-1\.5: 0.375rem;
     --wui-s-text: 1rem;
     --wui-s-line-height: 1.5rem;
+}
+:where(:root) {
     --wui-v-on-dark: var(--wui-v-nil,);
 }
 @media (prefers-color-scheme: dark) {
@@ -529,15 +531,24 @@
     background-color: rgb(var(--wui-v-bg-soft, var(--wui-v-on-light, var(--wui-c-100)) var(--wui-v-on-dark, var(--wui-c-900))) / var(--tw-bg-opacity, 1));
     --wui-v-bg-opacity: 0.6 !important;
 }
+:where(.bg-v-soft\/60) > * {
+    --wui-v-bg-opacity: initial;
+}
 .bg-v\/50 {
     --tw-bg-opacity: var(--wui-v-bg-opacity, 1);
     background-color: rgb(var(--wui-v-bg, var(--wui-v-on-light, var(--wui-c-white)) var(--wui-v-on-dark, var(--wui-c-950))) / var(--tw-bg-opacity, 1));
     --wui-v-bg-opacity: 0.5 !important;
 }
+:where(.bg-v\/50) > * {
+    --wui-v-bg-opacity: initial;
+}
 .bg-v\/\[0\.3\] {
     --tw-bg-opacity: var(--wui-v-bg-opacity, 1);
     background-color: rgb(var(--wui-v-bg, var(--wui-v-on-light, var(--wui-c-white)) var(--wui-v-on-dark, var(--wui-c-950))) / var(--tw-bg-opacity, 1));
     --wui-v-bg-opacity: 0.3 !important;
+}
+:where(.bg-v\/\[0\.3\]) > * {
+    --wui-v-bg-opacity: initial;
 }
 .border-v {
     --tw-border-opacity: var(--wui-v-border-opacity, 1);
@@ -552,6 +563,9 @@
     border-color: rgb(var(--wui-v-border, var(--wui-v-on-light, var(--wui-c-500)) var(--wui-v-on-dark, var(--wui-c-700))) / var(--tw-border-opacity, 1));
     --wui-v-border-opacity: 0.3 !important;
 }
+:where(.border-v\/30) > * {
+    --wui-v-border-opacity: initial;
+}
 .text-v {
     --tw-text-opacity: var(--wui-v-fg-opacity, 1);
     color: rgb(var(--wui-v-fg, var(--wui-v-on-light, var(--wui-c-800)) var(--wui-v-on-dark, var(--wui-c-200))) / var(--tw-text-opacity, 1));
@@ -564,6 +578,9 @@
     --tw-text-opacity: var(--wui-v-fg-opacity, 1);
     color: rgb(var(--wui-v-fg, var(--wui-v-on-light, var(--wui-c-800)) var(--wui-v-on-dark, var(--wui-c-200))) / var(--tw-text-opacity, 1));
     --wui-v-fg-opacity: 0.75 !important;
+}
+:where(.text-v\/75) > * {
+    --wui-v-fg-opacity: initial;
 }
 .s-lg {
     --wui-s-spacing-1: 0.375rem;

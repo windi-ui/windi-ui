@@ -162,7 +162,7 @@ With `'element'` and `'inherit'` a variant utility looks like this (Tailwind v4,
 	);
 }
 
-:root {
+:where(:root) {
 	--wui-v-on-dark: var(--wui-v-nil,);
 }
 
@@ -201,6 +201,9 @@ Things to know about `'element'` and `'inherit'`:
   their children get the same reset.
 
 ## `darkSelector`
+- **Opacity modifiers.** With `'element'`, `bg-v/50` resets its opacity variable on the children of its
+  element, so they paint at their own opacity. With `'inherit'` the modifier is inherited like the rest of the
+  variant.
 
 - Type: `'media' | 'class' | 'selector' | ['class' | 'selector', string] | ['variant', string | string[]] | string`
 - Default: none; dark mode follows Tailwind

@@ -89,6 +89,8 @@ overrides it for that element:
 Modifiers take the values of your theme's opacity scale (`/50`, `/75`, ...) or an arbitrary value (`/[0.33]`).
 The modifier sets the property's opacity variable (for example `--wui-v-bg-opacity`) with `!important` on the
 element, so it also wins over the variant's own opacity, including the opacity a variant sets for `:hover`.
+It applies to that element only: its children paint at their own opacity. With
+[`variantScope: 'inherit'`](/reference/options#variantscope) they inherit it, like the variant itself.
 
 ## States
 

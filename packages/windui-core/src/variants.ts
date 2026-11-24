@@ -458,6 +458,11 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 
 		if (alpha) {
 			target[this.vars.v(aVar)] = `${alpha} !important`;
+
+			// The element need not have a `v-*` class, so the reset of the `element` scope would not reach its children.
+			if (this.scope === 'element') {
+				(target as Record<string, unknown>)[':where(&) > *'] = { [this.vars.v(aVar)]: 'initial' };
+			}
 		}
 
 		return target;

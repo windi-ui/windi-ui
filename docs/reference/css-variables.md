@@ -83,7 +83,7 @@ dark value of the `default` variant where a variant variable is read with a fall
 | `--wui-v-on-dark` | empty | not set |
 
 `var(--wui-v-on-light, <light value>) var(--wui-v-on-dark, <dark value>)` therefore computes to the value of the
-current mode. They are set on `:root` and under the dark selector, and are not meant to be overridden.
+current mode. They are set on `:where(:root)` and under the dark selector, and are not meant to be overridden.
 
 ## Size variables
 
