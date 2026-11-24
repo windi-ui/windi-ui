@@ -9,6 +9,10 @@ Every `add*`, `update*` and `remove*` method returns the builder.
 
 | Method | Description |
 | --- | --- |
+| `addColor(name, value, options?)` | Register a palette and its `c-<name>` and `c-accent-<name>` classes. See [Colors](#colors). |
+| `setColor(name, value, options?)` | The same, replacing a palette of that name. |
+| `updateColor(name, updater)` | Change the shades of an existing palette. |
+| `removeColor(name)` | Remove a palette and its classes. |
 | `addVariant(name, factory)` | Register a variant and its `v-<name>` class. |
 | `updateVariant(name, updater)` | Change an existing variant. |
 | `removeVariant(name)` | Remove a variant. |
@@ -34,7 +38,9 @@ remove(name: string): Builder;
 - A `factory` returns the new item.
 - An `updater` either mutates the item it receives or returns a replacement.
 - `add` with an existing name, and `update` or `remove` with an unknown name, log a console error and do nothing.
-- The `default` variant and the `default` size can be updated, but not added or removed.
+- The `default` variant, the `default` size and the `default` color can be updated, but not added or removed.
+  `setColor('default', ...)` replaces the color.
+- `build` can run more than once per compilation; see [`utilities`](#colors).
 
 Built-in names:
 
@@ -43,6 +49,40 @@ Built-in names:
 | Variants | `default`, `solid`, `outline`, `light` |
 | Sizes | `default`, `xs`, `sm`, `lg`, `xl` |
 | Components | `btn`, `badge` |
+
+## Colors
+
+```ts
+addColor(name: string, value: ColorValue, options?: { utilities?: boolean }): Builder;
+setColor(name: string, value: ColorValue, options?: { utilities?: boolean }): Builder;
+updateColor(name: string, updater: (palette: Map<ColorShade, string>, ctx: Context) => Map<ColorShade, string> | void): Builder;
+removeColor(name: string): Builder;
+
+type ColorValue = string | { vars: string } | Record<ColorShade, string>;
+```
+
+| `value` | Shades |
+| --- | --- |
+| `{ vars: '--name' }` | `var(--name-50)` to `var(--name-950)` |
+| `{ 50: '...', ..., 950: '...' }` | As given. All 11 are needed. |
+| `'red'` | A copy of that palette, which has to exist at that point of `build` |
+
+- A value that gives no palette, such as an unknown name, logs an error and is skipped.
+- `updateColor` gets the shades as a `Map`. On Tailwind v3 its values are RGB channels (`239 68 68`).
+- Removing `accent` leaves `--wui-c-accent-*` unset.
+
+`utilities: true` also registers the palette as a color of the Tailwind theme, so `bg-<name>-<shade>` and
+every other color utility exist, with opacity modifiers. The default is off.
+
+- With `{ vars }` the utilities reference your variables directly (`background-color: var(--name-500)`), so
+  they follow them at runtime, also inside a container that sets them again.
+- A palette name must be one of Tailwind's own palettes (`'red'`, `'slate'`, ...) to get utilities; for
+  another one, an error is logged and the color is added without them.
+- Tailwind resolves its theme before the builder exists. To know these colors in time, WindUI first runs
+  `build` on a builder that only notes `addColor`, `setColor` and `removeColor`; its `*Names()` return empty
+  lists. So `build` runs twice, and a color that is only added depending on what `*Names()` return gets no
+  utilities.
+- Do not use it with the name of a color the theme already has: the theme color is replaced.
 
 ## Context
 

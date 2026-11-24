@@ -124,6 +124,55 @@ describe.skipIf(!browser)('in a browser', () => {
 		});
 	});
 
+	// #36: the variables behind a palette are set by the page, and may change while it is open.
+	describe('with a palette backed by CSS variables', () => {
+		const palette = `
+			<span id="var-class" class="c-primary bg-c-500"></span>
+			<span id="var-utility" class="bg-primary-500"></span>
+			<span id="var-default" class="bg-c-500"></span>
+			<div id="scope" data-theme-scope>
+				<span id="scope-class" class="c-primary bg-c-500"></span>
+				<span id="scope-utility" class="bg-primary-500"></span>
+				<span id="scope-default" class="bg-c-500"></span>
+			</div>
+			<div id="other" style="--ui-color-primary-500: rgb(9, 9, 9)"><span id="other-default" class="bg-c-500"></span></div>
+		`;
+
+		const outside = ['var-class', 'var-utility', 'var-default'];
+		const inside = ['scope-class', 'scope-utility', 'scope-default'];
+		let page: Page;
+
+		const backgrounds = (ids: string[]) => Promise.all(ids.map(id => style(page, id, 'backgroundColor')));
+		const set = (target: string, color: string) => page.evaluate(`${target}.style.setProperty('--ui-color-primary-500', '${color}')`);
+
+		beforeAll(async () => {
+			const css = await compile(palette.match(/[^\s"<>=]+/g)!, {}, {
+				default: { vars: '--ui-color-primary' },
+				rootSelector: ':root, [data-theme-scope]',
+				build: builder => builder.addColor('primary', { vars: '--ui-color-primary' }, { utilities: true }),
+			});
+
+			page = await browser!.newPage();
+			await page.setContent(`<style>:root { --ui-color-primary-500: rgb(1, 1, 1); }${css}</style>${palette}`);
+		});
+
+		it('follows a change at the root', async () => {
+			expect(await backgrounds([...outside, ...inside])).toEqual(Array(6).fill('rgb(1, 1, 1)'));
+
+			await set('document.documentElement', 'rgb(2, 2, 2)');
+			expect(await backgrounds([...outside, ...inside])).toEqual(Array(6).fill('rgb(2, 2, 2)'));
+		});
+
+		it('follows a change inside a scope that `rootSelector` matches', async () => {
+			await set('document.getElementById("scope")', 'rgb(3, 3, 3)');
+
+			expect(await backgrounds(inside)).toEqual(Array(3).fill('rgb(3, 3, 3)'));
+			expect(await backgrounds(outside)).toEqual(Array(3).fill('rgb(2, 2, 2)'));
+			// Elsewhere the default palette was resolved at the root.
+			expect(await style(page, 'other-default', 'backgroundColor')).toBe('rgb(2, 2, 2)');
+		});
+	});
+
 	it.todo('keeps an override through hover');
 	it.todo('lets a hand-written compound rule win from each cascade layer');
 });

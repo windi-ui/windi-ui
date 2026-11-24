@@ -97,6 +97,21 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 		return new Map(COLOR_SHADES.map(s => [s, this.theme.toColor?.(value[s]) ?? value[s]]));
 	}
 
+	addColor(name: string, value: ColorValue) {
+		if (this.items.has(name)) {
+			console.error(`"${name}" already exists.`);
+			return;
+		}
+
+		this.setColor(name, value);
+	}
+
+	/** Adds a palette, or replaces the one of that name. */
+	setColor(name: string, value: ColorValue) {
+		const palette = this.resolve(value);
+		if (palette) this.items.set(name, palette);
+	}
+
 	names() {
 		const cNames = super.names();
 		cNames.push(...cNames.map(c => `accent-${c}`));

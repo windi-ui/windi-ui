@@ -178,5 +178,74 @@ Rules:
 - On Tailwind v3, shades are converted to RGB channels so opacity modifiers work. Hex, `rgb()` and `hsl()`
   values are supported; other formats log `Unsupported color format`. On v4 values are used as written.
 
-Colors backed by your own CSS variables (`addColor`) are tracked in
-[#36](https://github.com/windi-ui/windi-ui/issues/36).
+## Palettes from the builder
+
+A palette does not have to be in the Tailwind theme. The [builder](/reference/builder#colors) adds one from
+CSS variables, from its 11 shades, or as another name for a palette that exists:
+
+```ts
+windui({
+	build(builder) {
+		builder
+			.addColor('primary', { vars: '--ui-color-primary' })
+			.addColor('brand', { 50: '#f0f7ff', /* ... */ 950: '#0a1a33' })
+			.addColor('danger', 'red');
+	}
+});
+```
+
+Each one gets its `c-<name>` and `c-accent-<name>` class:
+
+```css
+.c-primary {
+	--wui-c-50: var(--ui-color-primary-50);
+	/* ... */
+	--wui-c-950: var(--ui-color-primary-950);
+}
+```
+
+Such a palette is WindUI's only: there is no `bg-primary-500`. Pass `{ utilities: true }` as the third argument
+to also register it as a Tailwind color:
+
+```ts
+builder.addColor('primary', { vars: '--ui-color-primary' }, { utilities: true });
+```
+
+```html
+<div class="c-primary">...</div>
+<div class="bg-primary-500 text-primary-50 border-primary-600/50">...</div>
+```
+
+## Palettes that change at runtime
+
+With `{ vars }` the colors are whatever the variables hold when the page is shown, so a `<style>` tag, a
+tenant's theme or a theme editor can set them later. WindUI only writes the references; you define
+`--ui-color-primary-50` to `--ui-color-primary-950`:
+
+```css
+:root {
+	--ui-color-primary-50: oklch(0.97 0.02 290);
+	/* ... */
+}
+
+[data-theme-scope] {
+	--ui-color-primary-500: oklch(0.6 0.2 150);
+}
+```
+
+- `c-primary`, `bg-c-*` and, with `utilities: true`, `bg-primary-*` follow a change of the variables at the
+  root and inside any container that sets them again.
+- The default palette is different. WindUI declares `--wui-c-*`, `--wui-c-default-*` and `--wui-c-accent-*`
+  on `:root`, where a `var()` is resolved once. When [`default` or `accent`](#choosing-the-two-palettes) is
+  `{ vars }` and a container sets those variables again, name the container in
+  [`rootSelector`](/reference/options#rootselector), so that the variables are declared there too:
+
+  ```ts
+  windui({
+  	default: { vars: '--ui-color-neutral' },
+  	rootSelector: ':root, [data-theme-scope]',
+  });
+  ```
+
+- On Tailwind v3 the variables must hold RGB channels (`59 130 246`), not a color, as WindUI's own variables
+  do. On v4 they hold any color.

@@ -153,3 +153,24 @@ Also new: the [`debug`](/reference/options#debug) option.
    element without a `c-*` class, which stayed gray. They now follow the theme, like `bg-default-*` does.
 3. **A theme palette that sets only some shades of `default` or `accent` logs a warning.** The output is the
    0.7 output, a mix with `gray` or `blue`; the warning names the shades that are missing.
+
+## Colors from the builder, and `rootSelector`
+
+The builder had add, update and remove for variants, sizes and components, but not for colors
+([#36](https://github.com/windi-ui/windi-ui/issues/36)). New:
+
+- `addColor`, `setColor`, `updateColor` and `removeColor`. A color is given as CSS variables
+  (`{ vars: '--ui-color-primary' }`), as its 11 shades, or as the name of a palette that exists. See
+  [Palettes from the builder](/guide/colors#palettes-from-the-builder).
+- `{ utilities: true }` also registers the color with Tailwind, for `bg-primary-500` and the like.
+- The [`rootSelector`](/reference/options#rootselector) option declares the root color and size variables on
+  more than `:root`, for themes scoped to a container.
+- `Builder`, `ColorValue` and `ColorOptions` are exported as types from `@windi-ui/core`.
+
+**Migration:** none is required. Two things can be observed:
+
+1. **`build` runs twice per compilation**, the first time on a builder that only notes colors. A `build`
+   function that does other work, such as logging, does it twice.
+2. **A var-backed theme color on Tailwind v3 no longer logs `Unsupported color format`.** A value that
+   contains `var(` is taken to hold RGB channels and is used as it is, which is what happened after the
+   warning.

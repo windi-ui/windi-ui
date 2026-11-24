@@ -1,6 +1,6 @@
 import { default as createPlugin } from 'tailwindcss/plugin';
 import type { CSSRuleObject, DarkModeConfig } from 'tailwindcss/types/config';
-import { create, type Config, type ColorShade, type ApplyVariantMainProp, type ApplyVariantSubProp } from "@windi-ui/core";
+import { create, type Builder, type Config, type ColorShade, type ColorValue, type ApplyVariantMainProp, type ApplyVariantSubProp } from "@windi-ui/core";
 import { CONFIG, isLoadingConfig, loadWindUIConfig } from './config';
 import { createTailwindTheme } from './theme';
 import { getDarkSelector, applyDark, toDarkMode, VARIANT_DARK } from './utils/darkMode';
@@ -48,7 +48,7 @@ export interface TailwindV4Plugin {
 	config?: any;
 }
 
-const OPTIONS = ['prefix', 'default', 'accent', 'variantScope', 'darkSelector', 'build', 'debug', 'config'];
+const OPTIONS = ['prefix', 'rootSelector', 'default', 'accent', 'variantScope', 'darkSelector', 'build', 'debug', 'config'];
 
 /** Inline options over those of the config file. An `@plugin` block writes the names in kebab-case. */
 function resolveOptions(options: PluginOptions = {}): Config {
@@ -59,7 +59,8 @@ function resolveOptions(options: PluginOptions = {}): Config {
 			throw new Error(`WindUI: unknown option "${name}". The options are: ${OPTIONS.join(', ')}.`);
 		}
 
-		if (value !== undefined) inline[key] = value;
+		// Tailwind splits an unquoted `root-selector: :root, .scope` of an `@plugin` block at the comma.
+		if (value !== undefined) inline[key] = key === 'rootSelector' && Array.isArray(value) ? value.join(', ') : value;
 	}
 
 	const { config: file, ...config } = inline as PluginOptions;
@@ -67,6 +68,32 @@ function resolveOptions(options: PluginOptions = {}): Config {
 	if (file === false || (file == null && config.build) || isLoadingConfig()) return config;
 
 	return { ...loadWindUIConfig({ config: file }).config, ...config };
+}
+
+/**
+ * The palettes `build` adds with `utilities: true`. Tailwind resolves its theme before the builder can run, so `build`
+ * is first run on a builder that does nothing but note them.
+ */
+function utilityColors(build: Config['build']) {
+	const found = new Map<string, ColorValue>();
+	const set: Builder['setColor'] = (name, value, options) => {
+		if (options?.utilities) found.set(name, value);
+		else found.delete(name);
+		return builder;
+	};
+
+	const noted: Partial<Builder> = { addColor: set, setColor: set, removeColor: name => (found.delete(name), builder) };
+	const builder: Builder = new Proxy(noted as Builder, {
+		get: (target, key: keyof Builder) => target[key] ?? (() => key.endsWith('Names') ? [] : builder)
+	});
+
+	try {
+		build?.(builder);
+	} catch {
+		// The run on the real builder is the one that reports it.
+	}
+
+	return found;
 }
 
 /** @param ver the Tailwind major to build for; left out, it is taken from the Tailwind that runs the plugin. */
@@ -83,8 +110,11 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 	let fallback: Record<'default' | 'accent', Record<string, string>> | undefined;
 	let mixReported = false;
 
+	let utilities: Map<string, ColorValue> | undefined;
+	let utilitiesReported = false;
+
 	return Object.assign(createPlugin((tw) => {
-		const tp = createTailwindTheme(tw, ver);
+		const tp = createTailwindTheme(tw, ver, utilities && [...utilities.keys()]);
 		const gt = wiu.generator(tp);
 
 		// A theme that sets only some shades of `default` or `accent` has them merged into the fallback, shade by shade.
@@ -107,8 +137,9 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 		const darkSelector = darkMode != null ? getDarkSelector(darkMode)
 			: tp.ver === 4 && tailwindAtLeast(4, 1, 17) ? VARIANT_DARK : getDarkSelector('media');
 
-		tw.addBase({ ':root': gt.colors.rootVars() });
-		tw.addBase({ ':root': gt.sizes.rootVars() });
+		const root = wiu.config.rootSelector;
+		tw.addBase({ [root]: gt.colors.rootVars() });
+		tw.addBase({ [root]: gt.sizes.rootVars() });
 
 		const scope = wiu.config.variantScope;
 		if (scope === 'universal') {
@@ -181,7 +212,23 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 
 					fallback = { default: colors[FALLBACK.default], accent: colors[FALLBACK.accent] };
 
+					utilities ??= utilityColors(wiu.config.build);
+					const own: Record<string, unknown> = {};
+					for (const [name, value] of utilities) {
+						if (typeof value !== 'string') {
+							own[name] = 'vars' in value
+								? keyValuePairs(Object.keys(colors.gray), s => isV3 ? `rgb(var(${value.vars}-${s}) / <alpha-value>)` : `var(${value.vars}-${s})`)
+								: value;
+						} else if (value in colors) {
+							own[name] = colors[value as keyof typeof colors];
+						} else if (!utilitiesReported) {
+							utilitiesReported = true;
+							console.error(`WindUI: "${value}" is not one of Tailwind's own palettes, so "${name}" gets no color utilities.`);
+						}
+					}
+
 					return {
+						...own,
 						c: follow(''),
 						// With an option the theme color follows the root variables, which hold the palette the option gives.
 						default: wiu.config.default != null ? follow('default-') : fallback.default,

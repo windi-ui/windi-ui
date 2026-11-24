@@ -106,3 +106,82 @@ export function palettesCss(compile: Compile & { css: CompileCss }) {
 		expect(warn).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('"default" palette has no shade 50, 100, 200, 300, 400, 600, 700, 800, 900, 950; these are taken from gray'));
 	});
 }
+
+/** #36: palettes added with the builder. */
+export function builderColors(compile: Compile) {
+	it('adds a color from CSS variables, from shades and from a palette name', async () => {
+		const css = await compile(['c-primary', 'c-accent-primary', 'c-brand', 'c-accent-brand', 'c-danger', 'c-accent-danger', 'c-red'], {}, {
+			build: builder => builder
+				.addColor('primary', { vars: '--ui-color-primary' })
+				.addColor('brand', ramp)
+				.addColor('danger', 'red'),
+		});
+
+		expect(value(css, '--wui-c-500', '\\.c-primary')).toBe('var(--ui-color-primary-500)');
+		expect(value(css, '--wui-c-accent-950', '\\.c-accent-primary')).toBe('var(--ui-color-primary-950)');
+		expect(value(css, '--wui-c-50', '\\.c-brand')).toMatch(inRamp(0));
+		expect(value(css, '--wui-c-accent-950', '\\.c-accent-brand')).toMatch(inRamp(10));
+		expect(value(css, '--wui-c-500', '\\.c-danger')).toBe(value(css, '--wui-c-500', '\\.c-red'));
+		expect(value(css, '--wui-c-accent-500', '\\.c-accent-danger')).toBe(value(css, '--wui-c-500', '\\.c-red'));
+	});
+
+	it('skips `addColor` on a name that exists, and replaces with `setColor`', async () => {
+		const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const css = await compile(['c-red', 'c-blue', 'c-green', 'c-pink', 'c-default'], {}, {
+			build: builder => builder
+				.addColor('red', ramp)
+				.setColor('blue', ramp)
+				.setColor('default', 'slate')
+				.updateColor('green', palette => void palette.set('500', 'var(--green)'))
+				.removeColor('pink'),
+		});
+
+		expect(error).toHaveBeenCalledExactlyOnceWith('"red" already exists.');
+		expect(value(css, '--wui-c-500', '\\.c-red')).not.toMatch(inRamp(5));
+		expect(value(css, '--wui-c-500', '\\.c-blue')).toMatch(inRamp(5));
+		expect(value(css, '--wui-c-500', '\\.c-green')).toBe('var(--green)');
+		expect(value(css, '--wui-c-400', '\\.c-green')).not.toBe('var(--green)');
+		expect(css).not.toContain('.c-pink');
+		expect(value(css, '--wui-c-default-500')).not.toBe(value(await compile(['c-default']), '--wui-c-default-500'));
+	});
+
+	it('registers a color with the theme when `utilities` is set', async () => {
+		const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const css = await compile(['c-primary', 'bg-primary-500', 'text-primary-500/50', 'bg-brand-500', 'bg-danger-500', 'bg-red-500', 'bg-plain-500'], {}, {
+			build: builder => builder
+				.addColor('primary', { vars: '--ui-color-primary' }, { utilities: true })
+				.addColor('brand', ramp, { utilities: true })
+				.addColor('danger', 'red', { utilities: true })
+				.addColor('plain', ramp),
+		});
+
+		expect(error).not.toHaveBeenCalled();
+		expect(css).toMatch(/\.bg-primary-500 \{[^}]*var\(--ui-color-primary-500\)/);
+		// the modifier: `color-mix()` on Tailwind 4, the alpha of `rgb()` on Tailwind 3
+		expect(css).toMatch(/\.text-primary-500\\\/50 \{[^}]*(var\(--ui-color-primary-500\) 50%|rgb\(var\(--ui-color-primary-500\) \/ 0\.5\))/);
+		expect(css).toMatch(/\.bg-brand-500 \{[^}]*(#060606|6 6 6)/);
+		// Tailwind's own red, as a value: on Tailwind 4 `bg-red-500` itself is a reference to the theme variable
+		expect(css).toMatch(/\.bg-danger-500 \{[^}]*background-color: (oklch|rgb)\(/);
+		expect(css).not.toContain('.bg-plain-500');
+		// and the class of the builder is still its own
+		expect(value(css, '--wui-c-500', '\\.c-primary')).toBe('var(--ui-color-primary-500)');
+	});
+
+	it('declares the root variables on `rootSelector`', async () => {
+		const css = await compile(['c-red'], {}, { rootSelector: ':root, [data-theme-scope]' });
+		const root = ':root, \\[data-theme-scope\\]';
+
+		expect(value(css, '--wui-c-500', root)).toBe(value(await compile(['c-red']), '--wui-c-500'));
+		expect(value(css, '--wui-c-accent-500', root)).toBeTruthy();
+		expect(value(css, '--wui-s-text', root)).toBeTruthy();
+		expect(css).not.toMatch(/:root \{[^}]*--wui-[cs]-/);
+	});
+}
+
+/** #36, in a Tailwind 4 stylesheet. */
+export function rootSelectorCss(compile: Compile & { css: CompileCss }) {
+	it.each(['":root, [data-theme-scope]"', ':root, [data-theme-scope]'])('takes `root-selector: %s` from the `@plugin` block', async (selector) => {
+		expect(await compile.css(`@plugin "@windi-ui/tailwind" { root-selector: ${selector}; }`, candidates))
+			.toBe(await compile(candidates, {}, { rootSelector: ':root, [data-theme-scope]' }));
+	});
+}

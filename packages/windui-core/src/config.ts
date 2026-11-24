@@ -25,8 +25,18 @@ export type DarkSelectorOption =
  */
 export type ColorValue = string | { vars: string } | Record<ColorShade, string>;
 
+export interface ColorOptions {
+	/**
+	 * Also registers the palette as a color of the theme, for utilities such as `bg-{name}-{shade}`. This is up to the
+	 * host; a palette name must then be one of the host's own palettes.
+	 */
+	utilities?: boolean;
+}
+
 export interface ResolvedConfig {
 	prefix: string;
+	/** Where the root color and size variables are declared. More selectors let a scoped theme resolve them again. */
+	rootSelector: string;
 	/** The palette behind `default`. Left out, it is a complete `default` palette of the theme, or else gray. */
 	default?: ColorValue;
 	/** The palette behind `accent`. Left out, it is a complete `accent` palette of the theme, or else blue. */
@@ -44,6 +54,7 @@ export type Config = Partial<ResolvedConfig>;
 export function resolveConfig(config: Config): ResolvedConfig {
 	const {
 		prefix = 'wui',
+		rootSelector = ':root',
 		variantScope = 'element',
 		darkSelector,
 		build,
@@ -52,6 +63,7 @@ export function resolveConfig(config: Config): ResolvedConfig {
 
 	return {
 		prefix,
+		rootSelector,
 		default: config.default,
 		accent: config.accent,
 		variantScope,

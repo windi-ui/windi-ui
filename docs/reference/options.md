@@ -10,6 +10,7 @@ import windui from '@windi-ui/tailwind';
 
 windui({
 	prefix: 'wui',
+	rootSelector: ':root',
 	default: 'slate',
 	accent: 'indigo',
 	variantScope: 'element',
@@ -63,6 +64,33 @@ The prefix of every CSS variable WindUI writes and reads: `--<prefix>-c-*`, `--<
 ```ts
 windui({ prefix: 'app' }); // --app-c-500, --app-v-bg, --app-s-text
 ```
+
+## `rootSelector`
+
+- Type: `string`
+- Default: `':root'`
+
+Where the root color and size variables are declared: `--wui-c-*`, `--wui-c-default-*`, `--wui-c-accent-*`,
+black and white, and the default size.
+
+```ts
+windui({ rootSelector: ':root, [data-theme-scope]' });
+```
+
+```css
+@plugin "@windi-ui/tailwind" {
+	root-selector: ":root, [data-theme-scope]";
+}
+```
+
+A custom property that refers to another one is resolved where it is declared. With a
+[`default` or `accent`](#default-and-accent) palette backed by CSS variables, `:root` resolves them once, and
+a container that sets those variables again would keep the root's colors. Add the container's selector and
+the variables are declared, and resolved, there as well. See
+[Palettes that change at runtime](/guide/colors#palettes-that-change-at-runtime).
+
+The light and dark switches of [`variantScope`](#variantscope) stay on `:root`: they follow the dark
+selector, not a theme scope.
 
 ## `default` and `accent`
 
@@ -257,6 +285,7 @@ These are not WindUI options, but they shape its output:
 | Theme color | Value |
 | --- | --- |
 | `c` (`c-50` to `c-950`) | The current palette, as references to `--wui-c-<shade>` |
+| A palette added with [`utilities: true`](/reference/builder#colors) | Its shades, or references to its variables |
 | `default` | Tailwind's `gray`, or references to `--wui-c-default-<shade>` when the [`default`](#default-and-accent) option is set |
 | `accent` | Tailwind's `blue`, or references to `--wui-c-accent-<shade>` when the `accent` option is set |
 
@@ -264,8 +293,8 @@ These are not WindUI options, but they shape its output:
 
 | Output | Selector |
 | --- | --- |
-| Default color, default and accent palettes, black and white | `:root` |
-| Default size | `:root` |
+| Default color, default and accent palettes, black and white | `:root`, or [`rootSelector`](#rootselector) |
+| Default size | `:root`, or `rootSelector` |
 | Reset of the variant variables | `:where([class*="v-"]) > *` (`variantScope: 'element'`) |
 | Default variant | `*` (`variantScope: 'universal'` only) |
 | One class per palette, plus one per accent palette | `.c-<name>`, `.c-accent-<name>` |

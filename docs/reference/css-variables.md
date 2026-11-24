@@ -101,7 +101,8 @@ current mode. They are set on `:root` and under the dark selector, and are not m
 
 ## Using them in your own CSS
 
-The color and size variables are set on `:root`, so they can be read anywhere. The variant variables are only
+The color and size variables are set on `:root` (or on [`rootSelector`](/reference/options#rootselector)), so
+they can be read anywhere. The variant variables are only
 set on an element with a variant, so give the rule one:
 
 ::: code-group

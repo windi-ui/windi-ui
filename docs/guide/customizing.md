@@ -1,7 +1,7 @@
 # Customizing
 
-The plugin takes a `build` callback. It receives a builder with which you add, update or remove variants,
-sizes and components before any CSS is generated.
+The plugin takes a `build` callback. It receives a builder with which you add, update or remove colors,
+variants, sizes and components before any CSS is generated.
 
 ```ts [tailwind.config.ts]
 import windui from '@windi-ui/tailwind';
@@ -208,14 +208,30 @@ point of the build. `colorsNames()` includes the `accent-<name>` entries.
 ## Errors
 
 Adding a name that exists, or updating or removing one that does not, logs an error to the console and is
-skipped. The build does not fail. `set*` upserts are tracked in
+skipped. The build does not fail. `setColor` adds or replaces; `set*` for the other kinds is tracked in
 [#40](https://github.com/windi-ui/windi-ui/issues/40).
+
+`build` only describes what to register. It can run more than once per compilation, so keep other work out
+of it.
 
 ## Colors
 
-There is no builder method for colors yet: palettes come from the Tailwind theme (see
-[Custom palettes](/guide/colors#custom-palettes)). `addColor` is tracked in
-[#36](https://github.com/windi-ui/windi-ui/issues/36).
+Palettes come from the Tailwind theme (see [Custom palettes](/guide/colors#custom-palettes)) and from the
+builder:
+
+```ts
+builder
+	.addColor('primary', { vars: '--ui-color-primary' }, { utilities: true })
+	.addColor('danger', 'red')
+	.setColor('default', 'slate')
+	.updateColor('brand', (palette) => {
+		palette.set('500', '#7c3aed');
+	})
+	.removeColor('fuchsia');
+```
+
+See [Palettes from the builder](/guide/colors#palettes-from-the-builder) and the
+[builder reference](/reference/builder#colors).
 
 ## Variable prefix
 

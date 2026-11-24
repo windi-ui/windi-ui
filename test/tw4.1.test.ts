@@ -1,5 +1,5 @@
 import { cases } from './cases';
-import { palettes, palettesCss } from './colors';
+import { builderColors, palettes, palettesCss, rootSelectorCss } from './colors';
 import { autoDark, darkSelector } from './dark';
 import { baseline } from './baseline';
 import { forms } from './forms';
@@ -11,6 +11,8 @@ baseline('tw4.1', compile);
 cases(compile);
 palettes(compile);
 palettesCss(compile);
+builderColors(compile);
+rootSelectorCss(compile);
 forms(compile);
 darkSelector(compile);
 autoDark(compile);

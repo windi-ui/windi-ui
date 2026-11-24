@@ -34,9 +34,12 @@ const NUM_REGEX = /(\d*\.\d+|\d+)/;
 const ANGLE_REGEX = new RegExp(`^${NUM_REGEX.source}(deg|rad|grad|turn)?$`);
 const PERCENT_REGEX = new RegExp(`^${NUM_REGEX.source}%?$`);
 
-/** Picks the theme by what the plugin API offers, unless `ver` says which: only Tailwind 3 has `corePlugins`. */
-export function createTailwindTheme(tw: PluginAPI, ver?: 3 | 4): TailwindTheme {
-	return (ver ? ver === 3 : typeof tw.corePlugins === 'function') ? new TailwindV3Theme(tw) : new TailwindV4Theme(tw);
+/**
+ * Picks the theme by what the plugin API offers, unless `ver` says which: only Tailwind 3 has `corePlugins`.
+ * @param own theme colors the plugin registered for palettes of the builder, which `colors()` leaves to the builder.
+ */
+export function createTailwindTheme(tw: PluginAPI, ver?: 3 | 4, own?: Iterable<string>): TailwindTheme {
+	return (ver ? ver === 3 : typeof tw.corePlugins === 'function') ? new TailwindV3Theme(tw, own) : new TailwindV4Theme(tw, own);
 }
 
 export abstract class TailwindTheme implements ThemeProvider {
@@ -45,7 +48,7 @@ export abstract class TailwindTheme implements ThemeProvider {
 	protected readonly theme: PluginAPI['theme'];
 	private readonly fSize: Record<string, FontSize>;
 
-	constructor(pluginApi: PluginAPI) {
+	constructor(pluginApi: PluginAPI, private readonly own: Iterable<string> = []) {
 		this.theme = pluginApi.theme;
 		this.fSize = this.theme<Record<string, FontSize>>("fontSize");
 	}
@@ -55,9 +58,15 @@ export abstract class TailwindTheme implements ThemeProvider {
 	colors(name?: string): string | Record<string, string>;
 	colors(name?: string) {
 		const cname = name ? `colors.${name}` : 'colors';
-		const c = this.theme<string | RecursiveRecord>(cname);
+		let c = this.theme<string | RecursiveRecord>(cname);
+		if (typeof c !== 'object') return c;
 
-		return (typeof c === 'object') ? flattenColorPalette(c) : c;
+		if (!name) {
+			c = { ...c };
+			for (const own of this.own) delete c[own];
+		}
+
+		return flattenColorPalette(c);
 	}
 
 	spacing(name: string) {
@@ -80,8 +89,8 @@ export abstract class TailwindTheme implements ThemeProvider {
 export class TailwindV4Theme extends TailwindTheme {
 	readonly ver = 4;
 
-	constructor(pluginApi: PluginAPI) {
-		super(pluginApi);
+	constructor(pluginApi: PluginAPI, own?: Iterable<string>) {
+		super(pluginApi, own);
 	}
 
 	colorValue(value: string, alpha?: number | string): string {
@@ -134,8 +143,8 @@ export class TailwindV3Theme extends TailwindTheme {
 
 	private corePlugins: (p: string) => boolean;
 
-	constructor(pluginApi: PluginAPI) {
-		super(pluginApi);
+	constructor(pluginApi: PluginAPI, own?: Iterable<string>) {
+		super(pluginApi, own);
 		this.corePlugins = (p) => pluginApi.corePlugins(p);
 	}
 
