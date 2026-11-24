@@ -12,7 +12,7 @@ on:
       - main
 
 env:
-  NODE_VER: 22
+  NODE_VER: 26
 
 jobs:
   lint:
@@ -34,8 +34,8 @@ jobs:
       - name: Install dependencies
         run: pnpm -r install
 
-      - name: Stub
-        run: pnpm stub
+      - name: Build
+        run: pnpm build
 
       - name: Lint
         run: pnpm run lint
@@ -59,11 +59,8 @@ jobs:
       - name: Install dependencies
         run: pnpm -r install
 
-      - name: Stub
-        run: pnpm stub
+      - name: Build
+        run: pnpm build
 
       - name: Typecheck
         run: pnpm typecheck
-
-      - name: Build
-        run: pnpm build

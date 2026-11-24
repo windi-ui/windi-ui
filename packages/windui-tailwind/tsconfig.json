@@ -1,11 +1,5 @@
 {
 	"extends": "../../tsconfig.common.json",
-	"compilerOptions": {
-		"outDir": "dist",
-		"paths": {
-			"@/*": ["./src/*"]
-		}
-	},
 	"include": ["src/**/*"],
 	"references": [
 		{ "path": "../windui-core" }

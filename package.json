@@ -4,27 +4,29 @@
 	"description": "",
 	"private": true,
 	"type": "module",
-	"packageManager": "pnpm@10.34.9",
+	"packageManager": "pnpm@12.23.0",
 	"scripts": {
 		"build": "pnpm -r --filter !./playground/* run build",
-		"stub": "pnpm -r --parallel run stub",
 		"play": "pnpm -C playground/vue-tailwind run dev",
 		"playv4": "pnpm -C playground/vue-tailwindv4 run dev",
-		"dev": "pnpm stub && pnpm play",
-		"devv4": "pnpm stub && pnpm playv4",
+		"watch": "pnpm -r --parallel --filter !./playground/* run build --watch",
+		"dev": "pnpm build && pnpm play",
+		"devv4": "pnpm build && pnpm playv4",
 		"typecheck": "tsc --build --force",
 		"lint": "eslint --cache .",
 		"lint:fix": "pnpm lint --fix"
 	},
 	"devDependencies": {
+		"@arethetypeswrong/core": "^0.18.5",
 		"@eslint/js": "^10.0.1",
-		"@tsconfig/node22": "^22.0.7",
+		"@tsconfig/node26": "^26.0.2",
 		"@types/node": "26.6.6",
 		"changelogithub": "^15.0.5",
 		"eslint": "^10.15.0",
-		"typescript": "^5.9.3",
+		"publint": "^0.3.25",
+		"tsdown": "^0.23.7",
+		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.74.0",
-		"unbuild": "^3.6.1",
-		"vite": "^7.3.8"
+		"vite": "^8.3.8"
 	}
 }

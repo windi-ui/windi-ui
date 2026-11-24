@@ -1,3 +1,11 @@
 packages:
   - 'packages/*'
   - 'playground/*'
+allowBuilds:
+  esbuild: true
+permissions:
+  tsdown:
+    skills: false
+autoInstallPeers: true
+ignoreWorkspaceRootCheck: true
+strictPeerDependencies: false

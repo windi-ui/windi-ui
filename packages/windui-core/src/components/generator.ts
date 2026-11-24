@@ -1,6 +1,6 @@
-import type { CSS } from '@/types';
+import type { CSS } from '../types';
 import type { IComponent, ComponentBuilderContext } from './types';
-import { BuilderBase } from '@/base';
+import { BuilderBase } from '../base';
 import { default as button } from './button';
 import { default as badge } from './badge';
 

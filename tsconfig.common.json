@@ -3,6 +3,7 @@
 		"module": "ESNext",
 		"target": "ES2020",
 		"lib": ["ESNext"],
+		"types": ["node"],
 		"useDefineForClassFields": true,
 		"skipLibCheck": true,
 
@@ -18,7 +19,11 @@
 
 		"composite": true,
 		"declaration": true,
-		"declarationMap": true
+		"declarationMap": true,
+
+		/* Typecheck only: tsdown writes dist */
+		"emitDeclarationOnly": true,
+		"outDir": "${configDir}/node_modules/.tsc"
 	},
 	"exclude": [
 		"**/dist",

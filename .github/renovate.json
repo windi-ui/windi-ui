@@ -11,6 +11,10 @@
 	"packageRules": [{
 		"matchDepTypes": ["peerDependencies"],
 		"enabled": false
+	}, {
+		"description": "typescript-eslint and tsdown's dts generator do not support TypeScript 7 yet",
+		"matchPackageNames": ["typescript"],
+		"allowedVersions": "<7"
 	}]
 }
 

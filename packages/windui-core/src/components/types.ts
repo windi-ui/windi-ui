@@ -1,8 +1,8 @@
-import type { CSS } from "@/types";
-import type { BuilderContext } from "@/base";
-import type { ApplyVariant, ApplyVariantPseudos } from "@/variants";
-import type { ColorContext } from "@/colors";
-import type { VariantContext } from "@/variants";
+import type { CSS } from "../types";
+import type { BuilderContext } from "../base";
+import type { ApplyVariant, ApplyVariantPseudos } from "../variants";
+import type { ColorContext } from "../colors";
+import type { VariantContext } from "../variants";
 
 export interface ComponentBuilderContext extends BuilderContext {
 	readonly colors: ColorContext;

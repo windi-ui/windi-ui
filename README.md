@@ -97,6 +97,8 @@ Contributions are welcome! Please submit issues or pull requests.
    pnpm devv4
    ```
 
+   The playgrounds use the built packages. To rebuild them on change, run `pnpm watch` in a second terminal.
+
 ### Project Structure
 
 The repository is organized as a monorepo with the following packages:
