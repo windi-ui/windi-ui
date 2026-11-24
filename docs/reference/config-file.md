@@ -14,7 +14,14 @@ stylesheet says which file is meant.
 
 ## Config module
 
-The module exports the configured plugin, and `@plugin` points at it. WindUI does not look for any other file.
+The module exports the configured plugin, and `@plugin` points at it. A call that passes
+[`build`](/reference/options#build) is a complete config, and WindUI looks for no other file. A call without
+`build` still [searches](#search) from the working directory and takes the options it does not set itself from
+the file it finds. Pass `config: false` to stop that, which is what you want in a monorepo:
+
+```ts [windui.config.ts]
+export default windui({ prefix: 'app', config: false });
+```
 
 ::: code-group
 
@@ -115,6 +122,8 @@ Checked with `@tailwindcss/vite` 4.3.5 on Vite 8: Tailwind only rebuilds for the
 - A **config module** is one of them. Saving it rebuilds the CSS.
 - A **named or searched file** is not. Saving it does not change the CSS of a running dev server. The new
   config is read by the next full rebuild: save the stylesheet, or restart the dev server.
+- A **module that a named or searched file imports** is not watched by WindUI either. After changing it, save
+  the config file too and then the stylesheet, or restart the dev server.
 
 A build-tool plugin that watches the config file is planned in
 [#61](https://github.com/windi-ui/windi-ui/issues/61).
@@ -150,5 +159,8 @@ function loadWindUIConfig(options?: {
 ```
 
 It is synchronous. The result is cached and only read again when the modification time of one of `sources`
-changes, because Tailwind v4 runs a plugin on every build. A config file added later, nearer to the working
-directory than the one in use, is picked up after a restart.
+changes, because Tailwind v4 runs a plugin on every build. Two changes are only picked up after a restart:
+
+- a config file added later, nearer to the working directory than the one in use;
+- a change in a module the config file imports. `sources` holds the config file alone, so save the config
+  file as well, or restart.

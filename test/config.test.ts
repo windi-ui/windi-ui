@@ -1,6 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { defineConfig, loadWindUIConfig } from '@windi-ui/tailwind/config';
 import { tailwind4 } from './helpers';
@@ -69,16 +70,38 @@ it('searches for no file with `config: false`', async () => {
 	expect(await plugin('{ config: false; }')).toContain('--wui-c-500');
 });
 
-it('reloads a config file only when it changed', () => {
-	write('windui.config.json', { prefix: 'one' });
+it.each([
+	['windui.config.json', (prefix: string) => JSON.stringify({ prefix })],
+	// CommonJS, which Node.js caches itself
+	['windui.config.cjs', (prefix: string) => `module.exports = { prefix: "${prefix}" };`],
+])('reloads %s only when it changed', (name, content) => {
+	const file = join(dir, name);
+	writeFileSync(file, content('one'));
 	const first = loadWindUIConfig();
-	expect(first).toEqual({ config: { prefix: 'one' }, sources: [join(dir, 'windui.config.json')] });
+	expect(first).toEqual({ config: { prefix: 'one' }, sources: [file] });
 	expect(loadWindUIConfig()).toBe(first);
 
-	write('windui.config.json', { prefix: 'two' });
+	writeFileSync(file, content('two'));
 	// a second write can land on the same timestamp
-	utimesSync(join(dir, 'windui.config.json'), new Date(), new Date(Date.now() + 5000));
+	utimesSync(file, new Date(), new Date(Date.now() + 5000));
 	expect(loadWindUIConfig().config).toEqual({ prefix: 'two' });
+});
+
+it('searches from a config module without `build`, unless it says `config: false`', async () => {
+	write('windui.config.json', { variantScope: 'universal' });
+
+	const entry = pathToFileURL(resolve(import.meta.dirname, '../packages/windui-tailwind/dist/index.mjs')).href;
+	const module = (name: string, options: string) => {
+		writeFileSync(join(dir, name), `import windui from "${entry}";\nexport default windui(${options});`);
+		return compile.css(`@plugin "${join(dir, name).replaceAll('\\', '/')}";`, ['bg-c-500']);
+	};
+
+	// the `*` rule of the universal scope
+	expect(await module('searching.mjs', '{ prefix: "site" }')).toContain('--site-v-bg: var(--site-c-white);');
+
+	const alone = await module('alone.mjs', '{ prefix: "site", config: false }');
+	expect(alone).toContain('--site-c-500');
+	expect(alone).not.toContain('--site-v-bg: var(--site-c-white);');
 });
 
 it('takes the config of a file that exports the plugin', () => {

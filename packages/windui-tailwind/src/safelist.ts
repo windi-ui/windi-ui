@@ -1,5 +1,5 @@
 import { create, type Config, type ThemeProvider } from '@windi-ui/core';
-import { CONFIG } from './config';
+import { unwrap } from './utils/configState';
 
 export type SafelistAxis = 'c' | 'v' | 's';
 
@@ -47,6 +47,6 @@ export function safelistSource(config: Config | { handler: unknown } = {}, { axe
 		colorValue: value => value,
 	};
 
-	const gt = create((config as { [CONFIG]?: Config })[CONFIG] ?? config as Config).generator(theme);
+	const gt = create(unwrap(config)).generator(theme);
 	return classSource({ c: gt.colors.names(), v: gt.variants.names(), s: gt.sizes.names() }, axes);
 }

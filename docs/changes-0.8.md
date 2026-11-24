@@ -95,8 +95,8 @@ Also new:
 1. **A call without `build` now looks for a config file.** If a `windui.config.*` file or a `windui` key in
    `package.json` already exists for another purpose, `windui()` and `windui({ prefix })` read it. Pass
    `config: false` to keep them from looking.
-2. **An unknown option name is an error.** `windui({ prefx: 'app' })` was ignored and now throws
-   `WindUI: unknown option "prefx"`.
+2. **An unknown option name logs a warning.** `windui({ prefx: 'app' })` was ignored silently. It is still
+   ignored, and now logs `WindUI: unknown option "prefx"`. In an `@plugin` block, which is new, it is an error.
 
 On Tailwind v4 you can replace `@config` with `@plugin "./windui.config.ts"` if the JavaScript config only
 existed to load WindUI.

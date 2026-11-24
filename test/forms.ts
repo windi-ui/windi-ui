@@ -30,6 +30,10 @@ export function forms(compile: Compile & { css: CompileCss }) {
 		await expect(compile.css('@plugin "@windi-ui/tailwind" { prefx: abc; }', candidates)).rejects.toThrow('unknown option "prefx"');
 	});
 
+	it('rejects `build`, which a block cannot hold', async () => {
+		await expect(compile.css('@plugin "@windi-ui/tailwind" { build: x; }', candidates)).rejects.toThrow('`build` is a function');
+	});
+
 	it.each([tsModule, jsModule])('loads the config module %s', async (path) => {
 		const css = await compile.css(`@plugin "${path.replaceAll('\\', '/')}";`, candidates);
 		expect(css).toContain('--mod-c-500');

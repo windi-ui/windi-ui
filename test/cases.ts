@@ -13,6 +13,16 @@ export function cases(compile: Compile) {
 		vi.restoreAllMocks();
 	});
 
+	// #33: only an `@plugin` block is strict about it, as a JavaScript call ignored such an option in 0.7.
+	it('only warns about an unknown option of a JavaScript call', async () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+		expect(await compile(['c-red'], {}, { prefx: 'abc' } as never)).toBe(await compile(['c-red']));
+		expect(warn).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('unknown option "prefx"'));
+
+		vi.restoreAllMocks();
+	});
+
 	// #31
 	it('scopes the default variant as `variantScope` says', async () => {
 		const card = '.card { @apply v-solid v-scope; }';

@@ -1,11 +1,12 @@
 import { default as createPlugin } from 'tailwindcss/plugin';
 import type { CSSRuleObject, DarkModeConfig } from 'tailwindcss/types/config';
 import { create, type Builder, type Config, type ColorShade, type ColorValue, type ApplyVariantMainProp, type ApplyVariantSubProp } from "@windi-ui/core";
-import { CONFIG, isLoadingConfig, loadWindUIConfig } from './config';
+import { loadWindUIConfig } from './config';
+import { CONFIG, isLoadingConfig } from './utils/configState';
 import { classSource } from './safelist';
 import { createTailwindTheme } from './theme';
 import { getDarkSelector, applyDark, toDarkMode, VARIANT_DARK } from './utils/darkMode';
-import { tailwindAtLeast } from './utils/version';
+import { calledByTailwind, tailwindAtLeast } from './utils/version';
 
 function keyValuePairs(
 	keys: string[],
@@ -51,13 +52,24 @@ export interface TailwindV4Plugin {
 
 const OPTIONS = ['prefix', 'rootSelector', 'default', 'accent', 'variantScope', 'darkSelector', 'build', 'safelist', 'debug', 'config'];
 
-/** Inline options over those of the config file. An `@plugin` block writes the names in kebab-case. */
-function resolveOptions(options: PluginOptions = {}): Config {
+/**
+ * Inline options over those of the config file. An `@plugin` block writes the names in kebab-case.
+ * @param strict whether an unknown option is an error. In a JavaScript call it was ignored in 0.7, and still only warns.
+ */
+function resolveOptions(options: PluginOptions = {}, strict = false): Config {
 	const inline: Record<string, unknown> = {};
 	for (const [name, value] of Object.entries(options) as [string, unknown][]) {
 		const key = name.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());
 		if (!OPTIONS.includes(key)) {
-			throw new Error(`WindUI: unknown option "${name}". The options are: ${OPTIONS.join(', ')}.`);
+			const message = `WindUI: unknown option "${name}". The options are: ${OPTIONS.join(', ')}.`;
+			if (strict) throw new Error(message);
+
+			console.warn(message);
+			continue;
+		}
+
+		if (key === 'build' && value != null && typeof value !== 'function') {
+			throw new Error('WindUI: `build` is a function, which an `@plugin` block cannot hold. Put it in a config module or a config file.');
 		}
 
 		// Tailwind splits an unquoted `root-selector: :root, .scope` of an `@plugin` block at the comma.
@@ -99,7 +111,7 @@ function utilityColors(build: Config['build']) {
 
 /** @param ver the Tailwind major to build for; left out, it is taken from the Tailwind that runs the plugin. */
 export function createWindUIPlugin<P = ReturnType<typeof createPlugin>>(ver?: 3 | 4): WindUIPlugin<P> {
-	return Object.assign((options?: PluginOptions) => WindUITailwindCSS(resolveOptions(options), ver) as P, {
+	return Object.assign((options?: PluginOptions) => WindUITailwindCSS(resolveOptions(options, calledByTailwind(1)), ver) as P, {
 		__isOptionsFunction: true as const
 	});
 }

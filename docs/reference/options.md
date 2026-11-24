@@ -329,6 +329,9 @@ passes no `build` searches for `windui.config.*` and `package.json#windui`. `fal
 @plugin "@windi-ui/tailwind" {
 	config: "./config/windui.ts";
 }
+An option name that WindUI does not know is an error in an `@plugin` block. In a JavaScript call it logs a
+warning and is ignored, as it was ignored in 0.7.
+
 ```
 
 ## Entry points
