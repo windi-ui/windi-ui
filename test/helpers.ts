@@ -28,13 +28,12 @@ export type Compile = (
 ) => Promise<string>;
 
 /**
- * Moves the test file into a fixture package, which pins one Tailwind version.
- * The plugin picks its Tailwind from the working directory when it is first loaded,
- * so a test file can use one fixture only.
+ * Loads from a fixture package, which pins one Tailwind version, while the working directory is a fixture of the
+ * other major: the plugin must follow the Tailwind that runs it, not the one the working directory resolves (#32).
  */
 function enter(fixture: Fixture) {
 	const dir = resolve(import.meta.dirname, 'fixtures', fixture);
-	process.chdir(dir);
+	process.chdir(resolve(import.meta.dirname, 'fixtures', fixture === 'tw3' ? 'tw4' : 'tw3'));
 	return { dir, require: createRequire(resolve(dir, 'package.json')) };
 }
 

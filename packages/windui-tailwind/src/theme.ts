@@ -1,17 +1,31 @@
-import { findPackageJSON, createRequire } from 'node:module';
-import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import type { ThemeProvider, FontSize } from '@windi-ui/core';
 import type { CSS } from '@windi-ui/core';
 import type { default as Plugin } from 'tailwindcss/plugin';
 import type { default as WithAlphaVariable } from 'tailwindcss/lib/util/withAlphaVariable';
+import type { RecursiveRecord } from './types';
 import { hslToRgb } from './utils/color';
 
 type MDefault<T> = T extends { default: infer U } ? U : T;
 function _interopDefaultCompat<T, TR = MDefault<T>>(e: T): TR { return ((e && typeof e === 'object' && 'default' in e) ? e.default : e) as TR; }
 const require = createRequire(import.meta.url);
 
-const flattenColorPalette = _interopDefaultCompat(
-	require(require.resolve('tailwindcss/lib/util/flattenColorPalette', { paths: [process.cwd()] }) as 'tailwindcss/lib/util/flattenColorPalette'));
+/** `{ red: { 500: '#f00', DEFAULT: '#e00' } }` to `{ 'red-500': '#f00', red: '#e00' }`, as Tailwind's own helper does. */
+function flattenColorPalette(colors: RecursiveRecord, prefix = '', flat: Record<string, string> = {}) {
+	for (const [name, value] of Object.entries(colors)) {
+		// Tailwind 4 keeps the CSS variables of a palette under this key
+		if (name === '__CSS_VALUES__') continue;
+
+		const key = !prefix ? name : name === 'DEFAULT' ? prefix : `${prefix}-${name}`;
+		if (typeof value !== 'object') {
+			flat[key] = value;
+		} else if (value) {
+			flattenColorPalette(value, key, flat);
+		}
+	}
+
+	return flat;
+}
 
 type PluginAPI = Parameters<Parameters<typeof Plugin>[0]>[0];
 
@@ -19,29 +33,9 @@ const NUM_REGEX = /(\d*\.\d+|\d+)/;
 const ANGLE_REGEX = new RegExp(`^${NUM_REGEX.source}(deg|rad|grad|turn)?$`);
 const PERCENT_REGEX = new RegExp(`^${NUM_REGEX.source}%?$`);
 
-let twPkgPath: string | undefined;
-let twPkg: { version: string } | undefined;
-
-try {
-	twPkgPath = findPackageJSON(import.meta.resolve('tailwindcss', process.cwd()));
-	if (twPkgPath) {
-		twPkg = JSON.parse(readFileSync(twPkgPath, { encoding: 'utf8' })) as { version: string };
-	}
-} catch (e) {
-	console.error('Failed to read Tailwind CSS package.json:', e);
-}
-
-const TW_VER_REGEX = /^(3|4)\./;
-const match = twPkg?.version.match(TW_VER_REGEX);
-
-if (!match) {
-	console.warn(`Unsupported Tailwind CSS version: ${twPkg?.version}. Expected 3.x or 4.x.`);
-}
-
-export const TailwindVer = match ? Number(match[1]) as 3 | 4 : 3;
-
+/** Picks the theme by what the plugin API offers: only Tailwind 3 has `corePlugins`. */
 export function createTailwindTheme(tw: PluginAPI): TailwindTheme {
-	return TailwindVer === 4 ? new TailwindV4Theme(tw) : new TailwindV3Theme(tw);
+	return typeof tw.corePlugins === 'function' ? new TailwindV3Theme(tw) : new TailwindV4Theme(tw);
 }
 
 export abstract class TailwindTheme implements ThemeProvider {
@@ -60,7 +54,7 @@ export abstract class TailwindTheme implements ThemeProvider {
 	colors(name?: string): string | Record<string, string>;
 	colors(name?: string) {
 		const cname = name ? `colors.${name}` : 'colors';
-		const c = this.theme<string | Record<string, string>>(cname);
+		const c = this.theme<string | RecursiveRecord>(cname);
 
 		return (typeof c === 'object') ? flattenColorPalette(c) : c;
 	}
@@ -241,5 +235,3 @@ export class TailwindV3Theme extends TailwindTheme {
 		return color;
 	}
 }
-
-export { flattenColorPalette };

@@ -97,9 +97,5 @@ module.exports = {
 - **Types on Tailwind v4.** The plugin's return type comes from Tailwind v3, so v4's `Config` type rejects it.
   It works at runtime; silence the error as shown above. A typed `/v4` entry point is tracked in
   [#33](https://github.com/windi-ui/windi-ui/issues/33).
-- **Version detection.** The plugin reads the installed `tailwindcss` version to choose between its v3 and v4
-  code paths. When it cannot (for example when the plugin is loaded as CommonJS), it logs
-  `Unsupported Tailwind CSS version` and falls back to v3 behaviour.
-  Tracked in [#32](https://github.com/windi-ui/windi-ui/issues/32).
 - **Preflight.** `btn` sets a border width but relies on Tailwind's preflight for `border-style: solid`.
   If you disable preflight, add the border style yourself.

@@ -19,6 +19,25 @@ or size equivalent) during the build. They now emit nothing and log nothing.
 
 **Migration:** none. If you audited your built CSS or avoided arbitrary values because of this, you can stop.
 
+## The Tailwind version no longer depends on the working directory
+
+0.7 chose between its Tailwind 3 and Tailwind 4 code by reading `tailwindcss/package.json` from the working
+directory when the plugin was loaded ([#32](https://github.com/windi-ui/windi-ui/issues/32)). That had three
+effects, all gone:
+
+- Importing the plugin from a directory that cannot resolve `tailwindcss`, such as a monorepo root or a test
+  runner, threw.
+- When the lookup failed, a Tailwind 4 project got Tailwind 3 output: `c` colors wrapped in
+  `rgb(... / <alpha-value>)`.
+- Loading the plugin as CommonJS logged `Failed to read Tailwind CSS package.json` and
+  `Unsupported Tailwind CSS version: undefined` on every build.
+
+The plugin now asks the Tailwind that runs it: the plugin API tells Tailwind 3 from Tailwind 4, and nothing is
+read from disk. The CSS for a correctly detected project is unchanged.
+
+**Migration:** none. If you start your build from a particular directory only to make the detection work, that
+is no longer needed.
+
 ## The default variant no longer needs a `*` rule
 
 0.7 set the `default` variant's variables, about 54 declarations with the dark block, on every element of the

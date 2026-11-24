@@ -1,7 +1,7 @@
 import { default as createPlugin } from 'tailwindcss/plugin';
 import type { CSSRuleObject, DarkModeConfig } from 'tailwindcss/types/config';
 import { create, type Config, type ColorShade, type ApplyVariantMainProp, type ApplyVariantSubProp } from "@windi-ui/core";
-import { createTailwindTheme, TailwindVer } from './theme';
+import { createTailwindTheme } from './theme';
 import { getDarkSelector, applyDark } from './utils/darkMode';
 
 function keyValuePairs(
@@ -31,7 +31,6 @@ function WindUITailwindCSS(config: Config = {}): ReturnType<typeof createPlugin>
 	const wiu = create(config);
 
 	return createPlugin((tw) => {
-		const isV3 = typeof tw.corePlugins === 'function';
 		const tp = createTailwindTheme(tw);
 		const gt = wiu.generator(tp);
 
@@ -83,7 +82,7 @@ function WindUITailwindCSS(config: Config = {}): ReturnType<typeof createPlugin>
 			values: VARIANT_UTILS,
 			modifiers: tw.theme('opacity'),
 			// Tailwind 3 drops `bg-[#123456]` as ambiguous before the callback runs unless the type is narrowed.
-			...(isV3 ? { type: ['lookup'] } : {})
+			...(tp.ver === 3 ? { type: ['lookup'] } : {})
 		});
 
 		tw.matchUtilities({
@@ -98,11 +97,16 @@ function WindUITailwindCSS(config: Config = {}): ReturnType<typeof createPlugin>
 		content: [],
 		theme: {
 			extend: {
-				colors({ colors }) {
+				colors(utils) {
+					const { colors } = utils;
+					// The theme is resolved before the plugin runs, so the plugin API cannot tell the version here.
+					// The Tailwind that resolves the config can: only Tailwind 3 passes `breakpoints` and `negative`.
+					const isV3 = 'breakpoints' in utils;
+
 					return {
 						c: keyValuePairs(Object.keys(colors.gray), v => {
 							const c = wiu.vars.color(v as ColorShade);
-							return TailwindVer === 4 ? c : `rgb(${c} / <alpha-value>)`;
+							return isV3 ? `rgb(${c} / <alpha-value>)` : c;
 						}),
 						// TODO: add as configurable option
 						default: colors.gray,
