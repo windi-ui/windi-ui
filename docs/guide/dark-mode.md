@@ -22,49 +22,100 @@ The exact shades are in the [shade tables](/guide/variants#shade-tables).
 
 ## How the dark selector is chosen
 
-The plugin reads the `darkMode` key of your Tailwind config and wraps the dark values of each variant in the
-matching selector or at-rule:
+WindUI wraps the dark values of each variant in a selector or an at-rule. It takes the first of these that
+applies:
 
-| `darkMode` | Dark values apply under |
+1. The [`darkSelector`](/reference/options#darkselector) option.
+2. The `darkMode` key of your Tailwind config: Tailwind v3, or Tailwind v4 with a config loaded by `@config`.
+3. On Tailwind v4.1.17 or higher, **Tailwind's own dark variant**. WindUI writes `@variant dark`, and Tailwind
+   puts in whatever `dark:` means in your stylesheet, a `@custom-variant dark` included.
+4. `@media (prefers-color-scheme: dark)`.
+
+So in most projects there is nothing to configure: variants turn dark exactly when Tailwind's `dark:` utilities do.
+
+## Tailwind v4
+
+Declare the dark variant in CSS as usual. WindUI follows it:
+
+```css [main.css]
+@import "tailwindcss";
+@plugin "@windi-ui/tailwind";
+@custom-variant dark (&:where(.dark, .dark *));
+```
+
+```css
+/* output */
+.v-outline {
+	/* ... */
+	&:where(.dark, .dark *) {
+		/* dark values */
+	}
+}
+```
+
+Without a `@custom-variant dark`, Tailwind's `dark:` is the media query, and so is WindUI's.
+
+Tailwind 4.0.0 to 4.1.16 do not expand `@variant dark` for a plugin. There WindUI uses the media query unless
+you set `darkSelector`:
+
+```css [main.css]
+@plugin "@windi-ui/tailwind" {
+	dark-selector: .dark;
+}
+@custom-variant dark (&:where(.dark, .dark *));
+```
+
+The same applies when WindUI cannot tell which Tailwind is running it, which happens when Tailwind is bundled
+into another tool instead of being loaded from `node_modules`.
+
+## Tailwind v3
+
+WindUI follows the `darkMode` key of the Tailwind config:
+
+```ts [tailwind.config.ts]
+export default {
+	darkMode: 'selector',
+	plugins: [windui()],
+} satisfies Config;
+```
+
+## Setting it yourself
+
+`darkSelector` takes everything Tailwind's `darkMode` takes, and a bare selector. Use it when WindUI's dark
+values should follow something else than Tailwind's `dark:`, or on a Tailwind 4 older than 4.1.17.
+
+| `darkSelector` or `darkMode` | Dark values apply under |
 | --- | --- |
-| not set, or `'media'` | `@media (prefers-color-scheme: dark)` |
+| `'media'` | `@media (prefers-color-scheme: dark)` |
 | `'class'` | `&:is(.dark *)` |
 | `['class', '.my-dark']` | `&:is(.my-dark *)` |
 | `'selector'` | `&:where(.dark, .dark *)` |
 | `['selector', '[data-theme="dark"]']` | `&:where([data-theme="dark"], [data-theme="dark"] *)` |
+| `'[data-theme="dark"]'` (`darkSelector` only) | the same as `['selector', '[data-theme="dark"]']` |
 | `['variant', '&:where(.dark, .dark *)']` | the given selector or at-rule; it must start with `@` or contain `&` |
 | `['variant', ['@media (prefers-color-scheme: dark) { &:not(.light *) }', '&:is(.dark *)']]` | each entry; `@rule { selector }` nests the selector in the at-rule |
 
-Example for a class-based toggle:
+::: code-group
 
-```ts [tailwind.config.ts]
-export default {
-	darkMode: 'selector',
-	plugins: [windui()],
-} satisfies Config;
+```ts [JavaScript]
+windui({ darkSelector: '.dark' })
+windui({ darkSelector: ['variant', '&:where([data-theme=dark], [data-theme=dark] *)'] })
 ```
 
-## Tailwind v4
+```css [@plugin block]
+@plugin "@windi-ui/tailwind" {
+	dark-selector: .dark;
+}
 
-On v4 the dark variant is usually declared in CSS with `@custom-variant dark (...)`. WindUI does not read that
-declaration yet: without a `darkMode` key in the config file it uses the media query. Set `darkMode` in the
-config you load with `@config` so that both agree:
-
-```css [main.css]
-@import "tailwindcss";
-@config "../tailwind.config.ts";
-@custom-variant dark (&:where(.dark, .dark *));
+@plugin "@windi-ui/tailwind" {
+	dark-selector: variant, &:where([data-theme=dark], [data-theme=dark] *);
+}
 ```
 
-```ts [tailwind.config.ts]
-export default {
-	darkMode: 'selector',
-	plugins: [windui()],
-} satisfies Config;
-```
+:::
 
-Following the app's dark variant automatically, and a `darkSelector` option, are tracked in
-[#34](https://github.com/windi-ui/windi-ui/issues/34).
+`darkSelector` only moves WindUI's dark values. Tailwind's `dark:` utilities keep following Tailwind's own
+setting, so keep the two the same unless you mean them to differ.
 
 ## What is not automatic
 

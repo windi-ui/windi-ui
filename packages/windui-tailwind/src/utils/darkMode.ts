@@ -1,9 +1,19 @@
 import { DarkModeConfig } from 'tailwindcss/types/config';
+import type { DarkSelectorOption } from '@windi-ui/core';
 import { RecursiveRecord } from '../types';
 
 export type DarkSelector = string[][];
 
 const BLOCK_SELECTOR_REGEX = /^([^{]+)\{([^}]+)\}$/;
+const MODES = ['media', 'class', 'selector', 'variant'];
+
+/** Tailwind expands this key with the app's own dark variant, `@custom-variant dark` included. */
+export const VARIANT_DARK: DarkSelector = [['@variant dark']];
+
+/** The `darkSelector` option as a Tailwind `darkMode`: a bare selector is the `selector` strategy. */
+export function toDarkMode(option: DarkSelectorOption): DarkModeConfig {
+	return (typeof option === 'string' && !MODES.includes(option) ? ['selector', option] : option) as DarkModeConfig;
+}
 
 export function getDarkSelector(darkMode: DarkModeConfig): DarkSelector {
 	// eslint-disable-next-line prefer-const

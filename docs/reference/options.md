@@ -11,6 +11,7 @@ import windui from '@windi-ui/tailwind';
 windui({
 	prefix: 'wui',
 	variantScope: 'element',
+	darkSelector: '.dark',
 	build(builder) {
 		// ...
 	}
@@ -21,6 +22,7 @@ windui({
 @plugin "@windi-ui/tailwind" {
 	prefix: wui;
 	variant-scope: element;
+	dark-selector: .dark;
 }
 ```
 
@@ -30,6 +32,7 @@ import { defineConfig } from '@windi-ui/tailwind/config';
 export default defineConfig({
 	prefix: 'wui',
 	variantScope: 'element',
+	darkSelector: '.dark',
 	build(builder) {
 		// ...
 	}
@@ -128,6 +131,31 @@ Things to know about `'element'` and `'inherit'`:
 - **Other classes with `v-`.** The reset rule also matches classes such as `nav-item`. The only effect is that
   their children get the same reset.
 
+## `darkSelector`
+
+- Type: `'media' | 'class' | 'selector' | ['class' | 'selector', string] | ['variant', string | string[]] | string`
+- Default: none; dark mode follows Tailwind
+
+What the dark values of the variants apply under. It takes every form of Tailwind's `darkMode`, and a bare
+selector, which is the `selector` strategy with that selector:
+
+```ts
+windui({ darkSelector: '.dark' });                  // &:where(.dark, .dark *)
+windui({ darkSelector: 'media' });                  // @media (prefers-color-scheme: dark)
+windui({ darkSelector: ['variant', '&:where([data-theme=dark], [data-theme=dark] *)'] });
+```
+
+```css
+@plugin "@windi-ui/tailwind" {
+	dark-selector: .dark;
+}
+```
+
+Left out, WindUI uses the `darkMode` of the Tailwind config when there is one, then Tailwind v4's own dark
+variant (`@custom-variant dark` included), then the media query. See
+[Dark mode](/guide/dark-mode#how-the-dark-selector-is-chosen) for the order and the table of forms. The type
+is exported from `@windi-ui/core` as `DarkSelectorOption`.
+
 ## `build`
 
 - Type: `(builder: Builder) => void`
@@ -173,7 +201,7 @@ These are not WindUI options, but they shape its output:
 | `theme.colors` | The `c-*` classes: one per palette with all 11 shades. See [Colors](/guide/colors). |
 | `theme.spacing`, `theme.fontSize` | The values of the built-in [sizes](/guide/sizes). |
 | `theme.opacity` | The modifiers of `bg-v`, `text-v` and `border-v`. |
-| `darkMode` | The selector or media query for dark variant values. See [Dark mode](/guide/dark-mode). |
+| `darkMode`, or on v4 the `dark` variant | The selector or media query for dark variant values, unless [`darkSelector`](#darkselector) is set. See [Dark mode](/guide/dark-mode). |
 
 ## What the plugin adds to the theme
 

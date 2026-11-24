@@ -8,9 +8,21 @@ import { Builder } from "./builder";
  */
 export type VariantScope = 'universal' | 'element' | 'inherit';
 
+/**
+ * What dark mode follows. It takes what Tailwind's `darkMode` takes, or a bare selector such as `'.dark'`, which is
+ * the `selector` strategy with that selector.
+ */
+export type DarkSelectorOption =
+	| 'media' | 'class' | 'selector'
+	| ['class' | 'selector', string]
+	| ['variant', string | string[]]
+	| (string & {});
+
 export interface ResolvedConfig {
 	prefix: string;
 	variantScope: VariantScope;
+	/** Left out, dark mode follows Tailwind's own. */
+	darkSelector?: DarkSelectorOption;
 	build?: (builder: Builder) => void;
 }
 
@@ -20,12 +32,14 @@ export function resolveConfig(config: Config): ResolvedConfig {
 	const {
 		prefix = 'wui',
 		variantScope = 'element',
+		darkSelector,
 		build
 	} = config;
 
 	return {
 		prefix,
 		variantScope,
+		darkSelector,
 		build
 	};
 }

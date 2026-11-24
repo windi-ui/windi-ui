@@ -1,0 +1,52 @@
+import { expect, it } from 'vitest';
+import type { Compile, CompileCss } from './helpers';
+
+// No `dark:` utility here: with these, Tailwind's own `darkMode` and the `darkSelector` option must give the same CSS.
+const candidates = ['v-outline', 'bg-v', 'btn'];
+
+/** #34: `darkSelector` takes each form of Tailwind's `darkMode`, and a bare selector. */
+export function darkSelector(compile: Compile) {
+	it.each([
+		['media', 'media', '@media (prefers-color-scheme: dark)'],
+		['class', 'class', ':is(.dark *)'],
+		[['class', '.night'], ['class', '.night'], ':is(.night *)'],
+		[['selector', '.dark'], ['selector', '.dark'], ':where(.dark, .dark *)'],
+		[['variant', '&:where([data-theme=dark], [data-theme=dark] *)'], ['variant', '&:where([data-theme=dark], [data-theme=dark] *)'], ':where([data-theme=dark], [data-theme=dark] *)'],
+		['.night', ['selector', '.night'], ':where(.night, .night *)'],
+	] as const)('follows `darkSelector: %j`', async (option, darkMode, selector) => {
+		const css = await compile(candidates, {}, { darkSelector: option as string });
+
+		expect(css).toContain(selector);
+		expect(css).toBe(await compile(candidates, { darkMode }));
+		// and it wins over Tailwind's own setting
+		expect(await compile(candidates, { darkMode: ['selector', '.other'] }, { darkSelector: option as string })).toBe(css);
+	});
+}
+
+/** #34: without any setting, Tailwind 4 puts its own dark variant in. */
+export function autoDark(compile: Compile & { css: CompileCss }) {
+	const all = [...candidates, 'dark:flex'];
+
+	it('follows the `@custom-variant dark` of the stylesheet', async () => {
+		const css = await compile.css('@custom-variant dark (&:where(.dark, .dark *));\n@plugin "@windi-ui/tailwind";', all);
+
+		expect(css).not.toContain('prefers-color-scheme');
+		expect(css).not.toContain('@variant');
+		// the same selector for Tailwind's `dark:flex`, a variant's dark block and the dark rule of the base layer
+		expect(css).toMatch(/\.dark\\:flex[\s{&]*:where\(\.dark, \.dark \*\)/);
+		expect(css).toMatch(/\.v-outline \{[^}]*&:where\(\.dark, \.dark \*\) \{\s+--wui-v-/);
+		// compounded with the rule's own selector, not a descendant of it
+		expect(css).toMatch(/^ {2}(\*|\* \{\s+&)?:where\(\.dark, \.dark \*\) \{\s+--wui-v-on-light/m);
+	});
+
+	it('is the media query when the stylesheet has no dark variant of its own', async () => {
+		expect(await compile.css('@plugin "@windi-ui/tailwind";', all))
+			.toBe(await compile.css('@plugin "@windi-ui/tailwind" { dark-selector: media; }', all));
+	});
+
+	it('takes `dark-selector` from the `@plugin` block', async () => {
+		const css = await compile.css('@plugin "@windi-ui/tailwind" { dark-selector: variant, &:where(.night, .night *); }', candidates);
+
+		expect(css).toBe(await compile(candidates, {}, { darkSelector: ['variant', '&:where(.night, .night *)'] }));
+	});
+}

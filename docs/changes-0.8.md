@@ -100,3 +100,31 @@ Also new:
 
 On Tailwind v4 you can replace `@config` with `@plugin "./windui.config.ts"` if the JavaScript config only
 existed to load WindUI.
+
+## Dark mode follows the app's dark variant on Tailwind v4
+
+0.7 took the dark selector from the `darkMode` key of the Tailwind config. A Tailwind v4 project without a
+JavaScript config has no such key, so WindUI used `@media (prefers-color-scheme: dark)` even when the
+stylesheet declared `@custom-variant dark (&:where(.dark, .dark *));`
+([#34](https://github.com/windi-ui/windi-ui/issues/34)). Tailwind's `dark:` utilities followed the class, and
+`btn`, `badge`, `bg-v`, `text-v` and `border-v` followed the operating system.
+
+On Tailwind v4.1.17 or higher, WindUI now writes `@variant dark` and Tailwind puts the app's own dark variant
+in. Variants turn dark exactly when `dark:` utilities do, with nothing to configure.
+
+Also new: the [`darkSelector`](/reference/options#darkselector) option (`dark-selector` in an `@plugin`
+block). It takes every form of Tailwind's `darkMode`, and a bare selector such as `'.dark'`.
+
+What does not change:
+
+- Tailwind v3.
+- Tailwind v4 with a `darkMode` key in a config loaded by `@config`.
+- Tailwind v4 without a `@custom-variant dark`: Tailwind's dark variant is the media query there, and the
+  CSS is the same as before.
+- Tailwind v4.0.0 to 4.1.16, which do not expand `@variant dark` for a plugin: still the media query. Set
+  `darkSelector` there.
+
+**Migration:** only for a Tailwind v4 project that declares `@custom-variant dark` and does not set `darkMode`
+in a JavaScript config. Its variants now follow that declaration instead of the operating system, which is
+what the declaration asks for. To keep the 0.7 output, set `darkSelector: 'media'`
+(`dark-selector: media;`).

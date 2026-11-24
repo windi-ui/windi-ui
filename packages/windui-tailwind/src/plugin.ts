@@ -3,7 +3,8 @@ import type { CSSRuleObject, DarkModeConfig } from 'tailwindcss/types/config';
 import { create, type Config, type ColorShade, type ApplyVariantMainProp, type ApplyVariantSubProp } from "@windi-ui/core";
 import { CONFIG, isLoadingConfig, loadWindUIConfig } from './config';
 import { createTailwindTheme } from './theme';
-import { getDarkSelector, applyDark } from './utils/darkMode';
+import { getDarkSelector, applyDark, toDarkMode, VARIANT_DARK } from './utils/darkMode';
+import { tailwindAtLeast } from './utils/version';
 
 function keyValuePairs(
 	keys: string[],
@@ -45,7 +46,7 @@ export interface TailwindV4Plugin {
 	config?: any;
 }
 
-const OPTIONS = ['prefix', 'variantScope', 'build', 'config'];
+const OPTIONS = ['prefix', 'variantScope', 'darkSelector', 'build', 'config'];
 
 /** Inline options over those of the config file. An `@plugin` block writes the names in kebab-case. */
 function resolveOptions(options: PluginOptions = {}): Config {
@@ -80,8 +81,12 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 		const tp = createTailwindTheme(tw, ver);
 		const gt = wiu.generator(tp);
 
-		const darkMode =  tw.config<DarkModeConfig>('darkMode', 'media');
-		const darkSelector = getDarkSelector(darkMode);
+		// Tailwind 4 has no `darkMode` unless a JS config sets one. From 4.1.17 it expands `@variant dark` in plugin CSS.
+		const darkMode = wiu.config.darkSelector != null
+			? toDarkMode(wiu.config.darkSelector)
+			: tw.config<DarkModeConfig | undefined>('darkMode');
+		const darkSelector = darkMode != null ? getDarkSelector(darkMode)
+			: tp.ver === 4 && tailwindAtLeast(4, 1, 17) ? VARIANT_DARK : getDarkSelector('media');
 
 		tw.addBase({ ':root': gt.colors.rootVars() });
 		tw.addBase({ ':root': gt.sizes.rootVars() });

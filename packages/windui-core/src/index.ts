@@ -1,5 +1,5 @@
 import type { ThemeProvider } from './types';
-import { resolveConfig, defineConfig, type Config, type VariantScope } from './config';
+import { resolveConfig, defineConfig, type Config, type DarkSelectorOption, type VariantScope } from './config';
 import { varsProvider } from './vars';
 import { ColorsGenerator } from "./colors";
 import { VariantsGenerator } from "./variants";
@@ -40,7 +40,7 @@ export function create(config: Config) {
 
 export { varsProvider, type VarsProvider } from './vars';
 export { defineConfig };
-export type { Config, VariantScope };
+export type { Config, DarkSelectorOption, VariantScope };
 export type * from './types';
 export type { ColorShade, ExColorShade } from './colors';
 export type { Variant, VariantProperties as VariantProps, ApplyVariant, ApplyVariantMainProp, ApplyVariantSubProp, ApplyVariantProp } from './variants';

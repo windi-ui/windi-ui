@@ -27,7 +27,7 @@ features:
     details: Variants pick shades from your 11-shade palettes for background, border and text, with soft, muted and accent levels and a hover state. You never choose a shade number.
     link: /guide/variants
   - title: Dark mode built in
-    details: Variants carry their own dark shades and follow the dark mode strategy of your Tailwind config.
+    details: Variants carry their own dark shades and follow the dark mode of your Tailwind setup, `@custom-variant dark` included.
     link: /guide/dark-mode
   - title: Your palette
     details: Every color in your Tailwind theme that has all 11 shades becomes a <code>c-*</code> class automatically.
