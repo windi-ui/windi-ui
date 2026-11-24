@@ -1,4 +1,8 @@
+import { cases } from './cases';
 import { baseline } from './baseline';
 import { tailwind3 } from './helpers';
 
-baseline('tw3', tailwind3());
+const compile = tailwind3();
+
+baseline('tw3', compile);
+cases(compile);

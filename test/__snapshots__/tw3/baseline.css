@@ -266,6 +266,10 @@
     --tw-border-opacity: 1;
     border-color: rgb(var(--wui-c-300) / var(--tw-border-opacity, 1));
 }
+.bg-\[\#123456\] {
+    --tw-bg-opacity: 1;
+    background-color: rgb(18 52 86 / var(--tw-bg-opacity, 1));
+}
 .bg-c-500 {
     --tw-bg-opacity: 1;
     background-color: rgb(var(--wui-c-500) / var(--tw-bg-opacity, 1));
@@ -276,6 +280,10 @@
 }
 .text-\[14px\] {
     font-size: 14px;
+}
+.text-\[red\] {
+    --tw-text-opacity: 1;
+    color: rgb(255 0 0 / var(--tw-text-opacity, 1));
 }
 .text-accent-600 {
     --tw-text-opacity: 1;

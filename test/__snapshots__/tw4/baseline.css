@@ -79,12 +79,6 @@
     }
     --wui-v-border-opacity: 0.3 !important;
   }
-  .border-\[3px\] {
-    border-color: var(--wui-v-border-3px);
-    @supports (color: color-mix(in lab, red, red)) {
-      border-color: color-mix(in oklab, var(--wui-v-border-3px) calc(var(--wui-v-border-opacity, 1) * 100%), transparent);
-    }
-  }
   .border-c-300 {
     border-color: var(--wui-c-300);
   }
@@ -123,10 +117,6 @@
   }
   .bg-\[\#123456\] {
     background-color: #123456;
-    background-color: var(--wui-v-bg-#123456);
-    @supports (color: color-mix(in lab, red, red)) {
-      background-color: color-mix(in oklab, var(--wui-v-bg-#123456) calc(var(--wui-v-bg-opacity, 1) * 100%), transparent);
-    }
   }
   .bg-c-500 {
     background-color: var(--wui-c-500);
@@ -168,18 +158,8 @@
     }
     --wui-v-fg-opacity: 0.75 !important;
   }
-  .text-\[14px\] {
-    color: var(--wui-v-fg-14px);
-    @supports (color: color-mix(in lab, red, red)) {
-      color: color-mix(in oklab, var(--wui-v-fg-14px) calc(var(--wui-v-fg-opacity, 1) * 100%), transparent);
-    }
-  }
   .text-\[red\] {
     color: red;
-    color: var(--wui-v-fg-red);
-    @supports (color: color-mix(in lab, red, red)) {
-      color: color-mix(in oklab, var(--wui-v-fg-red) calc(var(--wui-v-fg-opacity, 1) * 100%), transparent);
-    }
   }
   .text-accent-600 {
     color: oklch(54.6% 0.245 262.881);

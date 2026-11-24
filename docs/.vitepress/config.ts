@@ -57,6 +57,7 @@ export default defineConfig({
 					{ text: 'CSS variables', link: '/reference/css-variables' },
 				],
 			},
+			{ text: 'Changes in 0.8', link: '/changes-0.8' },
 			{ text: 'Roadmap', link: '/roadmap' },
 		],
 

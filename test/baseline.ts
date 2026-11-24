@@ -17,7 +17,7 @@ export const candidates = [
 	'bg-c-500', 'text-c-700/50', 'border-c-300', 'bg-default-100', 'text-accent-600',
 	// components
 	'btn', 'badge',
-	// arbitrary values, which the variant utilities also match today (#30)
+	// arbitrary values, which stay Tailwind's own (#30)
 	'bg-[#123456]', 'text-[14px]', 'text-[red]', 'border-[3px]',
 ];
 

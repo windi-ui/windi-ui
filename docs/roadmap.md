@@ -1,6 +1,7 @@
 # Roadmap
 
-WindUI is under active development. This site documents the current `0.7.x` behaviour.
+WindUI is under active development. This site documents the `0.8` development branch; what differs from
+`0.7.x` is listed in [Changes in 0.8](/changes-0.8).
 
 The path from 0.7 to 1.0 is tracked in one GitHub issue:
 

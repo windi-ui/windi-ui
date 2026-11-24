@@ -87,7 +87,7 @@ overrides it for that element:
 
 Modifiers take the values of your theme's opacity scale (`/50`, `/75`, ...) or an arbitrary value (`/[0.33]`).
 The modifier sets the property's opacity variable (for example `--wui-v-bg-opacity`) with `!important` on the
-element, so it also wins over the variant's own opacity.
+element, so it also wins over the variant's own opacity, including the opacity a variant sets for `:hover`.
 
 ## States
 
@@ -107,9 +107,13 @@ The utilities paint the normal state only. A variant's `:hover` values are appli
 `bg-c-500`, `text-c-700`, `border-c-300` and every other Tailwind color utility accept the `c` color, which
 follows the current `c-*` class. See [Using the current color directly](/guide/colors#using-the-current-color-directly).
 
-## Known issue
+## Arbitrary values
 
-<!-- The bracket is an entity so Tailwind does not pick the class up from this page and hit the bug. -->
-`bg-`, `text-` and `border-` with an arbitrary value, such as <code>bg-&#91;#123456]</code>, are currently also matched by the
-variant utilities, which produces a broken declaration next to Tailwind's own. Tracked in
-[#30](https://github.com/windi-ui/windi-ui/issues/30).
+`bg-`, `text-` and `border-` with an arbitrary value stay Tailwind's own utilities. The variant utilities only
+answer `v`, `v-soft`, `v-muted` and `v-accent`:
+
+```html
+<div class="bg-[#123456] text-[14px] border-[3px]">Tailwind's output, nothing from WindUI</div>
+```
+
+Likewise `c-[...]`, `v-[...]` and `s-[...]` with a value WindUI does not know emit nothing.
