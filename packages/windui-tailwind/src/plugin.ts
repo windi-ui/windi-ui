@@ -4,7 +4,8 @@ import { create, type Builder, type Config, type ColorShade, type ColorValue, ty
 import { loadWindUIConfig } from './config';
 import { CONFIG, isLoadingConfig } from './utils/configState';
 import { classSource } from './safelist';
-import { createTailwindTheme } from './theme';
+import type { RecursiveRecord } from './types';
+import { createTailwindTheme, flattenColorPalette } from './theme';
 import { getDarkSelector, applyDark, toDarkMode, VARIANT_DARK } from './utils/darkMode';
 import { calledByTailwind, tailwindAtLeast } from './utils/version';
 
@@ -87,15 +88,21 @@ function resolveOptions(options: PluginOptions = {}, strict = false): Config {
  * The palettes `build` adds with `utilities: true`. Tailwind resolves its theme before the builder can run, so `build`
  * is first run on a builder that does nothing but note them.
  */
-function utilityColors(build: Config['build']) {
+function utilityColors(build: Config['build'], inTheme: (name: string) => boolean) {
 	const found = new Map<string, ColorValue>();
+	const removed = new Set<string>();
 	const set: Builder['setColor'] = (name, value, options) => {
 		if (options?.utilities) found.set(name, value);
 		else found.delete(name);
 		return builder;
 	};
 
-	const noted: Partial<Builder> = { addColor: set, setColor: set, removeColor: name => (found.delete(name), builder) };
+	const noted: Partial<Builder> = {
+		// As on the real builder, which skips a name that exists: the color of the theme stays as it is.
+		addColor: (name, ...rest) => inTheme(name) && !removed.has(name) && !found.has(name) ? builder : set(name, ...rest),
+		setColor: set,
+		removeColor: name => (found.delete(name), removed.add(name), builder),
+	};
 	const builder: Builder = new Proxy(noted as Builder, {
 		get: (target, key: keyof Builder) => target[key] ?? (() => key.endsWith('Names') ? [] : builder)
 	});
@@ -119,8 +126,12 @@ export function createWindUIPlugin<P = ReturnType<typeof createPlugin>>(ver?: 3 
 function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof createPlugin> {
 	const wiu = create(config);
 
-	// The palettes the theme gets when no option names one, as the theme callback below saw them.
-	let fallback: Record<'default' | 'accent', Record<string, string>> | undefined;
+	// The theme colors `default` and `accent` as the theme callback below gave them, when an option names the palette.
+	let followed: Partial<Record<'default' | 'accent', Record<string, string>>> = {};
+	// The shades a `default` or `accent` palette of the theme lacks, when it has some. Tailwind merges those into the
+	// fallback shade by shade, so the merged theme cannot tell.
+	let missing: Partial<Record<'default' | 'accent', string[]>> = {};
+	let probing = false;
 	let mixReported = false;
 
 	let utilities: Map<string, ColorValue> | undefined;
@@ -131,16 +142,17 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 		const tp = createTailwindTheme(tw, ver, utilities && [...utilities.keys()]);
 		const gt = wiu.generator(tp);
 
-		// A theme that sets only some shades of `default` or `accent` has them merged into the fallback, shade by shade.
-		for (const name of fallback && !mixReported ? ['default', 'accent'] as const : []) {
-			if (wiu.config[name] != null) continue;
+		for (const [name, shades] of Object.entries(mixReported ? {} : missing) as ['default' | 'accent', string[]][]) {
+			mixReported = true;
+			console.warn(`WindUI: the theme's "${name}" palette has no shade ${shades.join(', ')}; ${shades.length > 1 ? 'these are' : 'it is'} taken from ${FALLBACK[name]}. Give it all 11 shades, or set the \`${name}\` option.`);
+		}
 
-			const base = fallback![name];
-			const palette = tw.theme<Record<string, string>>(`colors.${name}`, {});
-			const missing = Object.keys(base).filter(s => palette[s] === base[s]);
-			if (missing.length && missing.length < Object.keys(base).length) {
+		// Tailwind puts a palette of the app's own theme over the one a plugin gives, so the option cannot replace it.
+		for (const [name, palette] of Object.entries(mixReported ? {} : followed)) {
+			const theme = tw.theme<Record<string, string>>(`colors.${name}`, {});
+			if (Object.keys(palette).some(s => theme[s] !== palette[s])) {
 				mixReported = true;
-				console.warn(`WindUI: the theme's "${name}" palette has no shade ${missing.join(', ')}; ${missing.length > 1 ? 'these are' : 'it is'} taken from ${FALLBACK[name]}. Give it all 11 shades, or set the \`${name}\` option.`);
+				console.warn(`WindUI: the theme has a "${name}" palette of its own, which utilities such as \`bg-${name}-500\` keep using. The \`${name}\` option only sets \`c-${name}\` and the variables. Use one of the two.`);
 			}
 		}
 
@@ -176,6 +188,15 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 		const colorNames = gt.colors.names();
 		const variantNames = gt.variants.names();
 		const sizeNames = gt.sizes.names();
+
+		if (tp.ver === 3) {
+			// Tailwind 3 drops a base rule whose selector has a class that no content uses, and the class of dark mode is
+			// often only set by a script. That would leave the default variant light.
+			const list = tw.config<unknown[]>('safelist');
+			for (const [, name] of darkSelector.flat().join(' ').matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)) {
+				if (!list.includes(name)) list.push(name);
+			}
+		}
 
 		if (wiu.config.safelist && tp.ver === 3) {
 			// A `safelist` in the plugin's config is dropped when the app has its own, so the pattern goes into the
@@ -256,7 +277,13 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 					const inTheme = (name: string) => theme.some(key => key === name || key.startsWith(`${name}-`));
 					const fallback = { default: colors[FALLBACK.default], accent: colors[FALLBACK.accent] };
 
-					utilities ??= utilityColors(wiu.config.build);
+					missing = {};
+					for (const name of ['default', 'accent'] as const) {
+						const shades = Object.keys(fallback[name]).filter(s => !theme.includes(`${name}-${s}`));
+						if (wiu.config[name] == null && shades.length && shades.length < 11) missing[name] = shades;
+					}
+
+					utilities ??= utilityColors(wiu.config.build, inTheme);
 					const own: Record<string, unknown> = {};
 					for (const [name, value] of utilities) {
 						if (typeof value !== 'string') {
@@ -271,13 +298,13 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 						}
 					}
 
-					return {
-						...own,
-						c: follow(''),
-						// With an option the theme color follows the root variables, which hold the palette the option gives.
-						default: wiu.config.default != null ? follow('default-') : fallback.default,
-						accent: wiu.config.accent != null ? follow('accent-') : fallback.accent,
+					// With an option the theme color follows the root variables, which hold the palette the option gives.
+					followed = {
+						...(wiu.config.default != null ? { default: follow('default-') } : {}),
+						...(wiu.config.accent != null ? { accent: follow('accent-') } : {}),
 					};
+
+					return { ...own, c: follow(''), ...fallback, ...followed };
 				},
 			}
 		}

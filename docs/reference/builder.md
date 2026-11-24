@@ -82,7 +82,9 @@ every other color utility exist, with opacity modifiers. The default is off.
   `build` on a builder that only notes `addColor`, `setColor` and `removeColor`; its `*Names()` return empty
   lists. So `build` runs twice, and a color that is only added depending on what `*Names()` return gets no
   utilities.
-- Do not use it with the name of a color the theme already has: the theme color is replaced.
+- `addColor` with the name of a color the theme already has is skipped as a whole, like `addColor` without
+  `utilities`: the error is logged and the theme color stays. `setColor` replaces the WindUI color and the
+  theme color.
 
 ## Context
 

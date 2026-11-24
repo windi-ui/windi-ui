@@ -154,6 +154,9 @@ Also new: the [`debug`](/reference/options#debug) option.
 3. **A theme palette that sets only some shades of `default` or `accent` logs a warning.** The output is the
    0.7 output, a mix with `gray` or `blue`; the warning names the shades that are missing.
 
+With an option and a theme palette of the same name, the theme utilities (`bg-default-*`) keep the theme's
+palette and WindUI logs a warning; see [`default` and `accent`](/reference/options#default-and-accent).
+
 ## Colors from the builder, and `rootSelector`
 
 The builder had add, update and remove for variants, sizes and components, but not for colors

@@ -11,7 +11,7 @@ function _interopDefaultCompat<T, TR = MDefault<T>>(e: T): TR { return ((e && ty
 const require = createRequire(import.meta.url);
 
 /** `{ red: { 500: '#f00', DEFAULT: '#e00' } }` to `{ 'red-500': '#f00', red: '#e00' }`, as Tailwind's own helper does. */
-function flattenColorPalette(colors: RecursiveRecord, prefix = '', flat: Record<string, string> = {}, css = colors.__CSS_VALUES__ ?? {}) {
+export function flattenColorPalette(colors: RecursiveRecord, prefix = '', flat: Record<string, string> = {}, css = colors.__CSS_VALUES__ ?? {}) {
 	for (const [name, value] of Object.entries(colors)) {
 		// Tailwind 4 keeps the names of the colors that come from the stylesheet's theme under this key
 		if (name === '__CSS_VALUES__') continue;

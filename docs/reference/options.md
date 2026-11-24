@@ -123,8 +123,12 @@ Things to know:
   `--wui-c-accent-*`, so `bg-default-500` follows the option, also when the variables change at runtime.
 - A theme palette (step 2) is merged into `gray` or `blue` by Tailwind, shade by shade. When only some shades
   are set, WindUI logs a warning once that names the others; the output is then the mix, as in 0.7.
-- On Tailwind v4, a `--color-default-*` variable in `@theme` still wins for `bg-default-*` when the option is
-  set, because Tailwind puts the stylesheet's theme over a plugin's. Use one of the two.
+- With an option **and** a theme palette of the same name (`--color-default-*` in `@theme`, or
+  `theme.extend.colors.default` in a JavaScript config, on Tailwind v3 and v4), the option sets `c-default` and
+  the `--wui-c-default-*` variables, but `bg-default-*` and the other theme utilities keep the theme's palette:
+  Tailwind puts the app's own theme over a plugin's. WindUI logs a warning once. Use one of the two.
+- A complete theme palette may share shades with `gray` or `blue`; only a shade that is not set counts as
+  missing.
 - On Tailwind v3 the variables behind `{ vars }` must hold RGB channels (`59 130 246`), as WindUI's own do.
 
 The type is exported from `@windi-ui/core` as `ColorValue`.
@@ -197,13 +201,13 @@ Things to know about `'element'` and `'inherit'`:
 - **Direct reads.** `var(--wui-v-bg)` in your own CSS is only valid on an element with a variant. See
   [Using them in your own CSS](/reference/css-variables#using-them-in-your-own-css). Components added with the
   builder get the fallback automatically.
+- **Opacity modifiers.** With `'element'`, `bg-v/50` resets its opacity variable on the children of its
+  element, so they paint at their own opacity. With `'inherit'` the modifier is inherited like the rest of the
+  variant.
 - **Other classes with `v-`.** The reset rule also matches classes such as `nav-item`. The only effect is that
   their children get the same reset.
 
 ## `darkSelector`
-- **Opacity modifiers.** With `'element'`, `bg-v/50` resets its opacity variable on the children of its
-  element, so they paint at their own opacity. With `'inherit'` the modifier is inherited like the rest of the
-  variant.
 
 - Type: `'media' | 'class' | 'selector' | ['class' | 'selector', string] | ['variant', string | string[]] | string`
 - Default: none; dark mode follows Tailwind
@@ -233,8 +237,8 @@ is exported from `@windi-ui/core` as `DarkSelectorOption`.
 - Type: `(builder: Builder) => void`
 - Default: none
 
-Called once per compilation, after the built-in variants, sizes and components are registered and before CSS is
-generated. Use the [builder](/reference/builder) to add, update or remove them. See
+Called after the built-in variants, sizes and components are registered and before CSS is generated. It runs
+twice per compilation, see [Builder](/reference/builder#colors). Use the [builder](/reference/builder) to add, update or remove them. See
 [Customizing](/guide/customizing) for a walkthrough.
 
 ## `safelist`
@@ -325,13 +329,13 @@ Logs what WindUI otherwise skips silently. Today that is one message per theme p
 The [config file](/reference/config-file) to load, relative to the working directory. Without it, a call that
 passes no `build` searches for `windui.config.*` and `package.json#windui`. `false` turns that search off.
 
+An option name that WindUI does not know is an error in an `@plugin` block. In a JavaScript call it logs a
+warning and is ignored, as it was ignored in 0.7.
+
 ```css
 @plugin "@windi-ui/tailwind" {
 	config: "./config/windui.ts";
 }
-An option name that WindUI does not know is an error in an `@plugin` block. In a JavaScript call it logs a
-warning and is ignored, as it was ignored in 0.7.
-
 ```
 
 ## Entry points

@@ -18,6 +18,7 @@ export function palettes(compile: Compile) {
 	afterEach(() => void vi.restoreAllMocks());
 
 	it('takes `default` and `accent` from a palette name', async () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 		const css = await compile(used, {}, { default: 'slate', accent: 'indigo' });
 
 		for (const shade of ['50', '500', '950']) {
@@ -30,6 +31,7 @@ export function palettes(compile: Compile) {
 		}
 
 		// the theme colors follow
+		expect(warn).not.toHaveBeenCalled();
 		expect(css).toMatch(/\.bg-default-500 \{[^}]*var\(--wui-c-default-500\)/);
 		expect(css).toMatch(/\.text-accent-600\\\/50 \{[^}]*var\(--wui-c-accent-600\)/);
 	});
@@ -59,8 +61,21 @@ export function palettes(compile: Compile) {
 		expect(themed).toMatch(/\.bg-default-500 \{[^}]*(#060606|6 6 6)/);
 		expect(warn).not.toHaveBeenCalled();
 
+		// The option sets the variables. Tailwind keeps the theme's own palette over a plugin's, so the utilities stay with it.
 		const option = await compile(used, config, { default: 'slate' });
 		expect(value(option, '--wui-c-default-500')).toBe(value(option, '--wui-c-500', '\\.c-slate'));
+		expect(option).toMatch(/\.bg-default-500 \{[^}]*(#060606|6 6 6)/);
+		expect(warn).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('the theme has a "default" palette of its own'));
+	});
+
+	it('does not take a complete palette for a partial one when it shares shades with the fallback', async () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		// gray-400 as this Tailwind has it: Tailwind 4 declares the variable, Tailwind 3 has the hex value
+		const gray = /--color-gray-400: ([^;]+);/.exec(await compile(['bg-gray-400']))?.[1] ?? '#9ca3af';
+
+		const css = await compile(used, { theme: { extend: { colors: { default: { ...ramp, 400: gray } } } } });
+		expect(value(css, '--wui-c-default-500')).toMatch(inRamp(5));
+		expect(warn).not.toHaveBeenCalled();
 	});
 
 	it('warns about a theme palette that sets some of the shades', async () => {
@@ -100,6 +115,10 @@ export function palettesCss(compile: Compile & { css: CompileCss }) {
 		const complete = await compile.css(`${theme(SHADES)}\n@plugin "@windi-ui/tailwind";`, ['bg-default-500']);
 		expect(value(complete, '--wui-c-default-50')).toBe(ramp[50]);
 		expect(value(complete, '--wui-c-default-950')).toBe(ramp[950]);
+		expect(warn).not.toHaveBeenCalled();
+
+		// complete, with a shade that is the same as gray's
+		await compile.css(`${theme(SHADES)}\n@theme { --color-default-400: var(--color-gray-400); }\n@plugin "@windi-ui/tailwind";`, ['bg-default-500']);
 		expect(warn).not.toHaveBeenCalled();
 
 		await compile.css(`${theme(['500'])}\n@plugin "@windi-ui/tailwind";`, ['bg-default-500']);
@@ -143,6 +162,16 @@ export function builderColors(compile: Compile) {
 		expect(value(css, '--wui-c-400', '\\.c-green')).not.toBe('var(--green)');
 		expect(css).not.toContain('.c-pink');
 		expect(value(css, '--wui-c-default-500')).not.toBe(value(await compile(['c-default']), '--wui-c-default-500'));
+	});
+
+	it('leaves a color of the theme alone when `addColor` names it with `utilities`', async () => {
+		const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const css = await compile(['c-red', 'bg-red-500'], {}, {
+			build: builder => builder.addColor('red', { vars: '--x' }, { utilities: true }),
+		});
+
+		expect(error).toHaveBeenCalledExactlyOnceWith('"red" already exists.');
+		expect(css).toBe(await compile(['c-red', 'bg-red-500']));
 	});
 
 	it('registers a color with the theme when `utilities` is set', async () => {
