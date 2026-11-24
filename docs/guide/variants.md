@@ -123,9 +123,8 @@ All opacities are `1`.
 
 ## Where to put the class
 
-Put `v-*` on the element that is painted. Unlike `c-*` and `s-*`, a variant set on an ancestor does not reach
-its descendants today: the plugin sets the `default` variant on every element with a `*` rule, which
-overrides inheritance. Scoping that rule is tracked in [#31](https://github.com/windi-ui/windi-ui/issues/31).
+Put `v-*` on the element that is painted. Unlike `c-*` and `s-*`, a variant set on an element does not reach
+its descendants: an element without a `v-*` class of its own uses the `default` variant, in its own color.
 
 ```html
 <!-- the badge is not solid: it has its own (default) variant -->
@@ -134,6 +133,23 @@ overrides inheritance. Scoping that rule is tracked in [#31](https://github.com/
 <!-- give the badge its own variant -->
 <button class="btn v-solid c-blue">Inbox <span class="badge v-light">3</span></button>
 ```
+
+To let a container set the variant for its content instead, set
+[`variantScope: 'inherit'`](/reference/options#variantscope).
+
+### Variants from `@apply`
+
+WindUI recognises an element that sets a variant by the `v-` in its `class` attribute. A rule that gets its
+variant through `@apply` has no such class, so add `v-scope` next to it:
+
+```css
+.card {
+	@apply c-blue v-light v-scope bg-v text-v;
+}
+```
+
+Without `v-scope`, the children of `.card` would inherit its variant. `v-scope` is not needed, and does not
+exist, with `variantScope: 'universal'`.
 
 ## With Tailwind variants
 

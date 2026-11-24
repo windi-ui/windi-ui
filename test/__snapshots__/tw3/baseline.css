@@ -147,66 +147,45 @@
     --wui-s-spacing-1\.5: 0.375rem;
     --wui-s-text: 1rem;
     --wui-s-line-height: 1.5rem;
-}
-* {
-    --wui-v-bg: var(--wui-c-white);
-    --wui-v-bg-soft: var(--wui-c-100);
-    --wui-v-bg-muted: var(--wui-c-200);
-    --wui-v-bg-accent: var(--wui-c-accent-100);
-    --wui-v-bg-opacity: 1;
-    --wui-v-border: var(--wui-c-500);
-    --wui-v-border-soft: var(--wui-c-400);
-    --wui-v-border-muted: var(--wui-c-300);
-    --wui-v-border-accent: var(--wui-c-accent-500);
-    --wui-v-border-opacity: 1;
-    --wui-v-fg: var(--wui-c-800);
-    --wui-v-fg-soft: var(--wui-c-500);
-    --wui-v-fg-muted: var(--wui-c-400);
-    --wui-v-fg-accent: var(--wui-c-accent-700);
-    --wui-v-fg-opacity: 1;
-    --wui-v-bg-\:hover: var(--wui-c-100);
-    --wui-v-bg-soft-\:hover: var(--wui-c-200);
-    --wui-v-bg-muted-\:hover: var(--wui-c-300);
-    --wui-v-bg-accent-\:hover: var(--wui-c-accent-200);
-    --wui-v-bg-opacity-\:hover: 1;
-    --wui-v-border-\:hover: var(--wui-c-500);
-    --wui-v-border-soft-\:hover: var(--wui-c-400);
-    --wui-v-border-muted-\:hover: var(--wui-c-300);
-    --wui-v-border-accent-\:hover: var(--wui-c-accent-500);
-    --wui-v-border-opacity-\:hover: 1;
-    --wui-v-fg-\:hover: var(--wui-c-800);
-    --wui-v-fg-soft-\:hover: var(--wui-c-500);
-    --wui-v-fg-muted-\:hover: var(--wui-c-400);
-    --wui-v-fg-accent-\:hover: var(--wui-c-accent-700);
-    --wui-v-fg-opacity-\:hover: 1;
+    --wui-v-on-dark: var(--wui-v-nil,);
 }
 @media (prefers-color-scheme: dark) {
     * {
-        --wui-v-bg: var(--wui-c-950);
-        --wui-v-bg-soft: var(--wui-c-900);
-        --wui-v-bg-muted: var(--wui-c-800);
-        --wui-v-bg-accent: var(--wui-c-accent-900);
-        --wui-v-border: var(--wui-c-700);
-        --wui-v-border-soft: var(--wui-c-600);
-        --wui-v-border-muted: var(--wui-c-500);
-        --wui-v-border-accent: var(--wui-c-accent-700);
-        --wui-v-fg: var(--wui-c-200);
-        --wui-v-fg-soft: var(--wui-c-300);
-        --wui-v-fg-muted: var(--wui-c-400);
-        --wui-v-fg-accent: var(--wui-c-accent-200);
-        --wui-v-bg-\:hover: var(--wui-c-900);
-        --wui-v-bg-soft-\:hover: var(--wui-c-800);
-        --wui-v-bg-muted-\:hover: var(--wui-c-700);
-        --wui-v-bg-accent-\:hover: var(--wui-c-accent-900);
-        --wui-v-border-\:hover: var(--wui-c-700);
-        --wui-v-border-soft-\:hover: var(--wui-c-600);
-        --wui-v-border-muted-\:hover: var(--wui-c-500);
-        --wui-v-border-accent-\:hover: var(--wui-c-accent-700);
-        --wui-v-fg-\:hover: var(--wui-c-200);
-        --wui-v-fg-soft-\:hover: var(--wui-c-300);
-        --wui-v-fg-muted-\:hover: var(--wui-c-400);
-        --wui-v-fg-accent-\:hover: var(--wui-c-accent-200);
+        --wui-v-on-light: var(--wui-v-nil,);
+        --wui-v-on-dark: initial;
     }
+}
+:where([class*="v-"]) > * {
+    --wui-v-bg: initial;
+    --wui-v-bg-soft: initial;
+    --wui-v-bg-muted: initial;
+    --wui-v-bg-accent: initial;
+    --wui-v-bg-opacity: initial;
+    --wui-v-border: initial;
+    --wui-v-border-soft: initial;
+    --wui-v-border-muted: initial;
+    --wui-v-border-accent: initial;
+    --wui-v-border-opacity: initial;
+    --wui-v-fg: initial;
+    --wui-v-fg-soft: initial;
+    --wui-v-fg-muted: initial;
+    --wui-v-fg-accent: initial;
+    --wui-v-fg-opacity: initial;
+    --wui-v-bg-\:hover: initial;
+    --wui-v-bg-soft-\:hover: initial;
+    --wui-v-bg-muted-\:hover: initial;
+    --wui-v-bg-accent-\:hover: initial;
+    --wui-v-bg-opacity-\:hover: initial;
+    --wui-v-border-\:hover: initial;
+    --wui-v-border-soft-\:hover: initial;
+    --wui-v-border-muted-\:hover: initial;
+    --wui-v-border-accent-\:hover: initial;
+    --wui-v-border-opacity-\:hover: initial;
+    --wui-v-fg-\:hover: initial;
+    --wui-v-fg-soft-\:hover: initial;
+    --wui-v-fg-muted-\:hover: initial;
+    --wui-v-fg-accent-\:hover: initial;
+    --wui-v-fg-opacity-\:hover: initial;
 }
 .btn {
     position: relative;
@@ -225,20 +204,20 @@
 }
 .btn:hover {
     --tw-bg-opacity: var(--wui-v-bg-opacity-\:hover, var(--wui-v-bg-opacity, 1));
-    background-color: rgb(var(--wui-v-bg-\:hover) / var(--tw-bg-opacity, 1));
+    background-color: rgb(var(--wui-v-bg-\:hover, var(--wui-v-on-light, var(--wui-c-100)) var(--wui-v-on-dark, var(--wui-c-900))) / var(--tw-bg-opacity, 1));
     --tw-border-opacity: var(--wui-v-border-opacity-\:hover, var(--wui-v-border-opacity, 1));
-    border-color: rgb(var(--wui-v-border-\:hover) / var(--tw-border-opacity, 1));
+    border-color: rgb(var(--wui-v-border-\:hover, var(--wui-v-on-light, var(--wui-c-500)) var(--wui-v-on-dark, var(--wui-c-700))) / var(--tw-border-opacity, 1));
     --tw-text-opacity: var(--wui-v-fg-opacity-\:hover, var(--wui-v-fg-opacity, 1));
-    color: rgb(var(--wui-v-fg-\:hover) / var(--tw-text-opacity, 1));
+    color: rgb(var(--wui-v-fg-\:hover, var(--wui-v-on-light, var(--wui-c-800)) var(--wui-v-on-dark, var(--wui-c-200))) / var(--tw-text-opacity, 1));
 }
 .btn:disabled {}
 .btn {
     --tw-bg-opacity: var(--wui-v-bg-opacity, 1);
-    background-color: rgb(var(--wui-v-bg) / var(--tw-bg-opacity, 1));
+    background-color: rgb(var(--wui-v-bg, var(--wui-v-on-light, var(--wui-c-white)) var(--wui-v-on-dark, var(--wui-c-950))) / var(--tw-bg-opacity, 1));
     --tw-border-opacity: var(--wui-v-border-opacity, 1);
-    border-color: rgb(var(--wui-v-border) / var(--tw-border-opacity, 1));
+    border-color: rgb(var(--wui-v-border, var(--wui-v-on-light, var(--wui-c-500)) var(--wui-v-on-dark, var(--wui-c-700))) / var(--tw-border-opacity, 1));
     --tw-text-opacity: var(--wui-v-fg-opacity, 1);
-    color: rgb(var(--wui-v-fg) / var(--tw-text-opacity, 1));
+    color: rgb(var(--wui-v-fg, var(--wui-v-on-light, var(--wui-c-800)) var(--wui-v-on-dark, var(--wui-c-200))) / var(--tw-text-opacity, 1));
 }
 .badge {
     display: inline-flex;
@@ -248,16 +227,16 @@
     outline-style: solid;
     outline-width: 1px;
     outline-offset: -1px;
-    outline-color: rgb(var(--wui-v-border) / 0.65);
+    outline-color: rgb(var(--wui-v-border, var(--wui-v-on-light, var(--wui-c-500)) var(--wui-v-on-dark, var(--wui-c-700))) / 0.65);
     font-size: 0.75em;
     font-weight: 500;
     line-height: calc(1 / .75);
     white-space: nowrap;
     vertical-align: baseline;
     --tw-bg-opacity: var(--wui-v-bg-opacity, 1);
-    background-color: rgb(var(--wui-v-bg) / var(--tw-bg-opacity, 1));
+    background-color: rgb(var(--wui-v-bg, var(--wui-v-on-light, var(--wui-c-white)) var(--wui-v-on-dark, var(--wui-c-950))) / var(--tw-bg-opacity, 1));
     --tw-text-opacity: var(--wui-v-fg-opacity, 1);
-    color: rgb(var(--wui-v-fg) / var(--tw-text-opacity, 1));
+    color: rgb(var(--wui-v-fg, var(--wui-v-on-light, var(--wui-c-800)) var(--wui-v-on-dark, var(--wui-c-200))) / var(--tw-text-opacity, 1));
 }
 .border-\[3px\] {
     border-width: 3px;
@@ -531,59 +510,59 @@
 }
 .bg-v {
     --tw-bg-opacity: var(--wui-v-bg-opacity, 1);
-    background-color: rgb(var(--wui-v-bg) / var(--tw-bg-opacity, 1));
+    background-color: rgb(var(--wui-v-bg, var(--wui-v-on-light, var(--wui-c-white)) var(--wui-v-on-dark, var(--wui-c-950))) / var(--tw-bg-opacity, 1));
 }
 .bg-v-accent {
     --tw-bg-opacity: var(--wui-v-bg-opacity, 1);
-    background-color: rgb(var(--wui-v-bg-accent) / var(--tw-bg-opacity, 1));
+    background-color: rgb(var(--wui-v-bg-accent, var(--wui-v-on-light, var(--wui-c-accent-100)) var(--wui-v-on-dark, var(--wui-c-accent-900))) / var(--tw-bg-opacity, 1));
 }
 .bg-v-muted {
     --tw-bg-opacity: var(--wui-v-bg-opacity, 1);
-    background-color: rgb(var(--wui-v-bg-muted) / var(--tw-bg-opacity, 1));
+    background-color: rgb(var(--wui-v-bg-muted, var(--wui-v-on-light, var(--wui-c-200)) var(--wui-v-on-dark, var(--wui-c-800))) / var(--tw-bg-opacity, 1));
 }
 .bg-v-soft {
     --tw-bg-opacity: var(--wui-v-bg-opacity, 1);
-    background-color: rgb(var(--wui-v-bg-soft) / var(--tw-bg-opacity, 1));
+    background-color: rgb(var(--wui-v-bg-soft, var(--wui-v-on-light, var(--wui-c-100)) var(--wui-v-on-dark, var(--wui-c-900))) / var(--tw-bg-opacity, 1));
 }
 .bg-v-soft\/60 {
     --tw-bg-opacity: var(--wui-v-bg-opacity, 1);
-    background-color: rgb(var(--wui-v-bg-soft) / var(--tw-bg-opacity, 1));
+    background-color: rgb(var(--wui-v-bg-soft, var(--wui-v-on-light, var(--wui-c-100)) var(--wui-v-on-dark, var(--wui-c-900))) / var(--tw-bg-opacity, 1));
     --wui-v-bg-opacity: 0.6 !important;
 }
 .bg-v\/50 {
     --tw-bg-opacity: var(--wui-v-bg-opacity, 1);
-    background-color: rgb(var(--wui-v-bg) / var(--tw-bg-opacity, 1));
+    background-color: rgb(var(--wui-v-bg, var(--wui-v-on-light, var(--wui-c-white)) var(--wui-v-on-dark, var(--wui-c-950))) / var(--tw-bg-opacity, 1));
     --wui-v-bg-opacity: 0.5 !important;
 }
 .bg-v\/\[0\.3\] {
     --tw-bg-opacity: var(--wui-v-bg-opacity, 1);
-    background-color: rgb(var(--wui-v-bg) / var(--tw-bg-opacity, 1));
+    background-color: rgb(var(--wui-v-bg, var(--wui-v-on-light, var(--wui-c-white)) var(--wui-v-on-dark, var(--wui-c-950))) / var(--tw-bg-opacity, 1));
     --wui-v-bg-opacity: 0.3 !important;
 }
 .border-v {
     --tw-border-opacity: var(--wui-v-border-opacity, 1);
-    border-color: rgb(var(--wui-v-border) / var(--tw-border-opacity, 1));
+    border-color: rgb(var(--wui-v-border, var(--wui-v-on-light, var(--wui-c-500)) var(--wui-v-on-dark, var(--wui-c-700))) / var(--tw-border-opacity, 1));
 }
 .border-v-muted {
     --tw-border-opacity: var(--wui-v-border-opacity, 1);
-    border-color: rgb(var(--wui-v-border-muted) / var(--tw-border-opacity, 1));
+    border-color: rgb(var(--wui-v-border-muted, var(--wui-v-on-light, var(--wui-c-300)) var(--wui-v-on-dark, var(--wui-c-500))) / var(--tw-border-opacity, 1));
 }
 .border-v\/30 {
     --tw-border-opacity: var(--wui-v-border-opacity, 1);
-    border-color: rgb(var(--wui-v-border) / var(--tw-border-opacity, 1));
+    border-color: rgb(var(--wui-v-border, var(--wui-v-on-light, var(--wui-c-500)) var(--wui-v-on-dark, var(--wui-c-700))) / var(--tw-border-opacity, 1));
     --wui-v-border-opacity: 0.3 !important;
 }
 .text-v {
     --tw-text-opacity: var(--wui-v-fg-opacity, 1);
-    color: rgb(var(--wui-v-fg) / var(--tw-text-opacity, 1));
+    color: rgb(var(--wui-v-fg, var(--wui-v-on-light, var(--wui-c-800)) var(--wui-v-on-dark, var(--wui-c-200))) / var(--tw-text-opacity, 1));
 }
 .text-v-soft {
     --tw-text-opacity: var(--wui-v-fg-opacity, 1);
-    color: rgb(var(--wui-v-fg-soft) / var(--tw-text-opacity, 1));
+    color: rgb(var(--wui-v-fg-soft, var(--wui-v-on-light, var(--wui-c-500)) var(--wui-v-on-dark, var(--wui-c-300))) / var(--tw-text-opacity, 1));
 }
 .text-v\/75 {
     --tw-text-opacity: var(--wui-v-fg-opacity, 1);
-    color: rgb(var(--wui-v-fg) / var(--tw-text-opacity, 1));
+    color: rgb(var(--wui-v-fg, var(--wui-v-on-light, var(--wui-c-800)) var(--wui-v-on-dark, var(--wui-c-200))) / var(--tw-text-opacity, 1));
     --wui-v-fg-opacity: 0.75 !important;
 }
 .s-lg {
@@ -624,16 +603,16 @@
 }
 .placeholder\:text-v::placeholder {
     --tw-text-opacity: var(--wui-v-fg-opacity, 1);
-    color: rgb(var(--wui-v-fg) / var(--tw-text-opacity, 1));
+    color: rgb(var(--wui-v-fg, var(--wui-v-on-light, var(--wui-c-800)) var(--wui-v-on-dark, var(--wui-c-200))) / var(--tw-text-opacity, 1));
 }
 .before\:bg-v::before {
     content: var(--tw-content);
     --tw-bg-opacity: var(--wui-v-bg-opacity, 1);
-    background-color: rgb(var(--wui-v-bg) / var(--tw-bg-opacity, 1));
+    background-color: rgb(var(--wui-v-bg, var(--wui-v-on-light, var(--wui-c-white)) var(--wui-v-on-dark, var(--wui-c-950))) / var(--tw-bg-opacity, 1));
 }
 .hover\:bg-v-soft:hover {
     --tw-bg-opacity: var(--wui-v-bg-opacity, 1);
-    background-color: rgb(var(--wui-v-bg-soft) / var(--tw-bg-opacity, 1));
+    background-color: rgb(var(--wui-v-bg-soft, var(--wui-v-on-light, var(--wui-c-100)) var(--wui-v-on-dark, var(--wui-c-900))) / var(--tw-bg-opacity, 1));
 }
 @media (prefers-color-scheme: dark) {
     .dark\:v-solid {

@@ -1,6 +1,7 @@
 import type { CSS } from "./types";
 import { type VarsProvider, type CSSVarName, type CSSVarValue, type CSSValues, cssVars } from "./vars";
 import { type BuilderContext, VarsGeneratorBase } from "./base";
+import type { VariantScope } from "./config";
 
 export type VariantVars = Record<CSSVarName<'v'>, string>;
 export type VariantPropValue = CSSVarValue<'c'> | CSSVarValue<'v'>;
@@ -50,6 +51,12 @@ export interface VariantContext {
 		pseudos?: ApplyVariantPseudos,
 		target?: CSS.Properties
 	): CSS.Properties;
+
+	/**
+	 * Outside the `universal` scope, gives every bare `var()` read of a variant variable in `css` the default
+	 * variant's value, light or dark, as its fallback.
+	 */
+	withFallback<T extends CSS.Properties>(css: T): T;
 }
 
 export function defaultVariant(vars: VarsProvider): Variant {
@@ -293,10 +300,16 @@ function getCssVars(vars: VarsProvider, props: Omit<Partial<Variant>, 'dark'>) {
 	return cssVars(cssObj, n => vars.v(n));
 }
 
+/** The light values of the built-in default variant, by CSS variable name. */
+export function defaultVariantVars(vars: VarsProvider): VariantVars {
+	const { dark: _, ...props } = defaultVariant(vars);
+	return getCssVars(vars, props);
+}
+
 export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars> implements VariantContext {
 	protected readonly items: Map<string, Variant>;
 
-	constructor(ctx: BuilderContext) {
+	constructor(ctx: BuilderContext, private readonly scope: VariantScope = 'universal') {
 		super(ctx);
 		this.items = new Map([
 			['default', defaultVariant(this.vars)],
@@ -320,8 +333,63 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 		return cssVars;
 	}
 
+	/** Every variable a variant can set, as `initial`: on a child it stops the parent's variant from inheriting. */
+	resetVars(): VariantVars {
+		const reset: VariantVars = {};
+		for (const name of this.items.keys()) {
+			const { '@dark': dark, ...light } = this.cssVars(name);
+			for (const v of Object.keys({ ...light, ...dark })) {
+				reset[v as CSSVarName<'v'>] = 'initial';
+			}
+		}
+
+		return reset;
+	}
+
 	utilCss(v: ApplyVariantMainProp, prop?: ApplyVariantSubProp, alpha?: string) {
-		return this.vApplyProp(v, prop, {}, undefined, alpha);
+		return this.withFallback(this.vApplyProp(v, prop, {}, undefined, alpha));
+	}
+
+	/**
+	 * The two switches a fallback picks its light or dark value with: `var(on-light, <light>) var(on-dark, <dark>)`.
+	 * The one of the current mode is not set, so its fallback is used, and the other one is empty.
+	 * They inherit, so a pseudo-element is in the mode of its element, which a dark selector nested in its rule cannot tell.
+	 */
+	modeVars(): { light: VariantVars, dark: VariantVars } {
+		// Computes to an empty value, and unlike a declaration without a value no minifier drops it
+		const empty = `var(${this.vars.v('nil')},)`;
+
+		return {
+			light: { [this.vars.v('on-dark')]: empty },
+			dark: { [this.vars.v('on-light')]: empty, [this.vars.v('on-dark')]: 'initial' },
+		};
+	}
+
+	withFallback<T extends CSS.Properties>(css: T): T {
+		if (this.scope === 'universal')
+			return css;
+
+		const { '@dark': dark = {}, ...light } = this.cssVars('default');
+		const bareRead = new RegExp(`var\\((${this.vars.v('').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^,()\\s]+)\\)`, 'g');
+
+		// `seen` stops at a default variant whose values refer to each other in a circle
+		const resolve = (value: string, seen: string[] = []): string => value.replace(bareRead, (read, name: CSSVarName<'v'>) => {
+			if (!(name in light) || seen.includes(name))
+				return read;
+
+			const onLight = resolve(light[name], [...seen, name]);
+			const onDark = resolve(dark[name] ?? light[name], [...seen, name]);
+			return onLight === onDark
+				? `var(${name}, ${onLight})`
+				: `var(${name}, ${this.vars.variant('on-light' as VariantProperty, onLight)} ${this.vars.variant('on-dark' as VariantProperty, onDark)})`;
+		});
+
+		const addFallback = (rule: CSS.Properties): CSS.Properties => Object.fromEntries(Object.entries(rule).map(([prop, value]) => [
+			prop,
+			typeof value === 'string' ? resolve(value) : typeof value === 'object' ? addFallback(value) : value
+		]));
+
+		return addFallback(css) as T;
 	}
 
 	apply(v: ApplyVariant = true, pseudos?: ApplyVariantPseudos, target: CSS.Properties = {}) {
@@ -378,7 +446,9 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 		const aVar = pseudo ? `${mvp}-opacity-${pseudo}` as const : `${mvp}-opacity` as const;
 
 		const vVal = this.vars.variant(pseudo ? `${vp}-${pseudo}` : vp);
-		const vAlpha = this.vars.variant(aVar, pseudo ? this.vars.variant(`${mvp}-opacity`, '1') : '1');
+		// Outside the `universal` scope the default variant's opacity is the fallback, which `withFallback` fills in
+		const one = this.scope === 'universal' ? '1' : undefined;
+		const vAlpha = this.vars.variant(aVar, pseudo ? this.vars.variant(`${mvp}-opacity`, one) : one);
 
 		switch (mProp) {
 			case 'bg': this.theme.applyBackgroundColor(vVal, target, vAlpha); break;

@@ -22,7 +22,9 @@ type PostCSS = (plugins: unknown[]) => { process(css: string, options: { from: u
 export type Compile = (
 	candidates: string[],
 	config?: TailwindConfig,
-	options?: Parameters<WindUI>[0]
+	options?: Parameters<WindUI>[0],
+	/** CSS appended to the entry stylesheet, for example a rule that uses `@apply`. */
+	css?: string
 ) => Promise<string>;
 
 /**
@@ -50,8 +52,8 @@ export function tailwind4(fixture: Exclude<Fixture, 'tw3'>): Compile {
 		'@config "./tailwind.config.js";',
 	].join('\n');
 
-	return async (candidates, config = {}, options) => {
-		const { build } = await compile(css, {
+	return async (candidates, config = {}, options, extra = '') => {
+		const { build } = await compile(`${css}\n${extra}`, {
 			base: dir,
 			// The config is built in the test, so `@config` gets it whatever path it names.
 			loadModule: async (id, base) => ({
@@ -77,13 +79,17 @@ export function tailwind3(): Compile {
 	const tailwindcss = require('tailwindcss') as (config: TailwindConfig) => unknown;
 	const plugin = require('@windi-ui/tailwind') as WindUI;
 
-	return async (candidates, config = {}, options) => {
+	let run = 0;
+
+	return async (candidates, config = {}, options, extra = '') => {
 		const result = await postcss([tailwindcss({
 			corePlugins: { preflight: false },
 			...config,
+			// Tailwind 3 caches its context by a hash of the config that sees no difference between two plugin instances.
+			run: run++,
 			content: [{ raw: candidates.join(' ') }],
 			plugins: [plugin(options)],
-		})]).process('@tailwind base;\n@tailwind components;\n@tailwind utilities;\n', { from: undefined });
+		})]).process(`@tailwind base;\n@tailwind components;\n@tailwind utilities;\n${extra}`, { from: undefined });
 
 		return result.css;
 	};

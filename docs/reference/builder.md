@@ -53,7 +53,7 @@ Factories and updaters receive a context object.
 | `vars` | all | Builds CSS variable names and `var()` references. See [`vars`](#vars). |
 | `theme` | all | Reads the Tailwind theme. See [`theme`](#theme). |
 | `colors` | components | `colors.toValue(value, alpha?)` returns a color value with optional opacity. `value` is a shade name (`'600'`, `'accent-600'`, `'white'`) or any CSS color or `var()` reference. |
-| `variants` | components | `variants.apply(variant?, pseudos?, target?)` writes variant declarations into a style object. Components normally use `applyVariant` instead. |
+| `variants` | components | `variants.apply(variant?, pseudos?, target?)` writes variant declarations into a style object. Components normally use `applyVariant` instead. `variants.withFallback(css)` adds the `default` variant's values as fallbacks to the variant variables read in a style object; a component's `style` gets this automatically. |
 
 ### `vars`
 
@@ -65,11 +65,22 @@ Factories and updaters receive a context object.
 | `vars.color.default('600')` | `var(--wui-c-default-600)` |
 | `vars.variant('bg')` | `var(--wui-v-bg)` |
 | `vars.variant('fg-soft', fallback)` | `var(--wui-v-fg-soft, <fallback>)` |
+| `vars.variant('bg', { fallback: true })` | `var(--wui-v-bg, var(--wui-c-white))`: the fallback is the light value of the built-in `default` variant |
 | `vars.size('spacing-3')` | `var(--wui-s-spacing-3)` |
 | `vars.size('text')`, `vars.size('line-height')` | `var(--wui-s-text)`, `var(--wui-s-line-height)` |
 | `vars.c(name)`, `vars.v(name)`, `vars.s(name)` | The bare variable name, for example `--wui-c-600` |
 
 The prefix follows the [`prefix`](/reference/options#prefix) option.
+
+The same object is available outside a builder callback: `varsProvider(prefix)` is exported from
+`@windi-ui/core`.
+
+```ts
+import { varsProvider } from '@windi-ui/core';
+
+const vars = varsProvider('wui');
+vars.variant('border', { fallback: true }); // var(--wui-v-border, var(--wui-c-500))
+```
 
 ### `theme`
 

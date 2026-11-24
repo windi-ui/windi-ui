@@ -26,4 +26,9 @@ export function baseline(name: string, compile: Compile) {
 	it('matches the baseline', async () => {
 		await expect(await compile(candidates)).toMatchFileSnapshot(`./__snapshots__/${name}/baseline.css`);
 	});
+
+	// The 0.7 output: this file changes only when a bug fix changes it.
+	it('matches the universal scope', async () => {
+		await expect(await compile(candidates, {}, { variantScope: 'universal' })).toMatchFileSnapshot(`./__snapshots__/${name}/universal.css`);
+	});
 }

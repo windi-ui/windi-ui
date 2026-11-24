@@ -103,6 +103,3 @@ module.exports = {
   Tracked in [#32](https://github.com/windi-ui/windi-ui/issues/32).
 - **Preflight.** `btn` sets a border width but relies on Tailwind's preflight for `border-style: solid`.
   If you disable preflight, add the border style yourself.
-- **Every element gets the default variant.** The plugin adds a `*` rule that sets the `--wui-v-*` variables of
-  the `default` variant on every element. Making that opt-in is tracked in
-  [#31](https://github.com/windi-ui/windi-ui/issues/31).

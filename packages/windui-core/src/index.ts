@@ -1,5 +1,5 @@
 import type { ThemeProvider } from './types';
-import { resolveConfig, type Config } from './config';
+import { resolveConfig, type Config, type VariantScope } from './config';
 import { varsProvider } from './vars';
 import { ColorsGenerator } from "./colors";
 import { VariantsGenerator } from "./variants";
@@ -20,10 +20,11 @@ export function create(config: Config) {
 
 	return {
 		vars,
+		config: rConfig,
 		generator(theme: ThemeProvider): Generator {
 			const ctx = { vars, theme };
 			const colors = new ColorsGenerator(ctx);
-			const variants = new VariantsGenerator(ctx);
+			const variants = new VariantsGenerator(ctx, rConfig.variantScope);
 			const sizes = new SizesGenerator(ctx);
 			const components = new ComponentsGenerator({ ...ctx, colors, variants });
 
@@ -37,7 +38,8 @@ export function create(config: Config) {
 	};
 }
 
-export type { Config };
+export { varsProvider, type VarsProvider } from './vars';
+export type { Config, VariantScope };
 export type * from './types';
 export type { ColorShade, ExColorShade } from './colors';
 export type { Variant, VariantProperties as VariantProps, ApplyVariant, ApplyVariantMainProp, ApplyVariantSubProp, ApplyVariantProp } from './variants';

@@ -40,7 +40,23 @@ function WindUITailwindCSS(config: Config = {}): ReturnType<typeof createPlugin>
 
 		tw.addBase({ ':root': gt.colors.rootVars() });
 		tw.addBase({ ':root': gt.sizes.rootVars() });
-		tw.addBase({ '*': applyDark(darkSelector, gt.variants.rootVars()) });
+
+		const scope = wiu.config.variantScope;
+		if (scope === 'universal') {
+			tw.addBase({ '*': applyDark(darkSelector, gt.variants.rootVars()) });
+		} else {
+			const mode = gt.variants.modeVars();
+			tw.addBase({ ':root': mode.light });
+			tw.addBase({ '*': applyDark(darkSelector, { '@dark': mode.dark }) });
+
+			const reset = gt.variants.resetVars();
+			if (scope === 'element') {
+				tw.addBase({ ':where([class*="v-"]) > *': reset });
+			}
+
+			// For an element that gets its variant without a `v-*` class of its own, such as `.card { @apply v-solid }`
+			tw.addUtilities({ '.v-scope': { ':where(&) > *': reset } });
+		}
 
 		const colorNames = gt.colors.names();
 		const variantNames = gt.variants.names();

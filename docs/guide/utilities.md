@@ -62,7 +62,8 @@ Each utility has three more levels: `soft`, `muted` and `accent`.
 ```
 
 The inner elements have no `v-*` class, so they use the default variant. Each element resolves its variant by
-itself; see [Where to put the class](/guide/variants#where-to-put-the-class).
+itself; see [Where to put the class](/guide/variants#where-to-put-the-class). On a pseudo-element
+(`before:bg-v`, `placeholder:text-v`) the utilities use the variant of the element it belongs to.
 
 ## Opacity modifiers
 

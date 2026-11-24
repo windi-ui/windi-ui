@@ -29,6 +29,8 @@ export class ComponentsGenerator extends BuilderBase<IComponent, ComponentBuilde
 				this.ctx.variants.apply(component.applyVariant, component.applyVariantPseudos, css[cClass]);
 			}
 
+			css[cClass] = this.ctx.variants.withFallback(css[cClass]);
+
 			yield css;
 		}
 	}

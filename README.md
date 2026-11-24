@@ -76,6 +76,16 @@ WindiUI comes with a few built-in components (e.g. `btn`, `badge`, ... more to c
 
 You can find more code examples in the [playground](/playground/vue-tailwindv4/src/App.vue).
 
+## Upgrading from 0.7
+
+See [Changes in 0.8](docs/changes-0.8.md). The one thing to check: 0.8 no longer sets the default variant on every
+element with a `*` rule (the new `variantScope` option, default `'element'`). `btn`, `badge` and the `bg-v`,
+`text-v`, `border-v` utilities look the same, but your own CSS that reads a variant variable directly, such as
+`background: var(--wui-v-bg)`, on an element without a `v-*` class no longer gets a value. Either set
+`windui({ variantScope: 'universal' })` to keep the 0.7 output, or give the rule a variant with
+`@apply v-default v-scope`. A rule that uses `@apply v-*` should also apply `v-scope`, so its children do not
+inherit the variant.
+
 ## Documentation
 
 The full guide and reference live in [`docs/`](docs/guide/introduction.md), a VitePress site with live examples.

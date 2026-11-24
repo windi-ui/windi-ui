@@ -1,7 +1,7 @@
 import { cssEsc } from './utils';
 import type { ColorShade, ExColorShade } from './colors';
 import type { SizeProperty } from './size';
-import type { VariantProperty } from './variants';
+import { defaultVariantVars, type VariantProperty } from './variants';
 
 export type VarType = 'c' | 'v' | 's';
 export type VarName<T extends VarType = VarType> = `${T}-${string}`;
@@ -20,7 +20,8 @@ export interface VarsProvider {
 		accent(name: ColorShade, fallback?: string): CSSVarValue<'c'>;
 	};
 	size(name: SizeProperty, fallback?: string): CSSVarValue<'s'>;
-	variant(name: VariantProperty, fallback?: string): CSSVarValue<'v'>;
+	/** `{ fallback: true }` falls back to the light value of the built-in default variant. */
+	variant(name: VariantProperty, fallback?: string | { fallback: true }): CSSVarValue<'v'>;
 }
 
 export function varsProvider(prefix: string): VarsProvider {
@@ -43,17 +44,23 @@ export function varsProvider(prefix: string): VarsProvider {
 	color.default = (name: ColorShade) => color(`default-${name}`);
 	color.accent = (name: ColorShade) => color(`accent-${name}`);
 
-	return {
+	const vars: VarsProvider = {
 		c, v, s,
 		color,
 
 		variant(name, fallback) {
+			if (typeof fallback === 'object') {
+				fallback = defaultVariantVars(vars)[cssEsc(v(name))];
+			}
+
 			return varFunc(v(name), fallback);
 		},
 		size(name, fallback) {
 			return varFunc(s(name), fallback);
 		}
 	};
+
+	return vars;
 }
 
 export function cssVars<TKey extends string>(
