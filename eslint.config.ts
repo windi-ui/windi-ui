@@ -2,7 +2,7 @@ import eslint from '@eslint/js';
 import tseslint, { type Config } from 'typescript-eslint';
 
 const config: Config = tseslint.config(
-	{ ignores: ['node_modules', '**/dist', 'playground'] },
+	{ ignores: ['node_modules', '**/dist', 'playground', 'docs/.vitepress/cache'] },
 
 	eslint.configs.recommended,
 	{
@@ -20,7 +20,7 @@ const config: Config = tseslint.config(
 	{
 		languageOptions: {
 			parserOptions: {
-				project: ['packages/*/tsconfig.json', 'tsconfig.node.json', 'tsconfig.json'],
+				project: ['packages/*/tsconfig.json', 'docs/tsconfig.json', 'tsconfig.node.json', 'tsconfig.json'],
 				tsconfigRootDir: __dirname // import.meta.dirname
 			}
 		}

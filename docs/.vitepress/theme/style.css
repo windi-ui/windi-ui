@@ -1,0 +1,60 @@
+/* Tailwind without preflight, and unlayered so `.btn` is not overridden by VitePress's own unlayered base styles. */
+@import "tailwindcss/theme";
+@import "tailwindcss/utilities";
+@config "../../tailwind.config.ts";
+
+/* Brand colours from the logo: cyan #22d3ee -> indigo #6366f1 -> violet #7c3aed */
+:root {
+	--vp-c-brand-1: #4f46e5;
+	--vp-c-brand-2: #6366f1;
+	--vp-c-brand-3: #6366f1;
+	--vp-c-brand-soft: rgb(99 102 241 / 0.14);
+
+	--vp-home-hero-name-color: transparent;
+	--vp-home-hero-name-background: linear-gradient(120deg, #22d3ee, #6366f1 55%, #7c3aed);
+	--vp-home-hero-image-background-image: linear-gradient(-45deg, #22d3ee 30%, #7c3aed);
+	--vp-home-hero-image-filter: blur(56px);
+}
+
+.dark {
+	--vp-c-brand-1: #a5b4fc;
+	--vp-c-brand-2: #818cf8;
+	--vp-c-brand-3: #6366f1;
+	--vp-c-brand-soft: rgb(129 140 248 / 0.16);
+}
+
+.VPHero .VPImage {
+	opacity: 1;
+}
+
+.VPHero .image-bg {
+	opacity: 0.35;
+}
+
+/* Live example box */
+.wui-demo {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem;
+	margin: 16px 0;
+	padding: 1.25rem;
+	border: 1px solid var(--vp-c-divider);
+	border-radius: 8px;
+	background-color: var(--vp-c-bg);
+}
+
+/* The two preflight rules WindUI's components rely on; zero specificity for the width so utilities and `.btn` win. */
+:where(.wui-demo) * {
+	border-width: 0;
+}
+
+.wui-demo * {
+	border-style: solid;
+}
+
+.home-example {
+	max-width: 1152px;
+	margin: 48px auto 0;
+	padding: 0 24px;
+}

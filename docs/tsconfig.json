@@ -1,0 +1,5 @@
+{
+	"extends": "../tsconfig.common.json",
+	"include": ["*.config.ts", ".vitepress/**/*.ts"],
+	"exclude": [".vitepress/cache", ".vitepress/dist"]
+}

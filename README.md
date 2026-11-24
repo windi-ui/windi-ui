@@ -1,3 +1,7 @@
+<p align="center">
+	<img src="docs/public/logo-lockup.svg" alt="WindUI" width="280">
+</p>
+
 # WindiUI
 
 🚧 under development 🚧
@@ -72,6 +76,11 @@ WindiUI comes with a few built-in components (e.g. `btn`, `badge`, ... more to c
 
 You can find more code examples in the [playground](/playground/vue-tailwindv4/src/App.vue).
 
+## Documentation
+
+The full guide and reference live in [`docs/`](docs/guide/introduction.md), a VitePress site with live examples.
+Run it locally with `pnpm build && pnpm docs:dev`.
+
 ## Contributing
 
 Contributions are welcome! Please submit issues or pull requests.
@@ -112,6 +121,10 @@ The repository is organized as a monorepo with the following packages:
 
 - **`vue-tailwind`**: A Vue 3 project showcasing WindUI with Tailwind CSS v3.
 - **`vue-tailwindv4`**: Another Vue 3 project demonstrating WindUI with Tailwind CSS v4.
+
+#### Docs
+
+- **`docs`**: The VitePress documentation site (`pnpm docs:dev`, `pnpm docs:build`, `pnpm docs:preview`). It loads the built packages, so run `pnpm build` first.
 
 ## License
 

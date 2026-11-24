@@ -6,12 +6,15 @@
 	"type": "module",
 	"packageManager": "pnpm@12.23.0",
 	"scripts": {
-		"build": "pnpm -r --filter !./playground/* run build",
+		"build": "pnpm -r --filter \"./packages/*\" run build",
 		"play": "pnpm -C playground/vue-tailwind run dev",
 		"playv4": "pnpm -C playground/vue-tailwindv4 run dev",
-		"watch": "pnpm -r --parallel --filter !./playground/* run build --watch",
+		"watch": "pnpm -r --parallel --filter \"./packages/*\" run build --watch",
 		"dev": "pnpm build && pnpm play",
 		"devv4": "pnpm build && pnpm playv4",
+		"docs:dev": "pnpm -C docs run dev",
+		"docs:build": "pnpm -C docs run build",
+		"docs:preview": "pnpm -C docs run preview",
 		"typecheck": "tsc --build --force",
 		"lint": "eslint --cache .",
 		"lint:fix": "pnpm lint --fix"
