@@ -2,6 +2,7 @@ import { default as createPlugin } from 'tailwindcss/plugin';
 import type { CSSRuleObject, DarkModeConfig } from 'tailwindcss/types/config';
 import { create, type Builder, type Config, type ColorShade, type ColorValue, type ApplyVariantMainProp, type ApplyVariantSubProp } from "@windi-ui/core";
 import { CONFIG, isLoadingConfig, loadWindUIConfig } from './config';
+import { classSource } from './safelist';
 import { createTailwindTheme } from './theme';
 import { getDarkSelector, applyDark, toDarkMode, VARIANT_DARK } from './utils/darkMode';
 import { tailwindAtLeast } from './utils/version';
@@ -48,7 +49,7 @@ export interface TailwindV4Plugin {
 	config?: any;
 }
 
-const OPTIONS = ['prefix', 'rootSelector', 'default', 'accent', 'variantScope', 'darkSelector', 'build', 'debug', 'config'];
+const OPTIONS = ['prefix', 'rootSelector', 'default', 'accent', 'variantScope', 'darkSelector', 'build', 'safelist', 'debug', 'config'];
 
 /** Inline options over those of the config file. An `@plugin` block writes the names in kebab-case. */
 function resolveOptions(options: PluginOptions = {}): Config {
@@ -112,6 +113,7 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 
 	let utilities: Map<string, ColorValue> | undefined;
 	let utilitiesReported = false;
+	let safelistReported = false;
 
 	return Object.assign(createPlugin((tw) => {
 		const tp = createTailwindTheme(tw, ver, utilities && [...utilities.keys()]);
@@ -161,6 +163,20 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 		const colorNames = gt.colors.names();
 		const variantNames = gt.variants.names();
 		const sizeNames = gt.sizes.names();
+
+		if (wiu.config.safelist && tp.ver === 3) {
+			// A `safelist` in the plugin's config is dropped when the app has its own, so the pattern goes into the
+			// resolved one. Tailwind 3 reads it after the plugins ran, and matches it against the classes they registered.
+			const list = tw.config<{ pattern?: RegExp }[]>('safelist');
+			const pattern = new RegExp(`^${tw.config('prefix', '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[cvs]-`);
+			if (!list.some(entry => String(entry?.pattern) === String(pattern))) list.push({ pattern });
+		}
+
+		// Tailwind 4 takes no safelist from a plugin; the stylesheet has to name the classes.
+		if (wiu.config.safelist && tp.ver === 4 && !safelistReported) {
+			safelistReported = true;
+			console.warn(`WindUI: \`safelist\` only works on Tailwind 3. On Tailwind 4, add this line to the stylesheet (\`safelistSource()\` from "@windi-ui/tailwind/safelist" returns the string, to keep it current with a test):\n@source inline("${classSource({ c: colorNames, v: variantNames, s: sizeNames })}");`);
+		}
 
 		tw.matchUtilities({
 			c: known(colorNames, (val) => gt.colors.cssVars(val))

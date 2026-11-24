@@ -45,6 +45,8 @@ export interface ResolvedConfig {
 	/** Left out, dark mode follows Tailwind's own. */
 	darkSelector?: DarkSelectorOption;
 	build?: (builder: Builder) => void;
+	/** Asks the host to emit every `c-*`, `v-*` and `s-*` class, also those it does not find in use. */
+	safelist: boolean;
 	/** Logs what is otherwise skipped silently, such as a theme palette without all 11 shades. */
 	debug: boolean;
 }
@@ -58,6 +60,7 @@ export function resolveConfig(config: Config): ResolvedConfig {
 		variantScope = 'element',
 		darkSelector,
 		build,
+		safelist = false,
 		debug = false
 	} = config;
 
@@ -69,6 +72,7 @@ export function resolveConfig(config: Config): ResolvedConfig {
 		variantScope,
 		darkSelector,
 		build,
+		safelist,
 		debug
 	};
 }

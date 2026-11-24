@@ -86,6 +86,27 @@ WindiUI comes with a few built-in components (e.g. `btn`, `badge`, ... more to c
 
 You can find more code examples in the [playground](/playground/vue-tailwindv4/src/App.vue).
 
+#### Class names built at runtime
+
+Tailwind only emits the classes it finds in your source. A class built at runtime, such as `c-${color}` from a
+component prop, has to be safelisted.
+
+On Tailwind v4, add one line to the stylesheet. `safelistSource()` returns the string for your config:
+
+```css
+@source inline("{c-{accent,accent-accent,accent-blue,accent-default,accent-red,blue,default,red},v-{default,light,outline,solid},s-{default,lg,sm,xl,xs}}");
+```
+
+```ts
+import { safelistSource } from '@windi-ui/tailwind/safelist';
+
+safelistSource({}, { palettes: ['blue', 'red'] }); // the string above; without `palettes`, every palette of the default theme
+```
+
+On Tailwind v3, `windui({ safelist: true })` emits every `c-*`, `v-*` and `s-*` class.
+
+See [the `safelist` option](docs/reference/options.md#safelist) for the details.
+
 ## Upgrading from 0.7
 
 See [Changes in 0.8](docs/changes-0.8.md). The one thing to check: 0.8 no longer sets the default variant on every

@@ -4,6 +4,7 @@ import { autoDark, darkSelector } from './dark';
 import { baseline } from './baseline';
 import { forms } from './forms';
 import { tailwind4 } from './helpers';
+import { safelistSourceCss } from './safelist';
 
 const compile = tailwind4('tw4');
 
@@ -13,6 +14,7 @@ palettes(compile);
 palettesCss(compile);
 builderColors(compile);
 rootSelectorCss(compile);
+safelistSourceCss(compile);
 forms(compile);
 darkSelector(compile);
 autoDark(compile);

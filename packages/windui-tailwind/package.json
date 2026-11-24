@@ -32,6 +32,10 @@
 			"import": "./dist/config.mjs",
 			"require": "./dist/config.cjs"
 		},
+		"./safelist": {
+			"import": "./dist/safelist.mjs",
+			"require": "./dist/safelist.cjs"
+		},
 		"./v3": {
 			"import": "./dist/v3.mjs",
 			"require": "./dist/v3.cjs"

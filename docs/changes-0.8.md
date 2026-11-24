@@ -174,3 +174,15 @@ The builder had add, update and remove for variants, sizes and components, but n
 2. **A var-backed theme color on Tailwind v3 no longer logs `Unsupported color format`.** A value that
    contains `var(` is taken to hold RGB channels and is used as it is, which is what happened after the
    warning.
+
+## A safelist for class names built at runtime
+
+`c-${color}` and `v-${variant}` built from component props are not found by Tailwind's scanner, and apps kept
+a hand-written safelist for them ([#37](https://github.com/windi-ui/windi-ui/issues/37)). New:
+
+- On Tailwind v3, the [`safelist`](/reference/options#safelist) option emits every `c-*`, `v-*` and `s-*`
+  class.
+- On Tailwind v4, `safelistSource()` from the new `@windi-ui/tailwind/safelist` entry returns the string for
+  one `@source inline("...")` line in the stylesheet.
+
+**Migration:** none. Without the option the output is unchanged.

@@ -234,6 +234,77 @@ Called once per compilation, after the built-in variants, sizes and components a
 generated. Use the [builder](/reference/builder) to add, update or remove them. See
 [Customizing](/guide/customizing) for a walkthrough.
 
+## `safelist`
+
+- Type: `boolean`
+- Default: `false`
+- Tailwind v3 only
+
+Tailwind emits the classes it finds in your source. A class that is built at runtime, such as `c-${color}`
+from a component prop, is not found, and has to be safelisted.
+
+### Tailwind v3
+
+`safelist: true` emits every `c-*`, `v-*` and `s-*` class, used or not: one per palette and accent palette,
+variant and size, including those of the builder. It adds a pattern to the `safelist` of the Tailwind config,
+next to your own entries, and follows Tailwind's `prefix`.
+
+```js
+windui({ safelist: true });
+```
+
+That is about 60 small rules with Tailwind's default theme. To list fewer, leave the option off and write the
+classes you need in the `safelist` of the Tailwind config.
+
+### Tailwind v4
+
+A plugin cannot safelist on Tailwind v4; the stylesheet does it with `@source inline()`. `safelistSource()`
+returns the string to put there:
+
+```ts
+import { safelistSource } from '@windi-ui/tailwind/safelist';
+import config from './windui.config';
+
+safelistSource(config);
+// '{c-{accent,accent-accent,...,zinc},v-{default,light,outline,solid},s-{default,lg,sm,xl,xs}}'
+safelistSource(config, { axes: ['c', 'v'] });
+safelistSource(config, { axes: ['c'], palettes: ['red', 'green'] });
+// 'c-{accent,accent-accent,accent-default,accent-green,accent-red,default,green,red}'
+```
+
+```css
+@source inline("{c-{...},v-{default,light,outline,solid},s-{default,lg,sm,xl,xs}}");
+```
+
+The line is written by hand. A test keeps it current:
+
+```ts
+import { readFileSync } from 'node:fs';
+import { expect, it } from 'vitest';
+import { safelistSource } from '@windi-ui/tailwind/safelist';
+import config from './windui.config';
+
+it('safelists the WindUI classes', () => {
+	expect(readFileSync('src/main.css', 'utf8')).toContain(`@source inline("${safelistSource(config)}");`);
+});
+```
+
+| Argument | Description |
+| --- | --- |
+| `config` | The WindUI options, or the plugin made from them, which is what a [config module](/reference/config-file#config-module) exports. Its `build` runs, so colors, variants and sizes of the builder are listed. |
+| `options.axes` | Which kinds to list, in that order: `'c'`, `'v'`, `'s'`. All three by default. |
+| `options.palettes` | The names of the theme's palettes with all 11 shades. By default the 26 of Tailwind v4's default theme. |
+
+- The names are sorted, so the string only changes when the classes do.
+- **`palettes`.** `safelistSource()` runs without Tailwind, so it does not see your theme. With the default
+  theme of a current Tailwind v4 it returns exactly the classes the plugin registers. Pass `palettes` when
+  your `@theme` adds or removes palettes, when you only need some of them, or on an older Tailwind v4 such as
+  4.1, which has no `mauve`, `olive`, `mist` and `taupe`. A class that does not exist is ignored by Tailwind.
+  `default`, `accent`, the `accent-*` classes and the colors of `build` are always added.
+- A `default` or `accent` option that names a palette needs that palette in the list.
+- `safelist: true` on Tailwind v4 changes nothing. It logs a warning once with the `@source inline()` line
+  for the classes that are registered in that build, which you can paste.
+
 ## `debug`
 
 - Type: `boolean`
@@ -265,6 +336,7 @@ passes no `build` searches for `windui.config.*` and `package.json#windui`. `fal
 | `@windi-ui/tailwind/v4` | The same, always building for Tailwind v4 and typed for v4's `Config`. |
 | `@windi-ui/tailwind/v3` | The same, always building for Tailwind v3. |
 | `@windi-ui/tailwind/config` | `defineConfig` and [`loadWindUIConfig`](/reference/config-file#loadwinduiconfig). Node.js only. |
+| `@windi-ui/tailwind/safelist` | [`safelistSource`](#tailwind-v4). Node.js only. |
 
 The `/v3` and `/v4` entries are for a setup where the automatic choice is wrong. All three plugin entries
 work with `@plugin` and take the same options.
