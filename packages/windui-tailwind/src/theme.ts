@@ -11,16 +11,17 @@ function _interopDefaultCompat<T, TR = MDefault<T>>(e: T): TR { return ((e && ty
 const require = createRequire(import.meta.url);
 
 /** `{ red: { 500: '#f00', DEFAULT: '#e00' } }` to `{ 'red-500': '#f00', red: '#e00' }`, as Tailwind's own helper does. */
-function flattenColorPalette(colors: RecursiveRecord, prefix = '', flat: Record<string, string> = {}) {
+function flattenColorPalette(colors: RecursiveRecord, prefix = '', flat: Record<string, string> = {}, css = colors.__CSS_VALUES__ ?? {}) {
 	for (const [name, value] of Object.entries(colors)) {
-		// Tailwind 4 keeps the CSS variables of a palette under this key
+		// Tailwind 4 keeps the names of the colors that come from the stylesheet's theme under this key
 		if (name === '__CSS_VALUES__') continue;
 
 		const key = !prefix ? name : name === 'DEFAULT' ? prefix : `${prefix}-${name}`;
 		if (typeof value !== 'object') {
-			flat[key] = value;
+			// Such a color is flat, next to the palette a config gives under the same name, and is the one Tailwind uses.
+			if (!prefix || !(key in (css as object))) flat[key] = value;
 		} else if (value) {
-			flattenColorPalette(value, key, flat);
+			flattenColorPalette(value, key, flat, css);
 		}
 	}
 
@@ -209,7 +210,14 @@ export class TailwindV3Theme extends TailwindTheme {
 		return colors;
 	}
 
+	toColor(value: string): string {
+		return this.colorToRgb(value);
+	}
+
 	private colorToRgb(color: string): string {
+		// A variable is taken to hold the channels already.
+		if (color.includes('var(')) return color;
+
 		const parsed = this.parseColor(color, { loose: true });
 
 		if (parsed?.mode.startsWith('rgb')) {

@@ -128,3 +128,28 @@ What does not change:
 in a JavaScript config. Its variants now follow that declaration instead of the operating system, which is
 what the declaration asks for. To keep the 0.7 output, set `darkSelector: 'media'`
 (`dark-selector: media;`).
+
+## `default` and `accent` can be chosen
+
+`default` was always `gray` and `accent` always `blue`
+([#35](https://github.com/windi-ui/windi-ui/issues/35)). The new
+[`default` and `accent`](/reference/options#default-and-accent) options take a palette name, CSS variables or
+the 11 shades:
+
+```ts
+windui({ default: 'slate', accent: 'indigo' });
+```
+
+Without an option nothing changes for a default setup: the CSS is the same as before.
+
+Also new: the [`debug`](/reference/options#debug) option.
+
+**Migration:** none is required. Three things can be observed:
+
+1. **The "does not have all 11 shades" warning is gone.** A theme palette with fewer shades, such as
+   `brand: { 500: ..., 600: ... }`, logged it on every build. It is now only logged with `debug: true`.
+2. **A `default` or `accent` palette in a Tailwind v4 `@theme` block now reaches WindUI.** In 0.7,
+   `--color-default-*` changed `bg-default-*` but not `--wui-c-default-*`, `c-default` or the color of an
+   element without a `c-*` class, which stayed gray. They now follow the theme, like `bg-default-*` does.
+3. **A theme palette that sets only some shades of `default` or `accent` logs a warning.** The output is the
+   0.7 output, a mix with `gray` or `blue`; the warning names the shades that are missing.

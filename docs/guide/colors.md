@@ -61,7 +61,7 @@ dark mode by themselves.
 
 Two palette names have a role:
 
-| Name | Role | Value today |
+| Name | Role | Value unless you choose one |
 | --- | --- | --- |
 | `default` | The palette used when no `c-*` class applies. It fills `--wui-c-*` on `:root`. | Tailwind's `gray` |
 | `accent` | A second palette available next to the current one, used by the `accent` level of variants. | Tailwind's `blue` |
@@ -69,7 +69,51 @@ Two palette names have a role:
 Both are added to your theme, so `bg-default-100` and `text-accent-600` work as ordinary Tailwind colors, and
 `c-default` and `c-accent` exist as classes.
 
-Making the two palettes configurable is tracked in [#35](https://github.com/windi-ui/windi-ui/issues/35).
+### Choosing the two palettes
+
+Set the [`default` and `accent` options](/reference/options#default-and-accent) to the name of a palette of
+your theme:
+
+::: code-group
+
+```ts [JavaScript]
+windui({ default: 'slate', accent: 'indigo' });
+```
+
+```css [@plugin block (Tailwind v4)]
+@plugin "@windi-ui/tailwind" {
+	default: slate;
+	accent: indigo;
+}
+```
+
+:::
+
+In JavaScript an option also takes CSS variables or the 11 shades themselves:
+
+```ts
+windui({
+	default: { vars: '--ui-color-neutral' },             // var(--ui-color-neutral-50) ... var(--ui-color-neutral-950)
+	accent: { 50: '#eef2ff', /* ... */ 950: '#1e1b4b' },
+});
+```
+
+Without an option, a `default` or `accent` palette of your Tailwind theme is used, and without that, `gray`
+and `blue`:
+
+```css
+@theme {
+	--color-default-50: oklch(0.985 0.002 106);
+	/* ... all 11 shades ... */
+	--color-default-950: oklch(0.147 0.004 49);
+}
+```
+
+Tailwind merges such a palette into `gray` or `blue` shade by shade, so give it all 11 shades. WindUI warns
+during the build when it finds only some of them, and names the ones that still come from `gray` or `blue`.
+
+`bg-default-*`, `text-accent-*`, `c-default`, `c-accent`, `--wui-c-default-*` and `--wui-c-accent-*` all
+follow the palette that was chosen.
 
 ### Changing the accent
 
@@ -127,7 +171,8 @@ export default {
 
 Rules:
 
-- A palette needs all 11 shades. An incomplete one is skipped with a console warning, and gets no `c-*` class.
+- A palette needs all 11 shades. An incomplete one gets no `c-*` class. The [`debug`](/reference/options#debug)
+  option logs the palettes that were skipped for this.
 - Nested palettes are flattened: `colors.brand.primary.500` becomes `c-brand-primary`.
 - The name `c` is reserved for the current color.
 - On Tailwind v3, shades are converted to RGB channels so opacity modifiers work. Hex, `rgb()` and `hsl()`

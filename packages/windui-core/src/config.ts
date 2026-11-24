@@ -1,4 +1,5 @@
 import { Builder } from "./builder";
+import type { ColorShade } from "./colors";
 
 /**
  * Where the default variant comes from for an element without a `v-*` class of its own:
@@ -18,12 +19,24 @@ export type DarkSelectorOption =
 	| ['variant', string | string[]]
 	| (string & {});
 
+/**
+ * A palette of 11 shades: the name of a palette of the theme, CSS variables named `{vars}-{shade}`, or the shades
+ * themselves.
+ */
+export type ColorValue = string | { vars: string } | Record<ColorShade, string>;
+
 export interface ResolvedConfig {
 	prefix: string;
+	/** The palette behind `default`. Left out, it is a complete `default` palette of the theme, or else gray. */
+	default?: ColorValue;
+	/** The palette behind `accent`. Left out, it is a complete `accent` palette of the theme, or else blue. */
+	accent?: ColorValue;
 	variantScope: VariantScope;
 	/** Left out, dark mode follows Tailwind's own. */
 	darkSelector?: DarkSelectorOption;
 	build?: (builder: Builder) => void;
+	/** Logs what is otherwise skipped silently, such as a theme palette without all 11 shades. */
+	debug: boolean;
 }
 
 export type Config = Partial<ResolvedConfig>;
@@ -33,14 +46,18 @@ export function resolveConfig(config: Config): ResolvedConfig {
 		prefix = 'wui',
 		variantScope = 'element',
 		darkSelector,
-		build
+		build,
+		debug = false
 	} = config;
 
 	return {
 		prefix,
+		default: config.default,
+		accent: config.accent,
 		variantScope,
 		darkSelector,
-		build
+		build,
+		debug
 	};
 }
 

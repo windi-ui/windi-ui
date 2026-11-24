@@ -15,6 +15,8 @@ export interface ThemeProvider {
 	applyBackgroundColor(value: string, target: CSS.Properties, alpha?: string): void;
 	applyBorderColor(value: string, target: CSS.Properties, alpha?: string): void;
 	colorValue(value: string, alpha?: number | string): string;
+	/** Converts a color to the form `colors()` returns them in. Left out, a color is used as it is written. */
+	toColor?(value: string): string;
 }
 
 export { CSS };

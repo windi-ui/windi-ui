@@ -16,6 +16,8 @@ function keyValuePairs(
 	}, {} as Record<string, string>);
 }
 
+const FALLBACK = { default: 'gray', accent: 'blue' } as const;
+
 const VARIANT_UTILS = { v: 'default', 'v-soft': 'soft', 'v-muted': 'muted', 'v-accent': 'accent' } as const;
 
 type UtilExtra = { modifier: string | null };
@@ -46,7 +48,7 @@ export interface TailwindV4Plugin {
 	config?: any;
 }
 
-const OPTIONS = ['prefix', 'variantScope', 'darkSelector', 'build', 'config'];
+const OPTIONS = ['prefix', 'default', 'accent', 'variantScope', 'darkSelector', 'build', 'debug', 'config'];
 
 /** Inline options over those of the config file. An `@plugin` block writes the names in kebab-case. */
 function resolveOptions(options: PluginOptions = {}): Config {
@@ -77,9 +79,26 @@ export function createWindUIPlugin<P = ReturnType<typeof createPlugin>>(ver?: 3 
 function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof createPlugin> {
 	const wiu = create(config);
 
+	// The palettes the theme gets when no option names one, as the theme callback below saw them.
+	let fallback: Record<'default' | 'accent', Record<string, string>> | undefined;
+	let mixReported = false;
+
 	return Object.assign(createPlugin((tw) => {
 		const tp = createTailwindTheme(tw, ver);
 		const gt = wiu.generator(tp);
+
+		// A theme that sets only some shades of `default` or `accent` has them merged into the fallback, shade by shade.
+		for (const name of fallback && !mixReported ? ['default', 'accent'] as const : []) {
+			if (wiu.config[name] != null) continue;
+
+			const base = fallback![name];
+			const palette = tw.theme<Record<string, string>>(`colors.${name}`, {});
+			const missing = Object.keys(base).filter(s => palette[s] === base[s]);
+			if (missing.length && missing.length < Object.keys(base).length) {
+				mixReported = true;
+				console.warn(`WindUI: the theme's "${name}" palette has no shade ${missing.join(', ')}; ${missing.length > 1 ? 'these are' : 'it is'} taken from ${FALLBACK[name]}. Give it all 11 shades, or set the \`${name}\` option.`);
+			}
+		}
 
 		// Tailwind 4 has no `darkMode` unless a JS config sets one. From 4.1.17 it expands `@variant dark` in plugin CSS.
 		const darkMode = wiu.config.darkSelector != null
@@ -154,14 +173,19 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 					// The Tailwind that resolves the config can: only Tailwind 3 passes `breakpoints` and `negative`.
 					const isV3 = ver ? ver === 3 : 'breakpoints' in utils;
 
+					// A color of the theme that follows WindUI's variables.
+					const follow = (prefix: '' | 'default-' | 'accent-') => keyValuePairs(Object.keys(colors.gray), v => {
+						const c = wiu.vars.color(`${prefix}${v as ColorShade}`);
+						return isV3 ? `rgb(${c} / <alpha-value>)` : c;
+					});
+
+					fallback = { default: colors[FALLBACK.default], accent: colors[FALLBACK.accent] };
+
 					return {
-						c: keyValuePairs(Object.keys(colors.gray), v => {
-							const c = wiu.vars.color(v as ColorShade);
-							return isV3 ? `rgb(${c} / <alpha-value>)` : c;
-						}),
-						// TODO: add as configurable option
-						default: colors.gray,
-						accent: colors.blue,
+						c: follow(''),
+						// With an option the theme color follows the root variables, which hold the palette the option gives.
+						default: wiu.config.default != null ? follow('default-') : fallback.default,
+						accent: wiu.config.accent != null ? follow('accent-') : fallback.accent,
 					};
 				},
 			}

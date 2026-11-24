@@ -10,6 +10,8 @@ import windui from '@windi-ui/tailwind';
 
 windui({
 	prefix: 'wui',
+	default: 'slate',
+	accent: 'indigo',
 	variantScope: 'element',
 	darkSelector: '.dark',
 	build(builder) {
@@ -21,6 +23,8 @@ windui({
 ```css [@plugin block (Tailwind v4)]
 @plugin "@windi-ui/tailwind" {
 	prefix: wui;
+	default: slate;
+	accent: indigo;
 	variant-scope: element;
 	dark-selector: .dark;
 }
@@ -59,6 +63,43 @@ The prefix of every CSS variable WindUI writes and reads: `--<prefix>-c-*`, `--<
 ```ts
 windui({ prefix: 'app' }); // --app-c-500, --app-v-bg, --app-s-text
 ```
+
+## `default` and `accent`
+
+- Type: `string | { vars: string } | Record<shade, string>`
+- Default: none; a complete `default` or `accent` palette of the Tailwind theme, or else `gray` and `blue`
+
+The palettes behind the names [`default` and `accent`](/guide/colors#default-and-accent).
+
+| Value | Meaning |
+| --- | --- |
+| `'slate'` | The palette of that name in the Tailwind theme. In an `@plugin` block this is the only form. |
+| `{ vars: '--brand' }` | The 11 shades are `var(--brand-50)` to `var(--brand-950)`. You define those variables. |
+| `{ 50: '#f8fafc', ..., 950: '#020617' }` | The 11 shades themselves. |
+
+```ts
+windui({ default: 'slate', accent: { vars: '--brand' } });
+```
+
+The order is:
+
+1. The option.
+2. A palette named `default` or `accent` in the Tailwind theme (`--color-default-*` in `@theme` on v4,
+   `theme.extend.colors.default` in a JavaScript config).
+3. `gray` and `blue`.
+
+Things to know:
+
+- A name that is not a palette of the theme, or a shade list without all 11 shades, is an error.
+- With an option, the theme colors `default` and `accent` are references to `--wui-c-default-*` and
+  `--wui-c-accent-*`, so `bg-default-500` follows the option, also when the variables change at runtime.
+- A theme palette (step 2) is merged into `gray` or `blue` by Tailwind, shade by shade. When only some shades
+  are set, WindUI logs a warning once that names the others; the output is then the mix, as in 0.7.
+- On Tailwind v4, a `--color-default-*` variable in `@theme` still wins for `bg-default-*` when the option is
+  set, because Tailwind puts the stylesheet's theme over a plugin's. Use one of the two.
+- On Tailwind v3 the variables behind `{ vars }` must hold RGB channels (`59 130 246`), as WindUI's own do.
+
+The type is exported from `@windi-ui/core` as `ColorValue`.
 
 ## `variantScope`
 
@@ -165,6 +206,14 @@ Called once per compilation, after the built-in variants, sizes and components a
 generated. Use the [builder](/reference/builder) to add, update or remove them. See
 [Customizing](/guide/customizing) for a walkthrough.
 
+## `debug`
+
+- Type: `boolean`
+- Default: `false`
+
+Logs what WindUI otherwise skips silently. Today that is one message per theme palette that does not have all
+11 shades and therefore gets no `c-*` class.
+
 ## `config`
 
 - Type: `string | false`
@@ -208,11 +257,8 @@ These are not WindUI options, but they shape its output:
 | Theme color | Value |
 | --- | --- |
 | `c` (`c-50` to `c-950`) | The current palette, as references to `--wui-c-<shade>` |
-| `default` | Tailwind's `gray` |
-| `accent` | Tailwind's `blue` |
-
-Options for the `default` and `accent` palettes are tracked in
-[#35](https://github.com/windi-ui/windi-ui/issues/35).
+| `default` | Tailwind's `gray`, or references to `--wui-c-default-<shade>` when the [`default`](#default-and-accent) option is set |
+| `accent` | Tailwind's `blue`, or references to `--wui-c-accent-<shade>` when the `accent` option is set |
 
 ## What the plugin generates
 

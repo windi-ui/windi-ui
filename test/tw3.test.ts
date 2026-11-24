@@ -1,5 +1,6 @@
 import { expect, it } from 'vitest';
 import { cases } from './cases';
+import { palettes } from './colors';
 import { darkSelector } from './dark';
 import { baseline, candidates } from './baseline';
 import { tailwind3 } from './helpers';
@@ -8,6 +9,7 @@ const compile = tailwind3();
 
 baseline('tw3', compile);
 cases(compile);
+palettes(compile);
 darkSelector(compile);
 
 // #33
