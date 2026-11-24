@@ -227,7 +227,22 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 						return isV3 ? `rgb(${c} / <alpha-value>)` : c;
 					});
 
-					fallback = { default: colors[FALLBACK.default], accent: colors[FALLBACK.accent] };
+					// Tailwind resolves `colors` again for the `theme()` call below; answered with nothing, that gives the
+					// theme as it is without this plugin.
+					if (probing) return {};
+
+					let theme: string[] = [];
+					probing = true;
+					try {
+						theme = Object.keys(flattenColorPalette((utils.theme('colors') ?? {}) as RecursiveRecord));
+					} catch {
+						// Then nothing is known about the theme, and nothing is reported.
+					} finally {
+						probing = false;
+					}
+
+					const inTheme = (name: string) => theme.some(key => key === name || key.startsWith(`${name}-`));
+					const fallback = { default: colors[FALLBACK.default], accent: colors[FALLBACK.accent] };
 
 					utilities ??= utilityColors(wiu.config.build);
 					const own: Record<string, unknown> = {};

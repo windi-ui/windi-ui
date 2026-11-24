@@ -79,6 +79,10 @@ export default {
 } satisfies Config;
 ```
 
+Tailwind v3 drops a rule whose selector has a class that it does not find in your content, and the dark class
+is often only set by a script. WindUI adds the class of the dark selector (`dark`, or your own) to Tailwind's
+`safelist`, so the dark values of the default variant are always emitted.
+
 ## Setting it yourself
 
 `darkSelector` takes everything Tailwind's `darkMode` takes, and a bare selector. Use it when WindUI's dark

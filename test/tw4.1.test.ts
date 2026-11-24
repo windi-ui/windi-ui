@@ -23,4 +23,5 @@ safelistSourceCss(compile, {
 });
 forms(compile);
 darkSelector(compile);
-autoDark(compile);
+// The fixture is below 4.1.17.
+autoDark(compile, false);

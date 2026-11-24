@@ -23,12 +23,30 @@ export function darkSelector(compile: Compile) {
 	});
 }
 
-/** #34: without any setting, Tailwind 4 puts its own dark variant in. */
-export function autoDark(compile: Compile & { css: CompileCss }) {
-	const all = [...candidates, 'dark:flex'];
+/** Tailwind 3 drops a rule whose selector has a class that the content does not use, and `dark:` is not a use. */
+export function darkClass(compile: Compile) {
+	it.each(['class', ['selector', '.night']] as const)('keeps the dark default variant with `darkMode: %j` and no such class in the content', async (darkMode) => {
+		expect(await compile(['bg-v', 'dark:bg-v-soft'], { darkMode })).toContain('--wui-v-on-light: ');
+	});
+}
 
-	it('follows the `@custom-variant dark` of the stylesheet', async () => {
-		const css = await compile.css('@custom-variant dark (&:where(.dark, .dark *));\n@plugin "@windi-ui/tailwind";', all);
+/**
+ * #34: without any setting, Tailwind 4 puts its own dark variant in.
+ * @param expands whether this Tailwind expands `@variant dark` in the CSS of a plugin, which it does from 4.1.17.
+ */
+export function autoDark(compile: Compile & { css: CompileCss }, expands = true) {
+	const all = [...candidates, 'dark:flex'];
+	const custom = '@custom-variant dark (&:where(.dark, .dark *));';
+
+	it.runIf(!expands)('is the media query on a Tailwind that leaves `@variant dark` as it is', async () => {
+		const css = await compile.css(`${custom}\n@plugin "@windi-ui/tailwind";`, all);
+
+		expect(css).not.toContain('@variant');
+		expect(css).toBe(await compile.css(`${custom}\n@plugin "@windi-ui/tailwind" { dark-selector: media; }`, all));
+	});
+
+	it.runIf(expands)('follows the `@custom-variant dark` of the stylesheet', async () => {
+		const css = await compile.css(`${custom}\n@plugin "@windi-ui/tailwind";`, all);
 
 		expect(css).not.toContain('prefers-color-scheme');
 		expect(css).not.toContain('@variant');
