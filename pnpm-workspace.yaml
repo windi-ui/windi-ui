@@ -11,3 +11,6 @@ permissions:
 autoInstallPeers: true
 ignoreWorkspaceRootCheck: true
 strictPeerDependencies: false
+# Refuse npm versions younger than a day. Set explicitly, so pnpm enforces it strictly (`minimumReleaseAgeStrict`
+# defaults to true then) instead of falling back to a fresh version. Renovate waits as long (`.github/renovate.json`).
+minimumReleaseAge: 1440
