@@ -31,25 +31,46 @@ jobs:
           registry-url: https://registry.npmjs.org/
           cache: pnpm
 
+      # Both packages share one version. A prerelease such as 0.8.0-beta.1 goes to its own dist-tag (`beta`),
+      # so `npm i @windi-ui/tailwind` keeps installing the latest stable release.
+      - name: Resolve version and dist-tag
+        id: release
+        run: |
+          core=$(node -p "require('./packages/windui-core/package.json').version")
+          tailwind=$(node -p "require('./packages/windui-tailwind/package.json').version")
+          if [ "$core" != "$tailwind" ]; then
+            echo "::error::@windi-ui/core is $core but @windi-ui/tailwind is $tailwind"; exit 1
+          fi
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "$GITHUB_REF_NAME" != "v$core" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match the package version $core"; exit 1
+          fi
+          case "$core" in
+            *-*) tag=$(echo "${core#*-}" | sed 's/[.0-9].*$//') ;;
+            *) tag=latest ;;
+          esac
+          if [ -z "$tag" ]; then
+            echo "::error::Cannot derive a dist-tag from the prerelease version $core"; exit 1
+          fi
+          echo "version=$core" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "Publishing $core with dist-tag $tag" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Install dependencies
-        run: pnpm -r install
+        run: pnpm install --frozen-lockfile
 
       - name: Build packages
         run: pnpm run build
 
-      - name: Publish `@windi-ui/core` to NPM registry
-        run: cd packages/windui-core && pnpm publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-          NPM_CONFIG_PROVENANCE: true
-
-      - name: Publish `@windi-ui/tailwind` to NPM registry
-        run: cd packages/windui-tailwind && pnpm publish --access public --no-git-checks
+      # `-r` publishes core before tailwind and skips a version that is already on the registry, so a re-run after a
+      # partial failure finishes the release instead of failing on the first package.
+      - name: Publish to NPM registry (${{steps.release.outputs.tag}})
+        run: pnpm -r --filter "./packages/*" publish --access public --no-git-checks --tag ${{steps.release.outputs.tag}}
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           NPM_CONFIG_PROVENANCE: true
 
       - name: Generate changelog and release on GitHub
+        if: github.ref_type == 'tag'
         run: npx changelogithub
         continue-on-error: true
         env:
