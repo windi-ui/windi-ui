@@ -18,7 +18,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "tsdown",
-		"prepack": "node -e \"fs.copyFileSync('../../README.md', 'README.md')\""
+		"prepack": "node -e \"const r = fs.readFileSync('../../README.md', 'utf8'), n = r.replace('/logo-lockup.svg', '/logo-lockup-npm.svg'); if (n === r) throw Error('README logo not found'); fs.writeFileSync('README.md', n)\""
 	},
 	"module": "./dist/index.mjs",
 	"main": "./dist/index.cjs",
