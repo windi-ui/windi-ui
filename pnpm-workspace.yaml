@@ -11,3 +11,5 @@ permissions:
 autoInstallPeers: true
 ignoreWorkspaceRootCheck: true
 strictPeerDependencies: false
+# pnpm 12 refuses versions younger than a day by default; Renovate PRs land within hours of a release.
+minimumReleaseAge: 0
