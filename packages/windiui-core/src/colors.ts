@@ -69,12 +69,21 @@ function getColorMap(colors: Record<string, string>, debug?: boolean) {
 export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, ColorCssVars> implements ColorContext {
 	private readonly colors: ReturnType<typeof getColorMap>;
 	protected readonly items: Map<string, Map<ColorShade, string>>;
+	/** The colors with a `c-*` class: `colors.only` and those of the builder. Left out, all of them. */
+	private readonly only?: Set<string>;
 
 	/** @param variants gives the override variables of each `c-*` class */
-	constructor(ctx: BuilderContext, options: Pick<Config, 'default' | 'accent' | 'debug'>, private readonly variants: VariantsGenerator) {
+	constructor(ctx: BuilderContext, private readonly options: Pick<Config, 'default' | 'accent' | 'colors' | 'debug'>, private readonly variants: VariantsGenerator) {
 		super(ctx);
 		this.colors = getColorMap(this.theme.colors(), options.debug);
 		this.items = this.colors.palette;
+
+		const only = options.colors?.only;
+		if (only) {
+			this.only = new Set(only);
+			// `:root` applies `default` and `accent` as `c-default` and `c-accent-accent`, with or without their classes
+			variants.hasColor = c => this.only!.has(c) || c === 'default' || c === 'accent';
+		}
 
 		for (const name of ['default', 'accent'] as const) {
 			const value = options[name];
@@ -123,6 +132,7 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 		if (palette) {
 			this.items.set(name, palette);
 			this.alias(name, value);
+			this.only?.add(name);
 		}
 	}
 
@@ -135,10 +145,16 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 		this.variants.alias(name, typeof value === 'object' && 'vars' in value && value.overrideVars ? { ...value.overrideVars, vars: value.vars } : undefined);
 	}
 
-	names() {
-		const cNames = super.names();
+	/** @param all also the palettes that `colors.only` leaves without a class */
+	names(all = false) {
+		const cNames = super.names().filter(c => all || (this.only?.has(c) ?? true));
 		cNames.push(...cNames.map(c => `accent-${c}`));
 		return cNames;
+	}
+
+	/** The names of `colors.only` that are not palettes. */
+	unknownOnly() {
+		return (this.options.colors?.only ?? []).filter(c => !this.items.has(c));
 	}
 
 	cssVars(name: string) {

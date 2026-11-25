@@ -56,7 +56,7 @@ export interface TailwindV4Plugin {
 	config?: any;
 }
 
-const OPTIONS = ['prefix', 'rootSelector', 'default', 'accent', 'variantScope', 'overrides', 'overrideMode', 'variantUtilities', 'darkSelector', 'presets', 'build', 'safelist', 'debug', 'config'];
+const OPTIONS = ['prefix', 'rootSelector', 'default', 'accent', 'colors', 'variantScope', 'overrides', 'overrideMode', 'variantUtilities', 'darkSelector', 'presets', 'build', 'safelist', 'debug', 'config'];
 
 /**
  * Inline options over those of the config file. An `@plugin` block writes the names in kebab-case.
@@ -85,6 +85,8 @@ function resolveOptions(options: PluginOptions = {}, strict = false): Config {
 		if (value !== undefined) inline[key] = key === 'rootSelector' && Array.isArray(value) ? value.join(', ') : value;
 		// `presets: nuxt-ui` is a string, and `presets: nuxt-ui, other` a list.
 		if (key === 'presets' && typeof value === 'string') inline[key] = [value];
+		// `colors: primary, error` is `colors.only`, which a block cannot write as an object.
+		if (key === 'colors' && (typeof value === 'string' || Array.isArray(value))) inline[key] = { only: [value].flat() };
 	}
 
 	const { config: file, ...config } = inline as PluginOptions;

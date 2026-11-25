@@ -67,7 +67,7 @@ Two palette names have a role:
 | `accent` | A second palette available next to the current one, used by the `accent` level of variants. | Tailwind's `blue` |
 
 Both are added to your theme, so `bg-default-100` and `text-accent-600` work as ordinary Tailwind colors, and
-`c-default` and `c-accent` exist as classes.
+`c-default` and `c-accent` exist as classes (unless [`colors.only`](#limiting-the-color-classes) leaves them out).
 
 ### Choosing the two palettes
 
@@ -215,6 +215,31 @@ builder.addColor('primary', { vars: '--ui-color-primary' }, { utilities: true })
 <div class="c-primary">...</div>
 <div class="bg-primary-500 text-primary-50 border-primary-600/50">...</div>
 ```
+
+## Limiting the color classes
+
+Every palette of the theme is a `c-*` class: more than 50 names with Tailwind v4's default theme, counting the
+`c-accent-*` ones. An app with a fixed set of colors can name the ones it uses:
+
+::: code-group
+
+```ts [JavaScript]
+windiui({ colors: { only: ['primary', 'error', 'default'] } });
+```
+
+```css [@plugin block (Tailwind v4)]
+@plugin "@windi-ui/tailwind" {
+	colors: primary, error, default;
+}
+```
+
+:::
+
+Then `c-primary`, `c-error`, `c-default` and their `c-accent-*` classes exist, and `c-fuchsia` emits nothing.
+The [safelist](/reference/options#safelist), `colorsNames()` and the
+[color utilities from a variant](/guide/utilities#color-utilities-from-a-variant) follow the list. Colors of the
+builder are always included, and the root palettes `default` and `accent` keep their variables on `:root`. A
+name that is not a palette logs a warning. See [`colors`](/reference/options#colors).
 
 ## Palettes that change at runtime
 

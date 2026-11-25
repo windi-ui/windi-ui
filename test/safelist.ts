@@ -17,6 +17,11 @@ export function source() {
 		expect(safelistSource(windiui({ ...config, config: false }), { palettes: ['red', 'blue'] })).toBe(expected);
 	});
 
+	it('lists the colors of `colors.only` and of the builder only', () => {
+		const config = defineConfig({ colors: { only: ['red'] }, build: builder => builder.addColor('brand', 'blue') });
+		expect(safelistSource(config, { palettes: ['red', 'blue'], axes: ['c'] })).toBe('c-{accent-brand,accent-red,brand,red}');
+	});
+
 	it('lists the axes that are asked for', () => {
 		expect(safelistSource({}, { axes: ['v'] })).toBe('v-{default,light,outline,solid}');
 		expect(safelistSource({}, { axes: ['s', 'v'] })).toBe('{s-{default,lg,md,sm,xl,xs},v-{default,light,outline,solid}}');
@@ -61,6 +66,10 @@ export function safelist(compile: Compile) {
 		expect(css).toContain('.underline {');
 		// and with Tailwind's own prefix
 		expect(await compile([], { prefix: 'tw-' }, { safelist: true })).toContain('.tw-c-red {');
+		// and only the colors of `colors.only`
+		const only = await compile([], {}, { safelist: true, colors: { only: ['red'] } });
+		expect(only).toContain('.c-accent-red {');
+		expect(only).not.toMatch(/\.c-(accent-)?blue \{/);
 	});
 
 	it('emits none of them without it', async () => {

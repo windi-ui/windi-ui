@@ -134,6 +134,38 @@ Things to know:
 
 The type is exported from `@windi-ui/core` as `ColorValue`.
 
+## `colors`
+
+- Type: `{ only?: string[] }`
+- Default: every palette of the theme
+
+`only` names the palettes of the theme that get a `c-*` and a `c-accent-*` class. The others get none, so
+they leave autocomplete, the [safelist](#safelist) and the [`variantUtilities`](#variantutilities):
+
+```ts
+windiui({ colors: { only: ['primary', 'secondary', 'success', 'warning', 'error', 'default'] } });
+```
+
+```css
+@plugin "@windi-ui/tailwind" {
+	colors: primary, secondary, success, warning, error, default;
+}
+```
+
+- Colors added with [`addColor` or `setColor`](/reference/builder#colors) always get their classes.
+- `default` and `accent` are names like the others: `c-default` and `c-accent` exist when they are listed. Their
+  root variables, `--wui-c-default-*` and `--wui-c-accent-*` on `:root`, and the theme colors `default` and
+  `accent` do not depend on the list.
+- The palettes stay in the theme: Tailwind's `bg-red-500` and the [`default` and `accent`](#default-and-accent)
+  options can still name any of them.
+- [Overrides](#overrides) of a color without a class are left out, except those of `default` and `accent`, which
+  `:root` applies.
+- A name that is not a palette, of the theme or of the builder, logs a warning once.
+- In an `@plugin` block, `colors:` takes the list itself.
+- Left out, every palette gets its classes, as before.
+
+The type is exported from `@windi-ui/core` as `ColorsConfig`.
+
 ## `variantScope`
 
 - Type: `'element' | 'inherit' | 'universal'`
@@ -235,7 +267,7 @@ An override of a value the variant does not define, such as `fg-muted` for a var
 variant set that value itself, for every color: the override for its colors, and the `default` variant's
 value for the others. With `variantScope: 'inherit'` those other colors then stop inheriting it from an
 enclosing variant. The same goes for [`overrideVars`](/guide/colors#variant-overrides-at-runtime) with such
-values in `props`.
+values in `props`. A color key that is not a palette logs a warning.
 
 ## `overrideMode`
 
@@ -364,8 +396,9 @@ next to your own entries, and follows Tailwind's `prefix`.
 windiui({ safelist: true });
 ```
 
-That is about 60 small rules with Tailwind's default theme. To list fewer, leave the option off and write the
-classes you need in the `safelist` of the Tailwind config.
+That is about 60 small rules with Tailwind's default theme. To list fewer, limit the colors with
+[`colors.only`](#colors), or leave the option off and write the classes you need in the `safelist` of the
+Tailwind config.
 
 ### Tailwind v4
 
@@ -411,7 +444,8 @@ it('safelists the WindiUI classes', () => {
   theme of a current Tailwind v4 it returns exactly the classes the plugin registers. Pass `palettes` when
   your `@theme` adds or removes palettes, when you only need some of them, or on an older Tailwind v4 such as
   4.1, which has no `mauve`, `olive`, `mist` and `taupe`. A class that does not exist is ignored by Tailwind.
-  `default`, `accent`, the `accent-*` classes and the colors of `build` are always added.
+  `default`, `accent`, the `accent-*` classes and the colors of `build` are always added; with
+  [`colors.only`](#colors), only the listed palettes and the colors of `build` are.
 - A `default` or `accent` option that names a palette needs that palette in the list.
 - `safelist: true` on Tailwind v4 changes nothing. It logs a warning once with the `@source inline()` line
   for the classes that are registered in that build, which you can paste.
@@ -501,7 +535,7 @@ These are not WindiUI options, but they shape its output:
 | Default size | `:root`, or `rootSelector` |
 | Reset of the variant variables | `:where([class*="v-"]) > *` (`variantScope: 'element'`) |
 | Default variant | `*` (`variantScope: 'universal'` only) |
-| One class per palette, plus one per accent palette, with the [override variables](/reference/css-variables#override-variables) when there are overrides | `.c-<name>`, `.c-accent-<name>` |
+| One class per palette, or per palette of [`colors.only`](#colors), plus one per accent palette, with the [override variables](/reference/css-variables#override-variables) when there are overrides | `.c-<name>`, `.c-accent-<name>` |
 | One class per variant | `.v-<name>` |
 | Per-color overrides with [`overrideMode`](#overridemode) `'compound'` or `'both'` | `.v-<name>.c-<color>` |
 | One class per size | `.s-<name>` |

@@ -60,6 +60,14 @@ export interface ColorOptions {
 	utilities?: boolean;
 }
 
+export interface ColorsConfig {
+	/**
+	 * The palettes of the theme that get a `c-*` and a `c-accent-*` class; left out, all of them. Colors of the builder
+	 * always get theirs, and the root variables of `default` and `accent` stay.
+	 */
+	only?: string[];
+}
+
 export interface ResolvedConfig {
 	prefix: string;
 	/** Where the root color and size variables are declared. More selectors let a scoped theme resolve them again. */
@@ -68,6 +76,7 @@ export interface ResolvedConfig {
 	default?: ColorValue;
 	/** The palette behind `accent`. Left out, it is a complete `accent` palette of the theme, or else blue. */
 	accent?: ColorValue;
+	colors?: ColorsConfig;
 	variantScope: VariantScope;
 	/** Per-color overrides of variants: `{ solid: { yellow: { bg: '700' }, 'amber,lime': { ... } } }`. */
 	overrides?: Record<string, Record<string, VariantOverride>>;
@@ -110,6 +119,7 @@ export function resolveConfig(config: Config): ResolvedConfig {
 		rootSelector,
 		default: config.default,
 		accent: config.accent,
+		colors: config.colors,
 		variantScope,
 		overrides: config.overrides,
 		overrideMode,

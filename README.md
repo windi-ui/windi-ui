@@ -66,6 +66,8 @@ First you choose the color you want with `c-*` (e.g. `c-blue`, ...), then apply 
 <div class="c-blue bg-c-800/50 text-c-300 border border-c-500 p-5">Hello World</div>
 ```
 
+To keep only the colors your app uses, list them: `windiui({ colors: { only: ['primary', 'error', 'default'] } })`, or `colors: primary, error, default;` in an `@plugin` block. The other palettes then get no `c-*` class.
+
 #### Variants
 
 Make your component more flexible by styling it with variant utilities classes, use (`bg-v`, `text-v`, `border-v`, ...) to apply the colors, then use `v-*` to change the style, WindiUI has the following built-in variants styles: `v-default`,  `v-solid`,  `v-outline`,  `v-light`.
@@ -152,7 +154,7 @@ import { safelistSource } from '@windi-ui/tailwind';
 safelistSource({}, { palettes: ['blue', 'red'] }); // the string above; without `palettes`, every palette of the default theme
 ```
 
-On Tailwind v3, `windiui({ safelist: true })` emits every `c-*`, `v-*` and `s-*` class.
+On Tailwind v3, `windiui({ safelist: true })` emits every `c-*`, `v-*` and `s-*` class. With `colors.only`, both list only those colors.
 
 See [the `safelist` option](https://windi-ui.github.io/windi-ui/reference/options#safelist) for the details.
 

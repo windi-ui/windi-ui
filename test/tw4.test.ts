@@ -1,6 +1,6 @@
 import { applyV } from './apply';
 import { cases } from './cases';
-import { builderColors, palettes, palettesCss, rootSelectorCss } from './colors';
+import { builderColors, colorsOnly, colorsOnlyCss, palettes, palettesCss, rootSelectorCss } from './colors';
 import { autoDark, darkSelector } from './dark';
 import { baseline } from './baseline';
 import { forms } from './forms';
@@ -21,6 +21,8 @@ palettes(compile);
 palettesCss(compile);
 builderColors(compile);
 rootSelectorCss(compile);
+colorsOnly(compile);
+colorsOnlyCss(compile);
 safelistSourceCss(compile);
 forms(compile);
 darkSelector(compile);

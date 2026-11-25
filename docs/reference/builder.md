@@ -26,7 +26,7 @@ Every `add*`, `set*`, `update*` and `remove*` method returns the builder.
 | `setComponent(name, factory)` | The same, replacing a component of that name. |
 | `updateComponent(name, updater)` | Change an existing component. |
 | `removeComponent(name)` | Remove a component. |
-| `colorsNames()` | Names of all `c-*` classes, including `accent-<name>`. |
+| `colorsNames(all?)` | Names of all `c-*` classes, including `accent-<name>`. With [`colors.only`](/reference/options#colors), the listed palettes and the colors of the builder; with `all`, also the palettes it leaves out. |
 | `variantsNames()` | Names of the registered variants. |
 | `sizesNames()` | Names of the registered sizes. |
 | `componentsNames()` | Names of the registered components. |

@@ -214,3 +214,38 @@ export function rootSelectorCss(compile: Compile & { css: CompileCss }) {
 			.toBe(await compile(candidates, {}, { rootSelector: ':root, [data-theme-scope]' }));
 	});
 }
+
+/** #43: `colors.only`. */
+export function colorsOnly(compile: Compile) {
+	it('emits the `c-*` classes of the listed palettes and of the builder, and nothing for the others', async () => {
+		let names: string[] = [];
+		const css = await compile(['c-red', 'c-accent-red', 'c-blue', 'c-accent-blue', 'c-default', 'c-accent', 'c-brand', 'c-accent-brand'], {}, {
+			colors: { only: ['red', 'default'] },
+			build: builder => void (names = builder.addColor('brand', 'blue').colorsNames()),
+		});
+
+		expect(names.sort()).toEqual(['accent-brand', 'accent-default', 'accent-red', 'brand', 'default', 'red']);
+		for (const c of ['red', 'accent-red', 'default', 'brand', 'accent-brand']) expect(css).toContain(`.c-${c} {`);
+		for (const c of ['blue', 'accent-blue', 'accent']) expect(css).not.toContain(`.c-${c} {`);
+	});
+
+	it('leaves the rest of the output as it is, the root palettes included', async () => {
+		expect(await compile([...candidates, 'c-blue', 'c-accent-blue'], {}, { colors: { only: ['red', 'indigo', 'default'] } }))
+			.toBe(await compile(candidates));
+	});
+
+	it('gives the color utilities of `variantUtilities` to the listed palettes only', async () => {
+		const css = await compile(['bg-red', 'bg-blue'], {}, { colors: { only: ['red'] }, variantUtilities: { bg: 'solid' } });
+
+		expect(css).toContain('.bg-red {');
+		expect(css).not.toContain('.bg-blue {');
+	});
+}
+
+/** #43, in a Tailwind 4 stylesheet. */
+export function colorsOnlyCss(compile: Compile & { css: CompileCss }) {
+	it.each([['red, default', ['red', 'default']], ['red', ['red']]])('takes `colors: %s` from the `@plugin` block', async (block, only) => {
+		expect(await compile.css(`@plugin "@windi-ui/tailwind" { colors: ${block}; }`, candidates))
+			.toBe(await compile(candidates, {}, { colors: { only } }));
+	});
+}

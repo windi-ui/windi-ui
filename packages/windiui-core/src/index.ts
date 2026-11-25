@@ -1,5 +1,5 @@
 import type { ThemeProvider } from './types';
-import { resolveConfig, defineConfig, type ColorOptions, type ColorValue, type Config, type DarkSelectorOption, type OverrideMode, type OverrideVars, type PresetName, type VariantScope } from './config';
+import { resolveConfig, defineConfig, type ColorOptions, type ColorsConfig, type ColorValue, type Config, type DarkSelectorOption, type OverrideMode, type OverrideVars, type PresetName, type VariantScope } from './config';
 import { varsProvider } from './vars';
 import { ColorsGenerator } from "./colors";
 import { VariantsGenerator } from "./variants";
@@ -17,6 +17,14 @@ export interface Generator {
 export function create(config: Config) {
 	const rConfig = resolveConfig(config);
 	const vars = varsProvider(rConfig.prefix);
+	const reported = new Set<string>();
+
+	/** Warns once per instance, for each source, about the names that are not palettes. */
+	const notPalettes = (source: string, names: string[]) => {
+		if (!names.length || reported.has(source)) return;
+		reported.add(source);
+		console.warn(`WindiUI: ${source} names ${names.map(c => `"${c}"`).join(', ')}, which ${names.length > 1 ? 'are not palettes' : 'is not a palette'}.`);
+	};
 
 	return {
 		vars,
@@ -38,6 +46,11 @@ export function create(config: Config) {
 				}
 			}
 
+			// After `build`, which can add a color that `colors.only` or an override names
+			const palettes = colors.names(true);
+			notPalettes('`colors.only`', colors.unknownOnly());
+			notPalettes('an override', variants.overrideColors().filter(c => !palettes.includes(c) && c !== 'default' && c !== 'accent'));
+
 			return { colors, variants, sizes, components };
 		}
 	};
@@ -47,7 +60,7 @@ export { varsProvider, type VarsProvider } from './vars';
 export type { Builder } from './builder';
 export { defineConfig };
 export { definePreset, type Preset, type PresetOptions } from './preset';
-export type { ColorOptions, ColorValue, Config, DarkSelectorOption, OverrideMode, OverrideVars, PresetName, VariantScope };
+export type { ColorOptions, ColorsConfig, ColorValue, Config, DarkSelectorOption, OverrideMode, OverrideVars, PresetName, VariantScope };
 export type * from './types';
 export type { ColorShade, ExColorShade } from './colors';
 export type { Size, SizeProperty } from './size';

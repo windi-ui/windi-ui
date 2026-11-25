@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 // The built package: the root does not depend on it, and the typecheck takes no source outside its project.
-import { create, type Config, type Size, type ThemeProvider } from '../packages/windiui-core/dist/index.mjs';
+import { create, definePreset, type Config, type Size, type ThemeProvider } from '../packages/windiui-core/dist/index.mjs';
 
 const theme = { colors: () => ({}), spacing: () => '0', fontSize: () => '1rem', colorValue: (v: string) => v } as unknown as ThemeProvider;
 
@@ -112,5 +112,60 @@ describe('sizes', () => {
 		expect(removed.names()).not.toContain('md');
 		expect(error).not.toHaveBeenCalled();
 		error.mockRestore();
+	});
+});
+
+// #43
+describe('colors.only', () => {
+	const shades = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'];
+	const colors = Object.fromEntries(['red', 'blue', 'yellow', 'default', 'accent'].flatMap(p => shades.map(s => [`${p}-${s}`, `${p}${s}`])));
+	const yellow = { bg: '700', pseudos: { ':hover': { bg: '800' } } } as const;
+	const config = (only: string[]): Config => ({
+		colors: { only },
+		overrides: { solid: { yellow, default: yellow } },
+		build: b => b.addColor('brand', 'blue'),
+	});
+
+	it('lists the names of `only` and the colors of the builder, and warns once about a name that is not a palette', () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const wiu = create(config(['red', 'nope', 'brand', 'accent-red']));
+		const names = wiu.generator({ ...theme, colors: () => colors }).colors.names();
+		wiu.generator({ ...theme, colors: () => colors });
+
+		expect(names).toEqual(['red', 'brand', 'accent-red', 'accent-brand']);
+		expect(warn).toHaveBeenCalledExactlyOnceWith('WindiUI: `colors.only` names "nope", "accent-red", which are not palettes.');
+		warn.mockRestore();
+	});
+
+	it('leaves out the overrides of a color without a class, but not those of the root palettes', () => {
+		const all = create(config([])).generator({ ...theme, colors: () => colors });
+		const some = create(config(['red', 'yellow'])).generator({ ...theme, colors: () => colors });
+		const none = create({ ...config([]), overrides: { solid: { default: yellow } } }).generator({ ...theme, colors: () => colors });
+
+		expect(some.variants.cssVars('solid')).toEqual(create({ ...config([]), colors: undefined }).generator({ ...theme, colors: () => colors }).variants.cssVars('solid'));
+		expect(all.variants.cssVars('solid')).toEqual(none.variants.cssVars('solid'));
+		expect(all.colors.rootVars()).toEqual(none.colors.rootVars());
+		expect(all.colors.rootVars()).toMatchObject({ '--wui-cv-solid-bg': 'var(--wui-c-700)' });
+		expect(all.colors.names()).toEqual(['brand', 'accent-brand']);
+	});
+
+	it('warns once about an override of a color that is not a palette', () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const wiu = create({ overrides: { solid: { 'yelow, red': yellow, default: yellow }, light: { brand: yellow } }, build: b => b.addColor('brand', 'blue') });
+		wiu.generator({ ...theme, colors: () => colors });
+		wiu.generator({ ...theme, colors: () => colors });
+
+		expect(warn).toHaveBeenCalledExactlyOnceWith('WindiUI: an override names "yelow", which is not a palette.');
+		warn.mockRestore();
+	});
+
+	it('lets a preset keep a palette that `only` leaves out, saying so', () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+		create({ colors: { only: ['blue'] }, presets: [definePreset('p', b => b.setColor('red', 'blue'))()] }).generator({ ...theme, colors: () => colors });
+
+		expect(error).not.toHaveBeenCalled();
+		expect(warn).toHaveBeenCalledExactlyOnceWith('WindiUI: the "p" preset keeps "red", which already exists. Pass `override: true` to replace it.');
+		vi.restoreAllMocks();
 	});
 });

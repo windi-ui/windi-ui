@@ -321,3 +321,21 @@ background in that state. It now falls back to the value at rest. `:hover` is re
 Without these the CSS is unchanged.
 
 **Migration:** none.
+
+### `colors.only`
+
+Every 11-shade palette of the theme became a `c-*` and a `c-accent-*` class, more than 50 names with Tailwind
+v4's default theme. An app with a fixed set of colors got all of them in autocomplete and in its safelist, and
+with [overrides](#per-color-variant-overrides) each class carries reset declarations
+([#43](https://github.com/windi-ui/windi-ui/issues/43)). New:
+
+- The [`colors`](/reference/options#colors) option: `colors: { only: ['primary', 'error', 'default'] }`, or
+  `colors: primary, error, default;` in an `@plugin` block. Only the listed palettes get `c-*` and `c-accent-*`
+  classes; `colorsNames()`, the safelist and the color utilities of `variantUtilities` follow.
+- Colors of the builder are always included, and the root variables of `default` and `accent` stay.
+- Overrides of a color without a class are left out.
+- A name that is not a palette logs a warning once.
+
+Without the option the CSS is unchanged.
+
+**Migration:** none.

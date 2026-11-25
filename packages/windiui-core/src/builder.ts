@@ -8,7 +8,8 @@ import type { ComponentsGenerator } from './components/generator';
 type BuilderFunc<TFunc extends (...args: any) => void> = (...args: Parameters<TFunc>) => Builder;
 
 export interface Builder {
-	colorsNames: () => string[];
+	/** @param all also the palettes that `colors.only` leaves without a class */
+	colorsNames: (all?: boolean) => string[];
 	variantsNames: () => string[];
 	sizesNames: () => string[];
 	componentsNames: () => string[];
@@ -42,7 +43,7 @@ export interface Builder {
 
 export function createBuilder(colors: ColorsGenerator, variants: VariantsGenerator, sizes: SizesGenerator, components: ComponentsGenerator): Builder {
 	return {
-		colorsNames: () => colors.names(),
+		colorsNames: all => colors.names(all),
 		variantsNames: () => variants.names(),
 		sizesNames: () => sizes.names(),
 		componentsNames: () => components.names(),

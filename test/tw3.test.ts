@@ -1,7 +1,7 @@
 import { applyV } from './apply';
 import { expect, it } from 'vitest';
 import { cases } from './cases';
-import { builderColors, palettes } from './colors';
+import { builderColors, colorsOnly, palettes } from './colors';
 import { darkClass, darkSelector } from './dark';
 import { baseline, candidates } from './baseline';
 import { tailwind3 } from './helpers';
@@ -18,6 +18,7 @@ applyV(compile);
 presets(compile);
 palettes(compile);
 builderColors(compile);
+colorsOnly(compile);
 source();
 safelist(compile);
 darkSelector(compile);

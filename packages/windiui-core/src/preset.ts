@@ -55,7 +55,8 @@ export function definePreset(name: string, build: (builder: Builder) => void) {
 						if (action === 'add' || action === 'set') {
 							const id = `${kind}:${named(n)}`;
 							const ours = own.has(id);
-							if (!override && !ours && (b[`${kind.toLowerCase()}sNames`]() as string[]).includes(named(n))) {
+							// `true`: a palette that `colors.only` leaves without a class exists too
+							if (!override && !ours && (b[`${kind.toLowerCase()}sNames`](true) as string[]).includes(named(n))) {
 								kept.push(named(n));
 								skipped.add(`${kind}:${n}`);
 								return scoped;

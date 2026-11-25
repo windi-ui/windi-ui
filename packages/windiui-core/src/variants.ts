@@ -371,6 +371,8 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 	protected readonly items: Map<string, Variant>;
 	/** Palettes given by CSS variables that also take their overrides from variables. */
 	private readonly aliases = new Map<string, OverrideVars & { vars: string }>();
+	/** Whether a color is applied anywhere; the overrides of the others are left out. Set by `colors.only`. */
+	hasColor = (_color: string) => true;
 
 	constructor(ctx: BuilderContext, private readonly scope: VariantScope = 'universal', private readonly mode: OverrideMode = 'vars') {
 		super(ctx);
@@ -452,6 +454,11 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 		this.items.set(name, { ...variant, colors: byColor });
 	}
 
+	/** The colors that overrides name. */
+	overrideColors() {
+		return [...new Set([...this.items.values()].flatMap(v => Object.keys(v.colors ?? {}).flatMap(k => k.split(',').map(c => c.trim()))))];
+	}
+
 	/** Makes the palette `color` take its overrides from `{vars}-{variant}-{prop}` variables, or with no `value` stops that. */
 	alias(color: string, value?: OverrideVars & { vars: string }) {
 		if (value) this.aliases.set(color, value);
@@ -496,7 +503,7 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 
 		const statics = new Map<string, Flat>();
 		for (const [key, { dark = {}, ...light }] of Object.entries(this.items.get(name)!.colors ?? {})) {
-			for (const color of key.split(',').map(c => c.trim())) {
+			for (const color of key.split(',').map(c => c.trim()).filter(this.hasColor)) {
 				const flat = statics.get(color) ?? { light: {}, dark: {} };
 				for (const [k, v] of Object.entries(flatten(this.vars, light as Partial<Variant>, false))) flat.light[k] = shade(this.vars, k, v);
 				for (const [k, v] of Object.entries(flatten(this.vars, dark as Partial<Variant>, false))) flat.dark[k] = shade(this.vars, k, v);
