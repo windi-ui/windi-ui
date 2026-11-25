@@ -12,6 +12,8 @@ export default defineBuildConfig({
 	footer: ({ format, fileName }) => format === 'cjs' && fileName === 'index.cjs'
 		? { js: 'module.exports = Object.assign(exports.default, exports);' }
 		: undefined,
+	// The footer settles the mixed default and named exports that rolldown warns about.
+	suppressWarnings: ['[MIXED_EXPORTS]'],
 	// The types of that shape: `export =` a function, so `require(...)()` type-checks, merged with a namespace that
 	// holds the named exports (a const cannot merge with one that holds values). tsdown leaves `plugins` out of the
 	// build of the `.d.cts` files, so the plugin is added here.

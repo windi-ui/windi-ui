@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="https://raw.githubusercontent.com/windi-ui/windi-ui/main/docs/public/logo-lockup.svg" alt="WindiUI" width="280">
+	<img src="https://raw.githubusercontent.com/windi-ui/windi-ui/main/docs/public/logo-lockup.svg" alt="WindiUI" width="292">
 </p>
 
 # WindiUI
