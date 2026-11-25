@@ -67,49 +67,49 @@ Also new: the `v-scope` utility, `varsProvider` exported from `@windi-ui/core`, 
 2. **A rule gets its variant from `@apply v-*`.** Its children now inherit that variant, because the element
    has no `v-` in its `class` attribute. Add `v-scope`: `@apply v-solid v-scope`.
 
-## Tailwind v4 loads WindUI with `@plugin`
+## Tailwind v4 loads WindiUI with `@plugin`
 
 In 0.7, `@plugin "@windi-ui/tailwind";` compiled and emitted nothing: Tailwind v4 took the plugin factory for
-a plugin ([#33](https://github.com/windi-ui/windi-ui/issues/33)). It now loads WindUI, in three forms:
+a plugin ([#33](https://github.com/windi-ui/windi-ui/issues/33)). It now loads WindiUI, in three forms:
 
 ```css
 @plugin "@windi-ui/tailwind";                      /* zero config */
 @plugin "@windi-ui/tailwind" { prefix: app; }      /* options, in kebab-case */
-@plugin "./windui.config.ts";                      /* a module that exports windui({ ... }) */
+@plugin "./windiui.config.ts";                      /* a module that exports windiui({ ... }) */
 ```
 
 Also new:
 
-- [Config files](/reference/config-file): `windui.config.{ts,mts,cts,js,mjs,cjs,json}` and
-  `package.json#windui` are found from the working directory, or named with the new
+- [Config files](/reference/config-file): `windiui.config.{ts,mts,cts,js,mjs,cjs,json}` and
+  `package.json#windiui` are found from the working directory, or named with the new
   [`config`](/reference/options#config) option. Inline options override the file.
 - `@windi-ui/tailwind/v4` and `@windi-ui/tailwind/v3`, which build for one Tailwind major whatever runs them.
   `/v4` is typed for Tailwind v4's `Config`, so a v4 JavaScript config no longer needs `@ts-expect-error`.
 - `defineConfig`, from `@windi-ui/core` and `@windi-ui/tailwind/config`.
-- `loadWindUIConfig()` from `@windi-ui/tailwind/config`, for tools that need the config the plugin uses.
+- `loadWindiUIConfig()` from `@windi-ui/tailwind/config`, for tools that need the config the plugin uses.
 
-`plugins: [windui()]` and `plugins: [windui({...})]` work as before, on Tailwind v3 and v4.
+`plugins: [windiui()]` and `plugins: [windiui({...})]` work as before, on Tailwind v3 and v4.
 
 **Migration:** none is required. Two things can be observed in an existing setup:
 
-1. **A call without `build` now looks for a config file.** If a `windui.config.*` file or a `windui` key in
-   `package.json` already exists for another purpose, `windui()` and `windui({ prefix })` read it. Pass
+1. **A call without `build` now looks for a config file.** If a `windiui.config.*` file or a `windiui` key in
+   `package.json` already exists for another purpose, `windiui()` and `windiui({ prefix })` read it. Pass
    `config: false` to keep them from looking.
-2. **An unknown option name logs a warning.** `windui({ prefx: 'app' })` was ignored silently. It is still
-   ignored, and now logs `WindUI: unknown option "prefx"`. In an `@plugin` block, which is new, it is an error.
+2. **An unknown option name logs a warning.** `windiui({ prefx: 'app' })` was ignored silently. It is still
+   ignored, and now logs `WindiUI: unknown option "prefx"`. In an `@plugin` block, which is new, it is an error.
 
-On Tailwind v4 you can replace `@config` with `@plugin "./windui.config.ts"` if the JavaScript config only
-existed to load WindUI.
+On Tailwind v4 you can replace `@config` with `@plugin "./windiui.config.ts"` if the JavaScript config only
+existed to load WindiUI.
 
 ## Dark mode follows the app's dark variant on Tailwind v4
 
 0.7 took the dark selector from the `darkMode` key of the Tailwind config. A Tailwind v4 project without a
-JavaScript config has no such key, so WindUI used `@media (prefers-color-scheme: dark)` even when the
+JavaScript config has no such key, so WindiUI used `@media (prefers-color-scheme: dark)` even when the
 stylesheet declared `@custom-variant dark (&:where(.dark, .dark *));`
 ([#34](https://github.com/windi-ui/windi-ui/issues/34)). Tailwind's `dark:` utilities followed the class, and
 `btn`, `badge`, `bg-v`, `text-v` and `border-v` followed the operating system.
 
-On Tailwind v4.1.17 or higher, WindUI now writes `@variant dark` and Tailwind puts the app's own dark variant
+On Tailwind v4.1.17 or higher, WindiUI now writes `@variant dark` and Tailwind puts the app's own dark variant
 in. Variants turn dark exactly when `dark:` utilities do, with nothing to configure.
 
 Also new: the [`darkSelector`](/reference/options#darkselector) option (`dark-selector` in an `@plugin`
@@ -137,7 +137,7 @@ what the declaration asks for. To keep the 0.7 output, set `darkSelector: 'media
 the 11 shades:
 
 ```ts
-windui({ default: 'slate', accent: 'indigo' });
+windiui({ default: 'slate', accent: 'indigo' });
 ```
 
 Without an option nothing changes for a default setup: the CSS is the same as before.
@@ -148,14 +148,14 @@ Also new: the [`debug`](/reference/options#debug) option.
 
 1. **The "does not have all 11 shades" warning is gone.** A theme palette with fewer shades, such as
    `brand: { 500: ..., 600: ... }`, logged it on every build. It is now only logged with `debug: true`.
-2. **A `default` or `accent` palette in a Tailwind v4 `@theme` block now reaches WindUI.** In 0.7,
+2. **A `default` or `accent` palette in a Tailwind v4 `@theme` block now reaches WindiUI.** In 0.7,
    `--color-default-*` changed `bg-default-*` but not `--wui-c-default-*`, `c-default` or the color of an
    element without a `c-*` class, which stayed gray. They now follow the theme, like `bg-default-*` does.
 3. **A theme palette that sets only some shades of `default` or `accent` logs a warning.** The output is the
    0.7 output, a mix with `gray` or `blue`; the warning names the shades that are missing.
 
 With an option and a theme palette of the same name, the theme utilities (`bg-default-*`) keep the theme's
-palette and WindUI logs a warning; see [`default` and `accent`](/reference/options#default-and-accent).
+palette and WindiUI logs a warning; see [`default` and `accent`](/reference/options#default-and-accent).
 
 ## Colors from the builder, and `rootSelector`
 

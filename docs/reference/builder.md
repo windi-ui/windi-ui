@@ -78,12 +78,12 @@ every other color utility exist, with opacity modifiers. The default is off.
   they follow them at runtime, also inside a container that sets them again.
 - A palette name must be one of Tailwind's own palettes (`'red'`, `'slate'`, ...) to get utilities; for
   another one, an error is logged and the color is added without them.
-- Tailwind resolves its theme before the builder exists. To know these colors in time, WindUI first runs
+- Tailwind resolves its theme before the builder exists. To know these colors in time, WindiUI first runs
   `build` on a builder that only notes `addColor`, `setColor` and `removeColor`; its `*Names()` return empty
   lists. So `build` runs twice, and a color that is only added depending on what `*Names()` return gets no
   utilities.
 - `addColor` with the name of a color the theme already has is skipped as a whole, like `addColor` without
-  `utilities`: the error is logged and the theme color stays. `setColor` replaces the WindUI color and the
+  `utilities`: the error is logged and the theme color stays. `setColor` replaces the WindiUI color and the
   theme color.
 
 ## Context
@@ -220,7 +220,7 @@ export default defineComponent(({ vars }) => ({
 ```ts [tailwind.config.ts]
 import chip from './chip';
 
-windui({
+windiui({
 	build: (builder) => builder.addComponent('chip', chip)
 });
 ```

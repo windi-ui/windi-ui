@@ -32,7 +32,7 @@ export function classSource(names: Record<SafelistAxis, string[]>, axes = AXES) 
 /**
  * The `c-*`, `v-*` and `s-*` classes a config registers, for `@source inline("...")` in a Tailwind 4 stylesheet.
  * It runs without Tailwind, so it knows the palettes of the theme only by name: see `palettes`.
- * @param config the options, or the plugin `windui()` made from them.
+ * @param config the options, or the plugin `windiui()` made from them.
  */
 export function safelistSource(config: Config | { handler: unknown } = {}, { axes, palettes = PALETTES }: SafelistOptions = {}) {
 	const colors = Object.fromEntries([...palettes, 'default', 'accent'].flatMap(p => SHADES.map(s => [`${p}-${s}`, ''])));

@@ -1,6 +1,6 @@
 # Components
 
-WindUI ships two components today, `btn` and `badge`. They are plain classes built on the three axes, so every
+WindiUI ships two components today, `btn` and `badge`. They are plain classes built on the three axes, so every
 `c-*`, `v-*` and (for `btn`) `s-*` class applies to them.
 
 ## Button

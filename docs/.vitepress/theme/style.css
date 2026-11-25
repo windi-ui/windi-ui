@@ -44,7 +44,7 @@
 	background-color: var(--vp-c-bg);
 }
 
-/* The two preflight rules WindUI's components rely on; zero specificity for the width so utilities and `.btn` win. */
+/* The two preflight rules WindiUI's components rely on; zero specificity for the width so utilities and `.btn` win. */
 :where(.wui-demo) * {
 	border-width: 0;
 }

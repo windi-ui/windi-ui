@@ -6,9 +6,9 @@ same options can be given in three places:
 ::: code-group
 
 ```ts [JavaScript]
-import windui from '@windi-ui/tailwind';
+import windiui from '@windi-ui/tailwind';
 
-windui({
+windiui({
 	prefix: 'wui',
 	rootSelector: ':root',
 	default: 'slate',
@@ -31,7 +31,7 @@ windui({
 }
 ```
 
-```ts [windui.config.ts]
+```ts [windiui.config.ts]
 import { defineConfig } from '@windi-ui/tailwind/config';
 
 export default defineConfig({
@@ -49,7 +49,7 @@ export default defineConfig({
 - An `@plugin` block takes the options that are plain values, with their names in kebab-case. `build` is a
   function, so it needs JavaScript: a [config module or a config file](/reference/config-file).
 - Options given inline, in JavaScript or in the block, override those of a config file.
-- An option name WindUI does not know is an error.
+- An option name WindiUI does not know is an error.
 
 All options are optional. The type is exported from `@windi-ui/core` as `Config`.
 
@@ -58,11 +58,11 @@ All options are optional. The type is exported from `@windi-ui/core` as `Config`
 - Type: `string`
 - Default: `'wui'`
 
-The prefix of every CSS variable WindUI writes and reads: `--<prefix>-c-*`, `--<prefix>-v-*` and
+The prefix of every CSS variable WindiUI writes and reads: `--<prefix>-c-*`, `--<prefix>-v-*` and
 `--<prefix>-s-*`. It does not change class names; `c-*`, `v-*`, `s-*`, `btn` and `badge` stay the same.
 
 ```ts
-windui({ prefix: 'app' }); // --app-c-500, --app-v-bg, --app-s-text
+windiui({ prefix: 'app' }); // --app-c-500, --app-v-bg, --app-s-text
 ```
 
 ## `rootSelector`
@@ -74,7 +74,7 @@ Where the root color and size variables are declared: `--wui-c-*`, `--wui-c-defa
 black and white, and the default size.
 
 ```ts
-windui({ rootSelector: ':root, [data-theme-scope]' });
+windiui({ rootSelector: ':root, [data-theme-scope]' });
 ```
 
 ```css
@@ -106,7 +106,7 @@ The palettes behind the names [`default` and `accent`](/guide/colors#default-and
 | `{ 50: '#f8fafc', ..., 950: '#020617' }` | The 11 shades themselves. |
 
 ```ts
-windui({ default: 'slate', accent: { vars: '--brand' } });
+windiui({ default: 'slate', accent: { vars: '--brand' } });
 ```
 
 The order is:
@@ -122,14 +122,14 @@ Things to know:
 - With an option, the theme colors `default` and `accent` are references to `--wui-c-default-*` and
   `--wui-c-accent-*`, so `bg-default-500` follows the option, also when the variables change at runtime.
 - A theme palette (step 2) is merged into `gray` or `blue` by Tailwind, shade by shade. When only some shades
-  are set, WindUI logs a warning once that names the others; the output is then the mix, as in 0.7.
+  are set, WindiUI logs a warning once that names the others; the output is then the mix, as in 0.7.
 - With an option **and** a theme palette of the same name (`--color-default-*` in `@theme`, or
   `theme.extend.colors.default` in a JavaScript config, on Tailwind v3 and v4), the option sets `c-default` and
   the `--wui-c-default-*` variables, but `bg-default-*` and the other theme utilities keep the theme's palette:
-  Tailwind puts the app's own theme over a plugin's. WindUI logs a warning once. Use one of the two.
+  Tailwind puts the app's own theme over a plugin's. WindiUI logs a warning once. Use one of the two.
 - A complete theme palette may share shades with `gray` or `blue`; only a shade that is not set counts as
   missing.
-- On Tailwind v3 the variables behind `{ vars }` must hold RGB channels (`59 130 246`), as WindUI's own do.
+- On Tailwind v3 the variables behind `{ vars }` must hold RGB channels (`59 130 246`), as WindiUI's own do.
 
 The type is exported from `@windi-ui/core` as `ColorValue`.
 
@@ -216,9 +216,9 @@ What the dark values of the variants apply under. It takes every form of Tailwin
 selector, which is the `selector` strategy with that selector:
 
 ```ts
-windui({ darkSelector: '.dark' });                  // &:where(.dark, .dark *)
-windui({ darkSelector: 'media' });                  // @media (prefers-color-scheme: dark)
-windui({ darkSelector: ['variant', '&:where([data-theme=dark], [data-theme=dark] *)'] });
+windiui({ darkSelector: '.dark' });                  // &:where(.dark, .dark *)
+windiui({ darkSelector: 'media' });                  // @media (prefers-color-scheme: dark)
+windiui({ darkSelector: ['variant', '&:where([data-theme=dark], [data-theme=dark] *)'] });
 ```
 
 ```css
@@ -227,7 +227,7 @@ windui({ darkSelector: ['variant', '&:where([data-theme=dark], [data-theme=dark]
 }
 ```
 
-Left out, WindUI uses the `darkMode` of the Tailwind config when there is one, then Tailwind v4's own dark
+Left out, WindiUI uses the `darkMode` of the Tailwind config when there is one, then Tailwind v4's own dark
 variant (`@custom-variant dark` included), then the media query. See
 [Dark mode](/guide/dark-mode#how-the-dark-selector-is-chosen) for the order and the table of forms. The type
 is exported from `@windi-ui/core` as `DarkSelectorOption`.
@@ -257,7 +257,7 @@ variant and size, including those of the builder. It adds a pattern to the `safe
 next to your own entries, and follows Tailwind's `prefix`.
 
 ```js
-windui({ safelist: true });
+windiui({ safelist: true });
 ```
 
 That is about 60 small rules with Tailwind's default theme. To list fewer, leave the option off and write the
@@ -270,7 +270,7 @@ returns the string to put there:
 
 ```ts
 import { safelistSource } from '@windi-ui/tailwind/safelist';
-import config from './windui.config';
+import config from './windiui.config';
 
 safelistSource(config);
 // '{c-{accent,accent-accent,...,zinc},v-{default,light,outline,solid},s-{default,lg,sm,xl,xs}}'
@@ -289,16 +289,16 @@ The line is written by hand. A test keeps it current:
 import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
 import { safelistSource } from '@windi-ui/tailwind/safelist';
-import config from './windui.config';
+import config from './windiui.config';
 
-it('safelists the WindUI classes', () => {
+it('safelists the WindiUI classes', () => {
 	expect(readFileSync('src/main.css', 'utf8')).toContain(`@source inline("${safelistSource(config)}");`);
 });
 ```
 
 | Argument | Description |
 | --- | --- |
-| `config` | The WindUI options, or the plugin made from them, which is what a [config module](/reference/config-file#config-module) exports. Its `build` runs, so colors, variants and sizes of the builder are listed. |
+| `config` | The WindiUI options, or the plugin made from them, which is what a [config module](/reference/config-file#config-module) exports. Its `build` runs, so colors, variants and sizes of the builder are listed. |
 | `options.axes` | Which kinds to list, in that order: `'c'`, `'v'`, `'s'`. All three by default. |
 | `options.palettes` | The names of the theme's palettes with all 11 shades. By default the 26 of Tailwind v4's default theme. |
 
@@ -317,7 +317,7 @@ it('safelists the WindUI classes', () => {
 - Type: `boolean`
 - Default: `false`
 
-Logs what WindUI otherwise skips silently. Today that is one message per theme palette that does not have all
+Logs what WindiUI otherwise skips silently. Today that is one message per theme palette that does not have all
 11 shades and therefore gets no `c-*` class.
 
 ## `config`
@@ -327,14 +327,14 @@ Logs what WindUI otherwise skips silently. Today that is one message per theme p
 - Not read from a config file
 
 The [config file](/reference/config-file) to load, relative to the working directory. Without it, a call that
-passes no `build` searches for `windui.config.*` and `package.json#windui`. `false` turns that search off.
+passes no `build` searches for `windiui.config.*` and `package.json#windiui`. `false` turns that search off.
 
-An option name that WindUI does not know is an error in an `@plugin` block. In a JavaScript call it logs a
+An option name that WindiUI does not know is an error in an `@plugin` block. In a JavaScript call it logs a
 warning and is ignored, as it was ignored in 0.7.
 
 ```css
 @plugin "@windi-ui/tailwind" {
-	config: "./config/windui.ts";
+	config: "./config/windiui.ts";
 }
 ```
 
@@ -345,7 +345,7 @@ warning and is ignored, as it was ignored in 0.7.
 | `@windi-ui/tailwind` | The plugin. It builds for the Tailwind that runs it. |
 | `@windi-ui/tailwind/v4` | The same, always building for Tailwind v4 and typed for v4's `Config`. |
 | `@windi-ui/tailwind/v3` | The same, always building for Tailwind v3. |
-| `@windi-ui/tailwind/config` | `defineConfig` and [`loadWindUIConfig`](/reference/config-file#loadwinduiconfig). Node.js only. |
+| `@windi-ui/tailwind/config` | `defineConfig` and [`loadWindiUIConfig`](/reference/config-file#loadwindiuiconfig). Node.js only. |
 | `@windi-ui/tailwind/safelist` | [`safelistSource`](#tailwind-v4). Node.js only. |
 
 The `/v3` and `/v4` entries are for a setup where the automatic choice is wrong. All three plugin entries
@@ -353,7 +353,7 @@ work with `@plugin` and take the same options.
 
 ## What the plugin reads from Tailwind
 
-These are not WindUI options, but they shape its output:
+These are not WindiUI options, but they shape its output:
 
 | Tailwind setting | Used for |
 | --- | --- |

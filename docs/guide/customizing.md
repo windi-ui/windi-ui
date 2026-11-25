@@ -4,11 +4,11 @@ The plugin takes a `build` callback. It receives a builder with which you add, u
 variants, sizes and components before any CSS is generated.
 
 ```ts [tailwind.config.ts]
-import windui from '@windi-ui/tailwind';
+import windiui from '@windi-ui/tailwind';
 
 export default {
 	plugins: [
-		windui({
+		windiui({
 			build(builder) {
 				builder
 					.updateVariant('light', (variant) => {
@@ -186,7 +186,7 @@ outlineColor: colors.toValue(vars.variant('border'), 0.65)
 ```
 
 A component's `style` can read a variant variable like this without thinking about elements that have no
-`v-*` class: WindUI adds the `default` variant's value as the fallback, for light and dark mode, to every such
+`v-*` class: WindiUI adds the `default` variant's value as the fallback, for light and dark mode, to every such
 read (see [`variantScope`](/reference/options#variantscope)).
 
 Built-in components can be changed or removed the same way:

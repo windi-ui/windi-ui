@@ -22,12 +22,12 @@ The exact shades are in the [shade tables](/guide/variants#shade-tables).
 
 ## How the dark selector is chosen
 
-WindUI wraps the dark values of each variant in a selector or an at-rule. It takes the first of these that
+WindiUI wraps the dark values of each variant in a selector or an at-rule. It takes the first of these that
 applies:
 
 1. The [`darkSelector`](/reference/options#darkselector) option.
 2. The `darkMode` key of your Tailwind config: Tailwind v3, or Tailwind v4 with a config loaded by `@config`.
-3. On Tailwind v4.1.17 or higher, **Tailwind's own dark variant**. WindUI writes `@variant dark`, and Tailwind
+3. On Tailwind v4.1.17 or higher, **Tailwind's own dark variant**. WindiUI writes `@variant dark`, and Tailwind
    puts in whatever `dark:` means in your stylesheet, a `@custom-variant dark` included.
 4. `@media (prefers-color-scheme: dark)`.
 
@@ -35,7 +35,7 @@ So in most projects there is nothing to configure: variants turn dark exactly wh
 
 ## Tailwind v4
 
-Declare the dark variant in CSS as usual. WindUI follows it:
+Declare the dark variant in CSS as usual. WindiUI follows it:
 
 ```css [main.css]
 @import "tailwindcss";
@@ -53,9 +53,9 @@ Declare the dark variant in CSS as usual. WindUI follows it:
 }
 ```
 
-Without a `@custom-variant dark`, Tailwind's `dark:` is the media query, and so is WindUI's.
+Without a `@custom-variant dark`, Tailwind's `dark:` is the media query, and so is WindiUI's.
 
-Tailwind 4.0.0 to 4.1.16 do not expand `@variant dark` for a plugin. There WindUI uses the media query unless
+Tailwind 4.0.0 to 4.1.16 do not expand `@variant dark` for a plugin. There WindiUI uses the media query unless
 you set `darkSelector`:
 
 ```css [main.css]
@@ -65,27 +65,27 @@ you set `darkSelector`:
 @custom-variant dark (&:where(.dark, .dark *));
 ```
 
-The same applies when WindUI cannot tell which Tailwind is running it, which happens when Tailwind is bundled
+The same applies when WindiUI cannot tell which Tailwind is running it, which happens when Tailwind is bundled
 into another tool instead of being loaded from `node_modules`.
 
 ## Tailwind v3
 
-WindUI follows the `darkMode` key of the Tailwind config:
+WindiUI follows the `darkMode` key of the Tailwind config:
 
 ```ts [tailwind.config.ts]
 export default {
 	darkMode: 'selector',
-	plugins: [windui()],
+	plugins: [windiui()],
 } satisfies Config;
 ```
 
 Tailwind v3 drops a rule whose selector has a class that it does not find in your content, and the dark class
-is often only set by a script. WindUI adds the class of the dark selector (`dark`, or your own) to Tailwind's
+is often only set by a script. WindiUI adds the class of the dark selector (`dark`, or your own) to Tailwind's
 `safelist`, so the dark values of the default variant are always emitted.
 
 ## Setting it yourself
 
-`darkSelector` takes everything Tailwind's `darkMode` takes, and a bare selector. Use it when WindUI's dark
+`darkSelector` takes everything Tailwind's `darkMode` takes, and a bare selector. Use it when WindiUI's dark
 values should follow something else than Tailwind's `dark:`, or on a Tailwind 4 older than 4.1.17.
 
 | `darkSelector` or `darkMode` | Dark values apply under |
@@ -102,8 +102,8 @@ values should follow something else than Tailwind's `dark:`, or on a Tailwind 4 
 ::: code-group
 
 ```ts [JavaScript]
-windui({ darkSelector: '.dark' })
-windui({ darkSelector: ['variant', '&:where([data-theme=dark], [data-theme=dark] *)'] })
+windiui({ darkSelector: '.dark' })
+windiui({ darkSelector: ['variant', '&:where([data-theme=dark], [data-theme=dark] *)'] })
 ```
 
 ```css [@plugin block]
@@ -118,7 +118,7 @@ windui({ darkSelector: ['variant', '&:where([data-theme=dark], [data-theme=dark]
 
 :::
 
-`darkSelector` only moves WindUI's dark values. Tailwind's `dark:` utilities keep following Tailwind's own
+`darkSelector` only moves WindiUI's dark values. Tailwind's `dark:` utilities keep following Tailwind's own
 setting, so keep the two the same unless you mean them to differ.
 
 ## What is not automatic

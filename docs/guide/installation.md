@@ -27,7 +27,7 @@ The package is published as both ESM and CommonJS.
 
 ## Tailwind CSS v4
 
-Load WindUI from your stylesheet with `@plugin`. There are three forms; pick the first one that covers what
+Load WindiUI from your stylesheet with `@plugin`. There are three forms; pick the first one that covers what
 you need.
 
 **Zero config.** The built-in colors, variants, sizes and components:
@@ -56,13 +56,13 @@ changes:
 
 ```css [main.css]
 @import "tailwindcss";
-@plugin "./windui.config.ts";
+@plugin "./windiui.config.ts";
 ```
 
-```ts [windui.config.ts]
-import windui from '@windi-ui/tailwind';
+```ts [windiui.config.ts]
+import windiui from '@windi-ui/tailwind';
 
-export default windui({
+export default windiui({
 	build(builder) {
 		// ...
 	}
@@ -71,7 +71,7 @@ export default windui({
 
 :::
 
-With the first two forms WindUI also looks for a `windui.config.*` file by itself. See
+With the first two forms WindiUI also looks for a `windiui.config.*` file by itself. See
 [Config file](/reference/config-file) for the lookup rules and its limits.
 
 ### In a JavaScript config
@@ -83,11 +83,11 @@ same plugin, typed for Tailwind v4's `Config`.
 
 ```ts [tailwind.config.ts]
 import type { Config } from 'tailwindcss';
-import windui from '@windi-ui/tailwind/v4';
+import windiui from '@windi-ui/tailwind/v4';
 
 export default {
 	plugins: [
-		windui()
+		windiui()
 	],
 } satisfies Config;
 ```
@@ -107,12 +107,12 @@ Add the plugin to your Tailwind config:
 
 ```ts [tailwind.config.ts]
 import type { Config } from 'tailwindcss';
-import windui from '@windi-ui/tailwind';
+import windiui from '@windi-ui/tailwind';
 
 export default {
 	content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
 	plugins: [
-		windui()
+		windiui()
 	],
 } satisfies Config;
 ```
@@ -141,6 +141,6 @@ module.exports = {
 ## Known limitations
 
 - **Types on Tailwind v4.** The default entry is typed against Tailwind v3, so v4's `Config` type rejects
-  `windui()` from it. Import from `@windi-ui/tailwind/v4` in a v4 JavaScript config.
+  `windiui()` from it. Import from `@windi-ui/tailwind/v4` in a v4 JavaScript config.
 - **Preflight.** `btn` sets a border width but relies on Tailwind's preflight for `border-style: solid`.
   If you disable preflight, add the border style yourself.

@@ -1,5 +1,5 @@
 import type { Config } from 'tailwindcss';
-import windui from '@windi-ui/tailwind';
+import windiui from '@windi-ui/tailwind';
 
 const config: Config = {
 	content: [
@@ -26,7 +26,7 @@ const config: Config = {
 		},
 	},
 	plugins: [
-		windui()
+		windiui()
 	],
 };
 

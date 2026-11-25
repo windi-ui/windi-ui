@@ -2,6 +2,6 @@
 	"extends": "../../tsconfig.common.json",
 	"include": ["src/**/*"],
 	"references": [
-		{ "path": "../windui-core" }
+		{ "path": "../windiui-core" }
 	]
 }

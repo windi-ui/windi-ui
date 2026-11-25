@@ -2,12 +2,12 @@
 layout: home
 
 hero:
-  name: WindUI
+  name: WindiUI
   text: Color, variant and size axes for Tailwind CSS
-  tagline: Pick a color, pick a variant, pick a size. WindUI picks the shades, in light and dark.
+  tagline: Pick a color, pick a variant, pick a size. WindiUI picks the shades, in light and dark.
   image:
     src: /logo.svg
-    alt: WindUI
+    alt: WindiUI
   actions:
     - theme: brand
       text: Get started

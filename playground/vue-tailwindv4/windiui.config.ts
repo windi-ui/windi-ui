@@ -1,6 +1,6 @@
-import windui from '@windi-ui/tailwind';
+import windiui from '@windi-ui/tailwind';
 
-export default windui({
+export default windiui({
 	build(builder) {
 		builder
 			.updateVariant('light', (variant) => {

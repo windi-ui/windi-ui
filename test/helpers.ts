@@ -2,10 +2,10 @@ import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 import { createJiti } from 'jiti';
-import type windui from '@windi-ui/tailwind';
+import type windiui from '@windi-ui/tailwind';
 
 type Fixture = 'tw3' | 'tw4.1' | 'tw4';
-type WindUI = typeof windui;
+type WindiUI = typeof windiui;
 type TailwindConfig = Record<string, unknown>;
 interface Loaded { path: string, base: string }
 
@@ -22,12 +22,12 @@ type PostCSS = (plugins: unknown[]) => { process(css: string, options: { from: u
 export type Compile = (
 	candidates: string[],
 	config?: TailwindConfig,
-	options?: Parameters<WindUI>[0],
+	options?: Parameters<WindiUI>[0],
 	/** CSS appended to the entry stylesheet, for example a rule that uses `@apply`. */
 	css?: string
 ) => Promise<string>;
 
-/** Compiles a stylesheet that loads WindUI itself, with `@plugin`. The paths in it are relative to the fixture. */
+/** Compiles a stylesheet that loads WindiUI itself, with `@plugin`. The paths in it are relative to the fixture. */
 export type CompileCss = (css: string, candidates: string[]) => Promise<string>;
 
 /**
@@ -45,9 +45,9 @@ export function tailwind4(fixture: Exclude<Fixture, 'tw3'>): Compile & { css: Co
 	const { dir, require } = enter(fixture);
 	const { compile } = require('tailwindcss') as Tailwind4;
 	const jiti = createJiti(resolve(dir, 'package.json'));
-	const plugin = jiti.import<WindUI>('@windi-ui/tailwind', { default: true });
+	const plugin = jiti.import<WindiUI>('@windi-ui/tailwind', { default: true });
 
-	// No preflight: the output should hold what WindUI emits and the theme variables it uses, nothing else.
+	// No preflight: the output should hold what WindiUI emits and the theme variables it uses, nothing else.
 	const css = [
 		'@layer theme, base, components, utilities;',
 		'@import "tailwindcss/theme.css" layer(theme);',
@@ -88,7 +88,7 @@ export function tailwind3(entry = '@windi-ui/tailwind'): Compile {
 	const { require } = enter('tw3');
 	const postcss = require('postcss') as PostCSS;
 	const tailwindcss = require('tailwindcss') as (config: TailwindConfig) => unknown;
-	const plugin = require(entry) as WindUI;
+	const plugin = require(entry) as WindiUI;
 
 	let run = 0;
 

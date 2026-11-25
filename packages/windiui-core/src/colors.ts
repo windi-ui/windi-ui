@@ -71,7 +71,7 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 			if (value == null) continue;
 
 			const palette = this.resolve(value);
-			if (!palette) throw new Error(`WindUI: the \`${name}\` option does not give a palette.`);
+			if (!palette) throw new Error(`WindiUI: the \`${name}\` option does not give a palette.`);
 			this.items.set(name, palette);
 		}
 	}

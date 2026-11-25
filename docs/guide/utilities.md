@@ -116,7 +116,7 @@ follows the current `c-*` class. See [Using the current color directly](/guide/c
 answer `v`, `v-soft`, `v-muted` and `v-accent`:
 
 ```html
-<div class="bg-[#123456] text-[14px] border-[3px]">Tailwind's output, nothing from WindUI</div>
+<div class="bg-[#123456] text-[14px] border-[3px]">Tailwind's output, nothing from WindiUI</div>
 ```
 
-Likewise `c-[...]`, `v-[...]` and `s-[...]` with a value WindUI does not know emit nothing.
+Likewise `c-[...]`, `v-[...]` and `s-[...]` with a value WindiUI does not know emit nothing.

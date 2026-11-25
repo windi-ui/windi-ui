@@ -1,10 +1,10 @@
 # Introduction
 
-WindUI is a Tailwind CSS plugin for building components that can be recolored, restyled and resized with
+WindiUI is a Tailwind CSS plugin for building components that can be recolored, restyled and resized with
 three short classes, without writing a class list per combination.
 
 ::: warning Under development
-WindUI is pre-1.0. This site documents `0.7.x`. See the [roadmap](/roadmap) for what is coming.
+WindiUI is pre-1.0. This site documents `0.7.x`. See the [roadmap](/roadmap) for what is coming.
 :::
 
 ## The three axes

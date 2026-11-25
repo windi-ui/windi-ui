@@ -8,7 +8,7 @@ const repo = 'https://github.com/windi-ui/windi-ui';
 export default defineConfig({
 	base,
 	lang: 'en-US',
-	title: 'WindUI',
+	title: 'WindiUI',
 	description: 'Colour, variant and size utilities and components for Tailwind CSS v3 and v4.',
 	cleanUrls: true,
 	lastUpdated: true,

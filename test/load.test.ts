@@ -9,11 +9,11 @@ const plugin = require.resolve('@windi-ui/tailwind');
 
 // A CommonJS Tailwind 3 config calls `require('@windi-ui/tailwind')()`.
 it('requires as the plugin, with the helpers on it', () => {
-	const windui = require('@windi-ui/tailwind') as Record<string, unknown>;
-	expect(windui).toBeTypeOf('function');
-	expect(windui.default).toBe(windui);
-	expect(windui.defineConfig).toBeTypeOf('function');
-	expect(windui.safelistSource).toBeTypeOf('function');
+	const windiui = require('@windi-ui/tailwind') as Record<string, unknown>;
+	expect(windiui).toBeTypeOf('function');
+	expect(windiui.default).toBe(windiui);
+	expect(windiui.defineConfig).toBeTypeOf('function');
+	expect(windiui.safelistSource).toBeTypeOf('function');
 });
 
 // #32: loading the plugin must not look for `tailwindcss` from the working directory.

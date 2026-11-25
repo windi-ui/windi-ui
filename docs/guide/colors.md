@@ -1,6 +1,6 @@
 # Colors
 
-WindUI does not ship its own colors. It reads the `colors` of your Tailwind theme and turns every palette
+WindiUI does not ship its own colors. It reads the `colors` of your Tailwind theme and turns every palette
 that has all 11 shades (`50`, `100`, `200`, ... `900`, `950`) into a `c-*` class.
 
 ## Choosing a color
@@ -77,7 +77,7 @@ your theme:
 ::: code-group
 
 ```ts [JavaScript]
-windui({ default: 'slate', accent: 'indigo' });
+windiui({ default: 'slate', accent: 'indigo' });
 ```
 
 ```css [@plugin block (Tailwind v4)]
@@ -92,7 +92,7 @@ windui({ default: 'slate', accent: 'indigo' });
 In JavaScript an option also takes CSS variables or the 11 shades themselves:
 
 ```ts
-windui({
+windiui({
 	default: { vars: '--ui-color-neutral' },             // var(--ui-color-neutral-50) ... var(--ui-color-neutral-950)
 	accent: { 50: '#eef2ff', /* ... */ 950: '#1e1b4b' },
 });
@@ -109,7 +109,7 @@ and `blue`:
 }
 ```
 
-Tailwind merges such a palette into `gray` or `blue` shade by shade, so give it all 11 shades. WindUI warns
+Tailwind merges such a palette into `gray` or `blue` shade by shade, so give it all 11 shades. WindiUI warns
 during the build when it finds only some of them, and names the ones that still come from `gray` or `blue`.
 
 `bg-default-*`, `text-accent-*`, `c-default`, `c-accent`, `--wui-c-default-*` and `--wui-c-accent-*` all
@@ -159,7 +159,7 @@ export default {
 			}
 		}
 	},
-	plugins: [windui()],
+	plugins: [windiui()],
 } satisfies Config;
 ```
 
@@ -184,7 +184,7 @@ A palette does not have to be in the Tailwind theme. The [builder](/reference/bu
 CSS variables, from its 11 shades, or as another name for a palette that exists:
 
 ```ts
-windui({
+windiui({
 	build(builder) {
 		builder
 			.addColor('primary', { vars: '--ui-color-primary' })
@@ -204,7 +204,7 @@ Each one gets its `c-<name>` and `c-accent-<name>` class:
 }
 ```
 
-Such a palette is WindUI's only: there is no `bg-primary-500`. Pass `{ utilities: true }` as the third argument
+Such a palette is WindiUI's only: there is no `bg-primary-500`. Pass `{ utilities: true }` as the third argument
 to also register it as a Tailwind color:
 
 ```ts
@@ -219,7 +219,7 @@ builder.addColor('primary', { vars: '--ui-color-primary' }, { utilities: true })
 ## Palettes that change at runtime
 
 With `{ vars }` the colors are whatever the variables hold when the page is shown, so a `<style>` tag, a
-tenant's theme or a theme editor can set them later. WindUI only writes the references; you define
+tenant's theme or a theme editor can set them later. WindiUI only writes the references; you define
 `--ui-color-primary-50` to `--ui-color-primary-950`:
 
 ```css
@@ -235,17 +235,17 @@ tenant's theme or a theme editor can set them later. WindUI only writes the refe
 
 - `c-primary`, `bg-c-*` and, with `utilities: true`, `bg-primary-*` follow a change of the variables at the
   root and inside any container that sets them again.
-- The default palette is different. WindUI declares `--wui-c-*`, `--wui-c-default-*` and `--wui-c-accent-*`
+- The default palette is different. WindiUI declares `--wui-c-*`, `--wui-c-default-*` and `--wui-c-accent-*`
   on `:root`, where a `var()` is resolved once. When [`default` or `accent`](#choosing-the-two-palettes) is
   `{ vars }` and a container sets those variables again, name the container in
   [`rootSelector`](/reference/options#rootselector), so that the variables are declared there too:
 
   ```ts
-  windui({
+  windiui({
   	default: { vars: '--ui-color-neutral' },
   	rootSelector: ':root, [data-theme-scope]',
   });
   ```
 
-- On Tailwind v3 the variables must hold RGB channels (`59 130 246`), not a color, as WindUI's own variables
+- On Tailwind v3 the variables must hold RGB channels (`59 130 246`), not a color, as WindiUI's own variables
   do. On v4 they hold any color.

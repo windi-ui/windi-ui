@@ -1,6 +1,6 @@
 # CSS variables
 
-Everything WindUI does at runtime goes through CSS variables. They all start with `--wui-`, or with your own
+Everything WindiUI does at runtime goes through CSS variables. They all start with `--wui-`, or with your own
 [`prefix`](/reference/options#prefix).
 
 | Group | Prefix | Set by |

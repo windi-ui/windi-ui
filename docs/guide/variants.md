@@ -139,7 +139,7 @@ To let a container set the variant for its content instead, set
 
 ### Variants from `@apply`
 
-WindUI recognises an element that sets a variant by the `v-` in its `class` attribute. A rule that gets its
+WindiUI recognises an element that sets a variant by the `v-` in its `class` attribute. A rule that gets its
 variant through `@apply` has no such class, so add `v-scope` next to it:
 
 ```css

@@ -36,8 +36,8 @@ jobs:
       - name: Resolve version and dist-tag
         id: release
         run: |
-          core=$(node -p "require('./packages/windui-core/package.json').version")
-          tailwind=$(node -p "require('./packages/windui-tailwind/package.json').version")
+          core=$(node -p "require('./packages/windiui-core/package.json').version")
+          tailwind=$(node -p "require('./packages/windiui-tailwind/package.json').version")
           if [ "$core" != "$tailwind" ]; then
             echo "::error::@windi-ui/core is $core but @windi-ui/tailwind is $tailwind"; exit 1
           fi

@@ -1,5 +1,5 @@
 {
-	"name": "windui-test-tw4.1",
+	"name": "windiui-test-tw4.1",
 	"private": true,
 	"devDependencies": {
 		"@windi-ui/tailwind": "workspace:*",

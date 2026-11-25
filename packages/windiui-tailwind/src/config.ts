@@ -34,10 +34,10 @@ function workspaceRoot(cwd: string) {
 }
 
 /**
- * Loads the WindUI config file: the one `config` names, or else the nearest `windui.config.{ts,mts,cts,js,mjs,cjs,json}`
- * or `package.json#windui`, from `cwd` up to the workspace root. Node only.
+ * Loads the WindiUI config file: the one `config` names, or else the nearest `windiui.config.{ts,mts,cts,js,mjs,cjs,json}`
+ * or `package.json#windiui`, from `cwd` up to the workspace root. Node only.
  */
-export function loadWindUIConfig({ cwd = process.cwd(), config }: LoadConfigOptions = {}): LoadedConfig {
+export function loadWindiUIConfig({ cwd = process.cwd(), config }: LoadConfigOptions = {}): LoadedConfig {
 	const key = `${cwd}\0${config ?? ''}`;
 	const cached = cache.get(key);
 	// shortcut: a hit is not searched again, so a config file added nearer to `cwd` later is only seen after a restart.
@@ -47,7 +47,7 @@ export function loadWindUIConfig({ cwd = process.cwd(), config }: LoadConfigOpti
 	for (const source of cached?.result.sources ?? []) delete require.cache[resolve(source)];
 
 	const file = config == null ? undefined : resolve(cwd, config);
-	if (file && !existsSync(file)) throw new Error(`WindUI: config file not found: ${file}`);
+	if (file && !existsSync(file)) throw new Error(`WindiUI: config file not found: ${file}`);
 
 	let loadConfigSync;
 	try {
@@ -67,8 +67,8 @@ export function loadWindUIConfig({ cwd = process.cwd(), config }: LoadConfigOpti
 		sources: file
 			? { files: file, extensions: [], rewrite: unwrap }
 			: [
-				{ files: 'windui.config', extensions: EXTENSIONS, rewrite: unwrap },
-				{ files: 'package.json', extensions: [], rewrite: <F>(pkg: F) => (pkg as { windui?: Config }).windui },
+				{ files: 'windiui.config', extensions: EXTENSIONS, rewrite: unwrap },
+				{ files: 'package.json', extensions: [], rewrite: <F>(pkg: F) => (pkg as { windiui?: Config }).windiui },
 			],
 	}));
 

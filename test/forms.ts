@@ -5,17 +5,17 @@ import type { Compile, CompileCss } from './helpers';
 
 const candidates = ['c-red', 'v-solid', 's-lg', 'bg-v', 'bg-c-500', 'btn', 'badge'];
 
-const tsModule = resolve(import.meta.dirname, 'config/windui.config.ts');
+const tsModule = resolve(import.meta.dirname, 'config/windiui.config.ts');
 // The same module in JavaScript, in a place that resolves the plugin and that neither git nor ESLint looks at.
 // One per worker, as the test files run side by side.
-const jsModule = resolve(import.meta.dirname, `../node_modules/.cache/windui-test-${process.env.VITEST_POOL_ID}/windui.config.js`);
+const jsModule = resolve(import.meta.dirname, `../node_modules/.cache/windiui-test-${process.env.VITEST_POOL_ID}/windiui.config.js`);
 mkdirSync(resolve(jsModule, '..'), { recursive: true });
 writeFileSync(jsModule, `
-	import windui from '@windi-ui/tailwind';
-	export default windui({ prefix: 'mod', build: builder => builder.removeComponent('badge') });
+	import windiui from '@windi-ui/tailwind';
+	export default windiui({ prefix: 'mod', build: builder => builder.removeComponent('badge') });
 `);
 
-/** #33: the ways a Tailwind 4 stylesheet loads WindUI without a JS config. */
+/** #33: the ways a Tailwind 4 stylesheet loads WindiUI without a JS config. */
 export function forms(compile: Compile & { css: CompileCss }) {
 	it('loads with a bare `@plugin`', async () => {
 		expect(await compile.css('@plugin "@windi-ui/tailwind";', candidates)).toBe(await compile(candidates));

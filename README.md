@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="https://raw.githubusercontent.com/windi-ui/windi-ui/main/docs/public/logo-lockup.svg" alt="WindUI" width="280">
+	<img src="https://raw.githubusercontent.com/windi-ui/windi-ui/main/docs/public/logo-lockup.svg" alt="WindiUI" width="280">
 </p>
 
 # WindiUI
@@ -36,19 +36,19 @@ On Tailwind v4, load it from your stylesheet:
 @plugin "@windi-ui/tailwind";
 ```
 
-Options go in the `@plugin` block, or in a `windui.config.ts` that you load with `@plugin "./windui.config.ts"`;
+Options go in the `@plugin` block, or in a `windiui.config.ts` that you load with `@plugin "./windiui.config.ts"`;
 see [Installation](https://windi-ui.github.io/windi-ui/guide/installation) and [Config file](https://windi-ui.github.io/windi-ui/reference/config-file).
 
 On Tailwind v3, add the plugin to your `tailwind.config.ts` / `tailwind.config.js` file:
 
 ```ts
 import type { Config } from 'tailwindcss';
-import windui from '@windi-ui/tailwind';
+import windiui from '@windi-ui/tailwind';
 
 export default {
 	// ...
 	plugins: [
-		windui()
+		windiui()
 	],
 } satisfies Config;
 ```
@@ -103,7 +103,7 @@ import { safelistSource } from '@windi-ui/tailwind/safelist';
 safelistSource({}, { palettes: ['blue', 'red'] }); // the string above; without `palettes`, every palette of the default theme
 ```
 
-On Tailwind v3, `windui({ safelist: true })` emits every `c-*`, `v-*` and `s-*` class.
+On Tailwind v3, `windiui({ safelist: true })` emits every `c-*`, `v-*` and `s-*` class.
 
 See [the `safelist` option](https://windi-ui.github.io/windi-ui/reference/options#safelist) for the details.
 
@@ -113,7 +113,7 @@ See [Changes in 0.8](https://windi-ui.github.io/windi-ui/changes-0.8). The one t
 element with a `*` rule (the new `variantScope` option, default `'element'`). `btn`, `badge` and the `bg-v`,
 `text-v`, `border-v` utilities look the same, but your own CSS that reads a variant variable directly, such as
 `background: var(--wui-v-bg)`, on an element without a `v-*` class no longer gets a value. Either set
-`windui({ variantScope: 'universal' })` to keep the 0.7 output, or give the rule a variant with
+`windiui({ variantScope: 'universal' })` to keep the 0.7 output, or give the rule a variant with
 `@apply v-default v-scope`. A rule that uses `@apply v-*` should also apply `v-scope`, so its children do not
 inherit the variant.
 
@@ -176,13 +176,13 @@ The repository is organized as a monorepo with the following packages:
 
 #### Packages
 
-- **`windui-core`**: Contains the core components and utilities.
-- **`windui-tailwind`**: Tailwind CSS-specific utilities and themes.
+- **`windiui-core`**: Contains the core components and utilities.
+- **`windiui-tailwind`**: Tailwind CSS-specific utilities and themes.
 
 #### Playgrounds
 
-- **`vue-tailwind`**: A Vue 3 project showcasing WindUI with Tailwind CSS v3.
-- **`vue-tailwindv4`**: Another Vue 3 project demonstrating WindUI with Tailwind CSS v4.
+- **`vue-tailwind`**: A Vue 3 project showcasing WindiUI with Tailwind CSS v3.
+- **`vue-tailwindv4`**: Another Vue 3 project demonstrating WindiUI with Tailwind CSS v4.
 
 #### Tests
 

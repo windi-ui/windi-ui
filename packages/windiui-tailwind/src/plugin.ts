@@ -1,7 +1,7 @@
 import { default as createPlugin } from 'tailwindcss/plugin';
 import type { CSSRuleObject, DarkModeConfig } from 'tailwindcss/types/config';
 import { create, type Builder, type Config, type ColorShade, type ColorValue, type ApplyVariantMainProp, type ApplyVariantSubProp } from "@windi-ui/core";
-import { loadWindUIConfig } from './config';
+import { loadWindiUIConfig } from './config';
 import { CONFIG, isLoadingConfig } from './utils/configState';
 import { classSource } from './safelist';
 import type { RecursiveRecord } from './types';
@@ -40,7 +40,7 @@ export interface PluginOptions extends Config {
 }
 
 /** The plugin factory. Tailwind calls it itself for `@plugin "@windi-ui/tailwind"`, with the options of the `@plugin` block. */
-export interface WindUIPlugin<P> {
+export interface WindiUIPlugin<P> {
 	(options?: PluginOptions): P;
 	__isOptionsFunction: true;
 }
@@ -62,7 +62,7 @@ function resolveOptions(options: PluginOptions = {}, strict = false): Config {
 	for (const [name, value] of Object.entries(options) as [string, unknown][]) {
 		const key = name.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());
 		if (!OPTIONS.includes(key)) {
-			const message = `WindUI: unknown option "${name}". The options are: ${OPTIONS.join(', ')}.`;
+			const message = `WindiUI: unknown option "${name}". The options are: ${OPTIONS.join(', ')}.`;
 			if (strict) throw new Error(message);
 
 			console.warn(message);
@@ -70,7 +70,7 @@ function resolveOptions(options: PluginOptions = {}, strict = false): Config {
 		}
 
 		if (key === 'build' && value != null && typeof value !== 'function') {
-			throw new Error('WindUI: `build` is a function, which an `@plugin` block cannot hold. Put it in a config module or a config file.');
+			throw new Error('WindiUI: `build` is a function, which an `@plugin` block cannot hold. Put it in a config module or a config file.');
 		}
 
 		// Tailwind splits an unquoted `root-selector: :root, .scope` of an `@plugin` block at the comma.
@@ -81,7 +81,7 @@ function resolveOptions(options: PluginOptions = {}, strict = false): Config {
 	// A `build` function can only come from a module, and that module is then the config file.
 	if (file === false || (file == null && config.build) || isLoadingConfig()) return config;
 
-	return { ...loadWindUIConfig({ config: file }).config, ...config };
+	return { ...loadWindiUIConfig({ config: file }).config, ...config };
 }
 
 /**
@@ -117,13 +117,13 @@ function utilityColors(build: Config['build'], inTheme: (name: string) => boolea
 }
 
 /** @param ver the Tailwind major to build for; left out, it is taken from the Tailwind that runs the plugin. */
-export function createWindUIPlugin<P = ReturnType<typeof createPlugin>>(ver?: 3 | 4): WindUIPlugin<P> {
-	return Object.assign((options?: PluginOptions) => WindUITailwindCSS(resolveOptions(options, calledByTailwind(1)), ver) as P, {
+export function createWindiUIPlugin<P = ReturnType<typeof createPlugin>>(ver?: 3 | 4): WindiUIPlugin<P> {
+	return Object.assign((options?: PluginOptions) => WindiUITailwindCSS(resolveOptions(options, calledByTailwind(1)), ver) as P, {
 		__isOptionsFunction: true as const
 	});
 }
 
-function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof createPlugin> {
+function WindiUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof createPlugin> {
 	const wiu = create(config);
 
 	// The theme colors `default` and `accent` as the theme callback below gave them, when an option names the palette.
@@ -144,7 +144,7 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 
 		for (const [name, shades] of Object.entries(mixReported ? {} : missing) as ['default' | 'accent', string[]][]) {
 			mixReported = true;
-			console.warn(`WindUI: the theme's "${name}" palette has no shade ${shades.join(', ')}; ${shades.length > 1 ? 'these are' : 'it is'} taken from ${FALLBACK[name]}. Give it all 11 shades, or set the \`${name}\` option.`);
+			console.warn(`WindiUI: the theme's "${name}" palette has no shade ${shades.join(', ')}; ${shades.length > 1 ? 'these are' : 'it is'} taken from ${FALLBACK[name]}. Give it all 11 shades, or set the \`${name}\` option.`);
 		}
 
 		// Tailwind puts a palette of the app's own theme over the one a plugin gives, so the option cannot replace it.
@@ -152,7 +152,7 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 			const theme = tw.theme<Record<string, string>>(`colors.${name}`, {});
 			if (Object.keys(palette).some(s => theme[s] !== palette[s])) {
 				mixReported = true;
-				console.warn(`WindUI: the theme has a "${name}" palette of its own, which utilities such as \`bg-${name}-500\` keep using. The \`${name}\` option only sets \`c-${name}\` and the variables. Use one of the two.`);
+				console.warn(`WindiUI: the theme has a "${name}" palette of its own, which utilities such as \`bg-${name}-500\` keep using. The \`${name}\` option only sets \`c-${name}\` and the variables. Use one of the two.`);
 			}
 		}
 
@@ -209,7 +209,7 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 		// Tailwind 4 takes no safelist from a plugin; the stylesheet has to name the classes.
 		if (wiu.config.safelist && tp.ver === 4 && !safelistReported) {
 			safelistReported = true;
-			console.warn(`WindUI: \`safelist\` only works on Tailwind 3. On Tailwind 4, add this line to the stylesheet (\`safelistSource()\` from "@windi-ui/tailwind/safelist" returns the string, to keep it current with a test):\n@source inline("${classSource({ c: colorNames, v: variantNames, s: sizeNames })}");`);
+			console.warn(`WindiUI: \`safelist\` only works on Tailwind 3. On Tailwind 4, add this line to the stylesheet (\`safelistSource()\` from "@windi-ui/tailwind/safelist" returns the string, to keep it current with a test):\n@source inline("${classSource({ c: colorNames, v: variantNames, s: sizeNames })}");`);
 		}
 
 		tw.matchUtilities({
@@ -254,7 +254,7 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 					// The Tailwind that resolves the config can: only Tailwind 3 passes `breakpoints` and `negative`.
 					const isV3 = ver ? ver === 3 : 'breakpoints' in utils;
 
-					// A color of the theme that follows WindUI's variables.
+					// A color of the theme that follows WindiUI's variables.
 					const follow = (prefix: '' | 'default-' | 'accent-') => keyValuePairs(Object.keys(colors.gray), v => {
 						const c = wiu.vars.color(`${prefix}${v as ColorShade}`);
 						return isV3 ? `rgb(${c} / <alpha-value>)` : c;
@@ -294,7 +294,7 @@ function WindUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof creat
 							own[name] = colors[value as keyof typeof colors];
 						} else if (!utilitiesReported) {
 							utilitiesReported = true;
-							console.error(`WindUI: "${value}" is not one of Tailwind's own palettes, so "${name}" gets no color utilities.`);
+							console.error(`WindiUI: "${value}" is not one of Tailwind's own palettes, so "${name}" gets no color utilities.`);
 						}
 					}
 

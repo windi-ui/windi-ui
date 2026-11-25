@@ -2,8 +2,8 @@
 	"files": [],
 	"references": [
 		{ "path": "./tsconfig.node.json" },
-		{ "path": "./packages/windui-tailwind" },
-		{ "path": "./packages/windui-core" },
+		{ "path": "./packages/windiui-tailwind" },
+		{ "path": "./packages/windiui-core" },
 		{ "path": "./docs" }
 	]
 }

@@ -1,5 +1,5 @@
 import { expect, it, vi } from 'vitest';
-import windui from '@windi-ui/tailwind';
+import windiui from '@windi-ui/tailwind';
 import { defineConfig } from '@windi-ui/tailwind/config';
 import { safelistSource, type SafelistOptions } from '@windi-ui/tailwind/safelist';
 import type { Compile, CompileCss } from './helpers';
@@ -13,8 +13,8 @@ export function source() {
 		const expected = '{c-{accent,accent-accent,accent-blue,accent-brand,accent-default,accent-red,blue,brand,default,red},v-{default,light,solid},s-{default,lg,sm,xl,xs}}';
 
 		expect(safelistSource(config, { palettes: ['red', 'blue'] })).toBe(expected);
-		// the plugin made from the config, as a `windui.config.ts` exports it
-		expect(safelistSource(windui({ ...config, config: false }), { palettes: ['red', 'blue'] })).toBe(expected);
+		// the plugin made from the config, as a `windiui.config.ts` exports it
+		expect(safelistSource(windiui({ ...config, config: false }), { palettes: ['red', 'blue'] })).toBe(expected);
 	});
 
 	it('lists the axes that are asked for', () => {
