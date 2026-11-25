@@ -1,5 +1,6 @@
 import { Builder } from "./builder";
 import type { ColorShade } from "./colors";
+import type { VariantOverride, VariantProperty } from "./variants";
 
 /**
  * Where the default variant comes from for an element without a `v-*` class of its own:
@@ -23,7 +24,26 @@ export type DarkSelectorOption =
  * A palette of 11 shades: the name of a palette of the theme, CSS variables named `{vars}-{shade}`, or the shades
  * themselves.
  */
-export type ColorValue = string | { vars: string } | Record<ColorShade, string>;
+export type ColorValue = string | { vars: string, overrideVars?: OverrideVars } | Record<ColorShade, string>;
+
+/**
+ * Which variant values a palette given by CSS variables also takes from variables, named
+ * `{vars}-{variant}-{prop}`, such as `--ui-color-primary-solid-bg-hover` for `bg-:hover`.
+ */
+export interface OverrideVars {
+	/** Left out, every registered variant. */
+	variants?: string[];
+	/** `'calibrated'`, the default, is `bg`, `fg`, `border` and their `:hover` values; `'all'` is every value of the variant. */
+	props?: 'calibrated' | 'all' | VariantProperty[];
+}
+
+/**
+ * How a per-color override reaches the variant:
+ * - `vars`: the `c-*` class sets override variables that the `v-*` class reads, wherever the two classes are;
+ * - `compound`: a `.c-{color}.v-{variant}` rule, for both classes on one element;
+ * - `both`.
+ */
+export type OverrideMode = 'vars' | 'compound' | 'both';
 
 export interface ColorOptions {
 	/**
@@ -42,6 +62,9 @@ export interface ResolvedConfig {
 	/** The palette behind `accent`. Left out, it is a complete `accent` palette of the theme, or else blue. */
 	accent?: ColorValue;
 	variantScope: VariantScope;
+	/** Per-color overrides of variants: `{ solid: { yellow: { bg: '700' }, 'amber,lime': { ... } } }`. */
+	overrides?: Record<string, Record<string, VariantOverride>>;
+	overrideMode: OverrideMode;
 	/** Left out, dark mode follows Tailwind's own. */
 	darkSelector?: DarkSelectorOption;
 	build?: (builder: Builder) => void;
@@ -58,6 +81,7 @@ export function resolveConfig(config: Config): ResolvedConfig {
 		prefix = 'wui',
 		rootSelector = ':root',
 		variantScope = 'element',
+		overrideMode = 'vars',
 		darkSelector,
 		build,
 		safelist = false,
@@ -70,6 +94,8 @@ export function resolveConfig(config: Config): ResolvedConfig {
 		default: config.default,
 		accent: config.accent,
 		variantScope,
+		overrides: config.overrides,
+		overrideMode,
 		darkSelector,
 		build,
 		safelist,

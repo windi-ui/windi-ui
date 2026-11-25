@@ -7,7 +7,7 @@ import { CONFIG, isLoadingConfig } from './utils/configState';
 import { classSource } from './safelist';
 import type { RecursiveRecord } from './types';
 import { createTailwindTheme, flattenColorPalette } from './theme';
-import { getDarkSelector, applyDark, toDarkMode, VARIANT_DARK } from './utils/darkMode';
+import { getDarkSelector, applyDark, rootDarkSelector, toDarkMode, VARIANT_DARK } from './utils/darkMode';
 import { calledByTailwind, tailwindAtLeast } from './utils/version';
 
 // Tailwind 3 has no `exports` map, so Node's ESM resolver cannot find `tailwindcss/plugin` (no extension); `require` can,
@@ -56,7 +56,7 @@ export interface TailwindV4Plugin {
 	config?: any;
 }
 
-const OPTIONS = ['prefix', 'rootSelector', 'default', 'accent', 'variantScope', 'darkSelector', 'build', 'safelist', 'debug', 'config'];
+const OPTIONS = ['prefix', 'rootSelector', 'default', 'accent', 'variantScope', 'overrides', 'overrideMode', 'darkSelector', 'build', 'safelist', 'debug', 'config'];
 
 /**
  * Inline options over those of the config file. An `@plugin` block writes the names in kebab-case.
@@ -169,7 +169,7 @@ function WindiUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof crea
 			: tp.ver === 4 && tailwindAtLeast(4, 1, 17) ? VARIANT_DARK : getDarkSelector('media');
 
 		const root = wiu.config.rootSelector;
-		tw.addBase({ [root]: gt.colors.rootVars() });
+		tw.addBase({ [root]: applyDark(rootDarkSelector(darkSelector), gt.colors.rootVars()) });
 		tw.addBase({ [root]: gt.sizes.rootVars() });
 
 		const scope = wiu.config.variantScope;
@@ -218,7 +218,7 @@ function WindiUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof crea
 		}
 
 		tw.matchUtilities({
-			c: known(colorNames, (val) => gt.colors.cssVars(val))
+			c: known(colorNames, (val) => applyDark(darkSelector, gt.colors.cssVars(val)))
 		}, { values: keyValuePairs(colorNames) });
 
 		tw.matchUtilities({

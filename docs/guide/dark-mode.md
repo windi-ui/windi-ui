@@ -121,6 +121,12 @@ windiui({ darkSelector: ['variant', '&:where([data-theme=dark], [data-theme=dark
 `darkSelector` only moves WindiUI's dark values. Tailwind's `dark:` utilities keep following Tailwind's own
 setting, so keep the two the same unless you mean them to differ.
 
+The root rule, which holds the dark [overrides](/guide/customizing#override-a-variant-for-some-colors) of
+`default` and `accent`, also matches the root element itself: `&:is(.dark *)` becomes `&:is(.dark, .dark *)`
+there, and `&:not(.light *)` becomes `&:not(.light, .light *)`. WindiUI cannot do this for a Tailwind v4 `@custom-variant dark (&:is(.dark *))`, which Tailwind expands
+itself, so with dark overrides of `default` or `accent` write it `&:where(.dark, .dark *)`, as above, or set
+`darkSelector: 'class'`.
+
 ## What is not automatic
 
 Classes that name a shade, such as `bg-c-100` or `text-accent-600`, are fixed. Use Tailwind's `dark:` variant

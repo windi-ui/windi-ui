@@ -8,6 +8,7 @@ Everything WindiUI does at runtime goes through CSS variables. They all start wi
 | Color | `--wui-c-` | `:root`, `c-<name>`, `c-accent-<name>` |
 | Variant | `--wui-v-` | `v-<name>` (and `*` with [`variantScope: 'universal'`](/reference/options#variantscope)) |
 | Size | `--wui-s-` | `:root` (default size), `s-<name>` |
+| Override | `--wui-cv-` | `:root`, `c-<name>`, `c-accent-<name>`, only when there are [per-color overrides](/guide/customizing#override-a-variant-for-some-colors) |
 
 ## Color variables
 
@@ -96,6 +97,30 @@ dark value of the `default` variant where a variant variable is read with a fall
 
 `var(--wui-v-on-light, <light value>) var(--wui-v-on-dark, <dark value>)` therefore computes to the value of the
 current mode. They are set on `:where(:root)` and under the dark selector, and are not meant to be overridden.
+
+## Override variables
+
+A [per-color override](/guide/customizing#override-a-variant-for-some-colors) gives each overridden value of a
+variant one variable, named after the variant and the value: `--wui-cv-solid-bg`, `--wui-cv-solid-bg-\:hover`,
+`--wui-cv-light-fg-accent`. With [`overrideMode`](/reference/options#overridemode) `'compound'` there are none,
+except for [palettes given by variables](/guide/colors#variant-overrides-at-runtime).
+
+| Set by | Value |
+| --- | --- |
+| `c-<name>` with an override of that value | The override, for example `var(--wui-c-700)` |
+| `c-<name>` without one, and `:root` for the `default` color | `initial`, so that a color inside another one is not overridden by it |
+| The dark block of `c-<name>` | The override's dark value, or `initial` where the variant has a dark value of its own and the override has none |
+| `c-accent-<name>`, and `:root` for the `accent` color | The same, for the `-accent` values |
+
+The variant class reads each one, with its own value as the fallback:
+
+```css
+.v-solid {
+	--wui-v-bg: var(--wui-cv-solid-bg, var(--wui-c-600));
+}
+```
+
+A value that no color overrides has no variable, and is emitted as before.
 
 ## Size variables
 

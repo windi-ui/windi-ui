@@ -4,12 +4,14 @@ import { builderColors, palettes } from './colors';
 import { darkClass, darkSelector } from './dark';
 import { baseline, candidates } from './baseline';
 import { tailwind3 } from './helpers';
+import { overrides } from './overrides';
 import { safelist, source } from './safelist';
 
 const compile = tailwind3();
 
 baseline('tw3', compile);
 cases(compile);
+overrides(compile);
 palettes(compile);
 builderColors(compile);
 source();

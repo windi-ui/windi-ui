@@ -57,6 +57,11 @@ export function getDarkSelector(darkMode: DarkModeConfig): DarkSelector {
 	}
 }
 
+/** The dark selector for a rule on the root element, which `&:is(.dark *)` never matches and `&:not(.light *)` always does: it has no ancestor. */
+export function rootDarkSelector(selector: DarkSelector): DarkSelector {
+	return selector.map(chain => chain.map(s => s.replace(/^&:(is|not)\((.+) \*\)$/, '&:$1($2, $2 *)')));
+}
+
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 function setNestedValue<T extends object, V>(obj: T, keys: string[], value: V) {
 	if (keys.length === 0) {
@@ -81,6 +86,11 @@ function setNestedValue<T extends object, V>(obj: T, keys: string[], value: V) {
 
 export function applyDark<T extends { '@dark'?: RecursiveRecord }>(selector: DarkSelector, styles: T) {
 	const { '@dark': darkStyle, ...style } = styles;
+
+	// A nested rule with a dark block of its own, such as a `compound` override
+	for (const [key, value] of Object.entries(style)) {
+		if (value && typeof value === 'object' && '@dark' in value) (style as RecursiveRecord)[key] = applyDark(selector, value as RecursiveRecord);
+	}
 
 	if (darkStyle) {
 		for (const s of selector) {

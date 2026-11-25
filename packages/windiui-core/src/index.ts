@@ -1,5 +1,5 @@
 import type { ThemeProvider } from './types';
-import { resolveConfig, defineConfig, type ColorOptions, type ColorValue, type Config, type DarkSelectorOption, type VariantScope } from './config';
+import { resolveConfig, defineConfig, type ColorOptions, type ColorValue, type Config, type DarkSelectorOption, type OverrideMode, type OverrideVars, type VariantScope } from './config';
 import { varsProvider } from './vars';
 import { ColorsGenerator } from "./colors";
 import { VariantsGenerator } from "./variants";
@@ -23,14 +23,20 @@ export function create(config: Config) {
 		config: rConfig,
 		generator(theme: ThemeProvider): Generator {
 			const ctx = { vars, theme };
-			const colors = new ColorsGenerator(ctx, rConfig);
-			const variants = new VariantsGenerator(ctx, rConfig.variantScope);
+			const variants = new VariantsGenerator(ctx, rConfig.variantScope, rConfig.overrideMode);
+			const colors = new ColorsGenerator(ctx, rConfig, variants);
 			const sizes = new SizesGenerator(ctx);
 			const components = new ComponentsGenerator({ ...ctx, colors, variants });
 
 			if (rConfig.build) {
 				const builder = createBuilder(colors, variants, sizes, components);
 				rConfig.build(builder);
+			}
+
+			for (const [variant, overrides] of Object.entries(rConfig.overrides ?? {})) {
+				for (const [color, override] of Object.entries(overrides)) {
+					variants.override(variant, color, override);
+				}
 			}
 
 			return { colors, variants, sizes, components };
@@ -41,7 +47,7 @@ export function create(config: Config) {
 export { varsProvider, type VarsProvider } from './vars';
 export type { Builder } from './builder';
 export { defineConfig };
-export type { ColorOptions, ColorValue, Config, DarkSelectorOption, VariantScope };
+export type { ColorOptions, ColorValue, Config, DarkSelectorOption, OverrideMode, OverrideVars, VariantScope };
 export type * from './types';
 export type { ColorShade, ExColorShade } from './colors';
-export type { Variant, VariantProperties as VariantProps, ApplyVariant, ApplyVariantMainProp, ApplyVariantSubProp, ApplyVariantProp } from './variants';
+export type { Variant, VariantOverride, VariantProperties as VariantProps, ApplyVariant, ApplyVariantMainProp, ApplyVariantSubProp, ApplyVariantProp } from './variants';

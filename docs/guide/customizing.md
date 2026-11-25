@@ -89,6 +89,97 @@ builder.updateVariant('solid', (variant, { vars }) => {
 });
 ```
 
+### Override a variant for some colors
+
+A variant uses the same shades with every color, and a few colors need others. White text on shade 600 passes
+the WCAG contrast of 4.5:1 with blue or red, but not with yellow, amber or lime; on 700 it passes with all of
+them. `overrideVariant(variant, colors, override)` changes the values of one variant for some colors only:
+
+```ts
+builder
+	.overrideVariant('solid', 'yellow', { bg: '700', pseudos: { ':hover': { bg: '800' } } })
+	.overrideVariant('solid', ['amber', 'lime'], { bg: '700', dark: { bg: '600' } })
+	.overrideVariant('outline', 'yellow', ({ vars }) => ({ fg: vars.color('700'), dark: { fg: vars.color('300') } }));
+```
+
+This site overrides `solid` for yellow as in the first line:
+
+<Demo>
+<button class="btn v-solid c-amber">Amber</button>
+<button class="btn v-solid c-yellow">Yellow</button>
+<div class="c-yellow"><button class="btn v-solid">Yellow from the parent</button></div>
+</Demo>
+
+```html
+<button class="btn v-solid c-amber">Amber</button>
+<button class="btn v-solid c-yellow">Yellow</button>
+<div class="c-yellow"><button class="btn v-solid">Yellow from the parent</button></div>
+```
+
+- An override takes any value of a variant, with `pseudos` and `dark`, and only needs the values it changes.
+- A value is a shade of the color (`'700'`, `'accent-600'`, `'default-200'`, `'white'`, `'black'`) or a
+  reference such as `vars.color('700')`. On an `-accent` property a bare shade is one of the accent color:
+  `'bg-accent': '700'` is `var(--wui-c-accent-700)`, and `c-accent-yellow` applies it.
+- Calls add up: a later call for the same variant and color changes the values it names and keeps the others.
+- In dark mode the variant's dark value applies where the override has no `dark` value of its own. `v-light`
+  has a dark `fg`, so an override `{ fg: '700' }` of `v-light` gives the dark `fg` in dark mode.
+- `addVariant` and `updateVariant` take the same under `colors`, by color name, where `'amber,lime'` names two:
+  `{ bg: ..., colors: { yellow: { bg: '700' }, 'amber,lime': { bg: '700' } } }`.
+
+The [`overrides`](/reference/options#overrides) option takes them as data, for a JSON config. It is applied
+after `build`:
+
+```ts
+windiui({
+	overrides: {
+		solid: {
+			yellow: { bg: '700', pseudos: { ':hover': { bg: '800' } }, dark: { bg: '600' } },
+			'amber,lime': { bg: '700' },
+		},
+	},
+});
+```
+
+#### How an override reaches the variant
+
+The `c-*` class sets an override variable for each overridden value, and the `v-*` class reads it, with its own
+shade as the fallback:
+
+```css
+.c-yellow {
+	--wui-c-50: ...; /* the 11 shades, as before */
+	--wui-cv-solid-bg: var(--wui-c-700);
+	--wui-cv-solid-bg-\:hover: var(--wui-c-800);
+}
+.c-blue {
+	--wui-cv-solid-bg: initial;
+	--wui-cv-solid-bg-\:hover: initial;
+}
+.v-solid {
+	--wui-v-bg: var(--wui-cv-solid-bg, var(--wui-c-600));
+	--wui-v-bg-\:hover: var(--wui-cv-solid-bg-\:hover, var(--wui-c-700));
+}
+```
+
+So an override works wherever the two classes are: both on one element in any order, `c-yellow` on a parent of
+`v-solid`, `@apply c-yellow v-solid` in a rule, and under Tailwind variants such as `hover:v-solid`,
+`md:c-yellow` or `dark:c-yellow`. Every other color class resets the variables, so `c-blue` inside `c-yellow` is
+not overridden. Only values that some color overrides get a variable; without overrides the CSS is unchanged.
+See [Override variables](/reference/css-variables#override-variables).
+
+With [`overrideMode: 'compound'`](/reference/options#overridemode) the override is a `.c-yellow.v-solid` rule
+instead, which only applies with both classes on one element. `'both'` emits the two forms.
+
+::: tip A compound rule by hand
+`.c-yellow.v-solid { --wui-v-bg: var(--wui-c-700); }` in your own CSS works unlayered or in `@layer utilities`.
+On Tailwind v4 it has no effect in `@layer components` or `@layer base`, whatever its specificity: `v-*` is in the
+utilities layer, and so are the components of a plugin
+([tailwindcss#15045](https://github.com/tailwindlabs/tailwindcss/issues/15045)).
+:::
+
+Palettes given by CSS variables can take their overrides from variables at runtime; see
+[Variant overrides at runtime](/guide/colors#variant-overrides-at-runtime).
+
 ### Remove a variant
 
 ```ts
@@ -205,7 +296,7 @@ point of the build. `colorsNames()` includes the `accent-<name>` entries.
 
 ## Errors
 
-Adding a name that exists, or updating or removing one that does not, logs an error to the console and is
+Adding a name that exists, or updating, removing or overriding one that does not, logs an error to the console and is
 skipped. The build does not fail. `setColor` adds or replaces; `set*` for the other kinds is tracked in
 [#40](https://github.com/windi-ui/windi-ui/issues/40).
 

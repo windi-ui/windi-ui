@@ -249,3 +249,54 @@ tenant's theme or a theme editor can set them later. WindiUI only writes the ref
 
 - On Tailwind v3 the variables must hold RGB channels (`59 130 246`), not a color, as WindiUI's own variables
   do. On v4 they hold any color.
+
+### Variant overrides at runtime
+
+A [per-color override](/guide/customizing#override-a-variant-for-some-colors) is fixed at build time, and a
+`c-*` class cannot know which variants it will meet. A palette given by variables can therefore also take its
+overrides from variables, with `overrideVars`:
+
+```ts
+builder.setColor('primary', {
+	vars: '--ui-color-primary',
+	overrideVars: { variants: ['solid', 'outline'], props: 'calibrated' },
+});
+```
+
+```css
+.c-primary {
+	--wui-c-50: var(--ui-color-primary-50);
+	/* ... */
+	--wui-cv-solid-bg: var(--ui-color-primary-solid-bg);
+	--wui-cv-solid-bg-\:hover: var(--ui-color-primary-solid-bg-hover);
+	/* ... */
+}
+```
+
+- While `--ui-color-primary-solid-bg` is not set, the variable is invalid and `v-solid` uses its own shade. Set
+  it, at the root or in any container, and `c-primary v-solid` uses it.
+- A static override of the same color is the fallback: with
+  `overrideVariant('solid', 'primary', { bg: '800' })` the class sets
+  `--wui-cv-solid-bg: var(--ui-color-primary-solid-bg, var(--wui-c-800))`.
+- `variants` defaults to every registered variant. `props` is `'calibrated'` by default (`bg`, `fg`, `border`
+  and their `:hover` values), `'all'` (every value of the variant), or a list such as
+  `['bg', 'bg-:hover', 'fg-soft']`.
+- The variables are named `{vars}-{variant}-{prop}`, without the colon of a state: `bg-:hover` of `solid` is
+  `--ui-color-primary-solid-bg-hover`. An `-accent` value is set by `c-accent-primary`.
+- Where the variant has a dark value, the dark block of the class reads the variable without the static
+  fallback, so the variant's dark shade applies while it is unset. The variable is the same in both modes; set
+  it per mode if the value differs.
+- The `default` and `accent` options take it too: `default: { vars: '--ui-color-neutral', overrideVars: {} }`
+  forwards them on the root.
+- It works with every [`overrideMode`](/reference/options#overridemode): a palette given by variables always
+  uses override variables.
+
+Each forwarded value is a declaration on the `c-*` class, plus one in its dark block where the variant has a
+dark value, and every other color class resets it. Measured on Tailwind v4 for one class with six variants
+(the four built-in ones and two more):
+
+| `props` | Declarations | Minified | Minified and gzipped |
+| --- | --- | --- | --- |
+| without `overrideVars` | 11 | 487 B | 152 B |
+| `'calibrated'` | 11 + 56 | 3,989 B | 429 B |
+| `'all'` | 11 + 159 | 11,796 B | 905 B |

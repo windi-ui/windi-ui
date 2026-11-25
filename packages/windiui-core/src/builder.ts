@@ -1,6 +1,7 @@
 import type { ColorOptions, ColorValue } from "./config";
 import type { ColorsGenerator } from "./colors";
-import type { VariantsGenerator } from "./variants";
+import type { VariantOverride, VariantsGenerator } from "./variants";
+import type { BuilderContext } from "./base";
 import type { SizesGenerator } from "./size";
 import type { ComponentsGenerator } from './components/generator';
 
@@ -30,6 +31,9 @@ export interface Builder {
 	removeVariant: BuilderFunc<VariantsGenerator['remove']>;
 	removeSize: BuilderFunc<SizesGenerator['remove']>;
 	removeComponent: BuilderFunc<ComponentsGenerator['remove']>;
+
+	/** Sets values of a variant for one or more colors, over the overrides they have. */
+	overrideVariant: (variant: string, colors: string | string[], override: VariantOverride | ((ctx: BuilderContext) => VariantOverride)) => Builder;
 }
 
 export function createBuilder(colors: ColorsGenerator, variants: VariantsGenerator, sizes: SizesGenerator, components: ComponentsGenerator): Builder {
@@ -92,6 +96,11 @@ export function createBuilder(colors: ColorsGenerator, variants: VariantsGenerat
 		},
 		removeComponent(name) {
 			components.remove(name);
+			return this;
+		},
+
+		overrideVariant(variant, colors, override) {
+			variants.override(variant, colors, override);
 			return this;
 		},
 	};

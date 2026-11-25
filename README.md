@@ -74,6 +74,16 @@ Make your component more flexible by styling it with variant utilities classes, 
 <span class="inline-block c-red v-solid bg-v-soft/60 text-v border border-v py-1 px-2 rounded">Test</span>
 ```
 
+A variant can use other shades for some colors, for example a darker `solid` background for yellow, where white text on shade 600 is hard to read:
+
+```ts
+windiui({
+	build: (builder) => builder.overrideVariant('solid', 'yellow', { bg: '700', pseudos: { ':hover': { bg: '800' } } }),
+});
+```
+
+See [Override a variant for some colors](https://windi-ui.github.io/windi-ui/guide/customizing#override-a-variant-for-some-colors).
+
 #### Components
 
 WindiUI comes with a few built-in components (e.g. `btn`, `badge`, ... more to come) that can be styled with `c-*`, `v-*` utilities, some components also support `s-*` utility to control its size.

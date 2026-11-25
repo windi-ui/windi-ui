@@ -1,10 +1,14 @@
 import { cssVars, type CSSVarName } from './vars';
 import { type BuilderContext, VarsGeneratorBase } from "./base";
 import type { ColorValue, Config } from "./config";
+import type { VariantsGenerator } from "./variants";
 
 export type ColorShade = '50' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900' | '950';
 export type ExColorShade = ColorShade | `default-${ColorShade}` | `accent-${ColorShade}` | 'black' | 'white';
-export type ColorVars = Record<CSSVarName<'c'>, string>;
+export type ColorVars = Record<CSSVarName<'c' | 'cv'>, string>;
+export interface ColorCssVars extends ColorVars {
+	'@dark'?: ColorVars;
+}
 
 export interface ColorContext {
 	toValue(name: ExColorShade | (string & {}), alpha?: number | string): string;
@@ -13,7 +17,7 @@ export interface ColorContext {
 export const COLOR_SHADES: ColorShade[] = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'];
 
 const COLOR_SHADE_REGEX = /50|950|[1-9]00/;
-const COLOR_SHADE_EX_REGEX = new RegExp(`^((?:(default|accent)-)?(${COLOR_SHADE_REGEX.source})|black|white)$`);
+export const COLOR_SHADE_EX_REGEX = new RegExp(`^((?:(default|accent)-)?(${COLOR_SHADE_REGEX.source})|black|white)$`);
 const COLOR_PALETTE_REGEX = new RegExp(`^(.+)-(${COLOR_SHADE_REGEX.source})$`);
 
 const FLAT_COLORS: Record<string, string> = {
@@ -57,11 +61,12 @@ function getColorMap(colors: Record<string, string>, debug?: boolean) {
 	return cMap;
 }
 
-export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, ColorVars> implements ColorContext {
+export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, ColorCssVars> implements ColorContext {
 	private readonly colors: ReturnType<typeof getColorMap>;
 	protected readonly items: Map<string, Map<ColorShade, string>>;
 
-	constructor(ctx: BuilderContext, options: Pick<Config, 'default' | 'accent' | 'debug'> = {}) {
+	/** @param variants gives the override variables of each `c-*` class */
+	constructor(ctx: BuilderContext, options: Pick<Config, 'default' | 'accent' | 'debug'>, private readonly variants: VariantsGenerator) {
 		super(ctx);
 		this.colors = getColorMap(this.theme.colors(), options.debug);
 		this.items = this.colors.palette;
@@ -73,6 +78,7 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 			const palette = this.resolve(value);
 			if (!palette) throw new Error(`WindiUI: the \`${name}\` option does not give a palette.`);
 			this.items.set(name, palette);
+			this.alias(name, value);
 		}
 	}
 
@@ -109,7 +115,19 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 	/** Adds a palette, or replaces the one of that name. */
 	setColor(name: string, value: ColorValue) {
 		const palette = this.resolve(value);
-		if (palette) this.items.set(name, palette);
+		if (palette) {
+			this.items.set(name, palette);
+			this.alias(name, value);
+		}
+	}
+
+	remove(name: string) {
+		super.remove(name);
+		if (!this.items.has(name)) this.variants.alias(name);
+	}
+
+	private alias(name: string, value: ColorValue) {
+		this.variants.alias(name, typeof value === 'object' && 'vars' in value && value.overrideVars ? { ...value.overrideVars, vars: value.vars } : undefined);
 	}
 
 	names() {
@@ -140,17 +158,22 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 		}
 
 		const cObj = Object.fromEntries(palette.entries());
-		return cssVars(cObj, n => this.vars.c(accentVars ? `accent-${n}` : n));
+		return { ...cssVars(cObj, n => this.vars.c(accentVars ? `accent-${n}` : n)), ...this.variants.colorVars(name, accentVars) };
 	}
 
 	rootVars() {
-		const cRoot: ColorVars = {};
+		const cRoot: ColorCssVars = {};
 		for (const mn in FLAT_COLORS) {
 			cRoot[this.vars.c(mn)] = this.colors.custom.get(mn) ?? FLAT_COLORS[mn];
 		}
 
 		const dc = super.rootVars();
 		Object.assign(cRoot, dc);
+
+		// The root is also `c-accent-accent`
+		const { '@dark': accentDark, ...accent } = this.variants.colorVars('accent', true);
+		Object.assign(cRoot, accent);
+		if (accentDark) cRoot['@dark'] = { ...cRoot['@dark'], ...accentDark };
 
 		const addPalette = (suffix: string, palette: Map<ColorShade, string>) => {
 			for (const [shade, color] of palette) {

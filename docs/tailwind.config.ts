@@ -25,6 +25,7 @@ const config: Config = {
 							'fg': vars.color('300'),
 						}
 					}))
+					.overrideVariant('solid', 'yellow', { bg: '700', pseudos: { ':hover': { bg: '800' } } })
 					.addSize('2xl', ({ theme }) => ({
 						spacing: {
 							'1': theme.spacing('3'),

@@ -16,6 +16,7 @@ Every `add*`, `update*` and `remove*` method returns the builder.
 | `addVariant(name, factory)` | Register a variant and its `v-<name>` class. |
 | `updateVariant(name, updater)` | Change an existing variant. |
 | `removeVariant(name)` | Remove a variant. |
+| `overrideVariant(variant, colors, override)` | Change values of a variant for some colors. See [Overrides](#overrides). |
 | `addSize(name, factory)` | Register a size and its `s-<name>` class. |
 | `updateSize(name, updater)` | Change an existing size. |
 | `removeSize(name)` | Remove a size. |
@@ -58,12 +59,18 @@ setColor(name: string, value: ColorValue, options?: { utilities?: boolean }): Bu
 updateColor(name: string, updater: (palette: Map<ColorShade, string>, ctx: Context) => Map<ColorShade, string> | void): Builder;
 removeColor(name: string): Builder;
 
-type ColorValue = string | { vars: string } | Record<ColorShade, string>;
+type ColorValue = string | { vars: string, overrideVars?: OverrideVars } | Record<ColorShade, string>;
+
+interface OverrideVars {
+	variants?: string[];                                // every registered variant
+	props?: 'calibrated' | 'all' | VariantProperty[];   // 'calibrated'
+}
 ```
 
 | `value` | Shades |
 | --- | --- |
 | `{ vars: '--name' }` | `var(--name-50)` to `var(--name-950)` |
+| `{ vars: '--name', overrideVars: { ... } }` | The same; the variant overrides come from `--name-{variant}-{prop}` too. See [Variant overrides at runtime](/guide/colors#variant-overrides-at-runtime). |
 | `{ 50: '...', ..., 950: '...' }` | As given. All 11 are needed. |
 | `'red'` | A copy of that palette, which has to exist at that point of `build` |
 
@@ -85,6 +92,46 @@ every other color utility exist, with opacity modifiers. The default is off.
 - `addColor` with the name of a color the theme already has is skipped as a whole, like `addColor` without
   `utilities`: the error is logged and the theme color stays. `setColor` replaces the WindiUI color and the
   theme color.
+
+## Overrides
+
+```ts
+overrideVariant(
+	variant: string,
+	colors: string | string[],
+	override: VariantOverride | ((ctx: Context) => VariantOverride)
+): Builder;
+```
+
+```ts
+builder
+	.overrideVariant('solid', 'yellow', { bg: '700', pseudos: { ':hover': { bg: '800' } } })
+	.overrideVariant('solid', ['amber', 'lime'], { bg: '700' })
+	.overrideVariant('outline', 'yellow', ({ vars }) => ({ fg: vars.color('700'), dark: { fg: vars.color('300') } }));
+```
+
+`VariantOverride` is a `Variant` in which every value is optional and may be a shade:
+
+```ts
+type VariantOverride = Partial<Omit<Variant, 'colors'>>; // and each value may also be a shade
+```
+
+| Value | Means |
+| --- | --- |
+| `'700'` | `var(--wui-c-700)`; on an `-accent` property `var(--wui-c-accent-700)` |
+| `'accent-600'`, `'default-200'` | `var(--wui-c-accent-600)`, `var(--wui-c-default-200)` |
+| `'white'`, `'black'` | `var(--wui-c-white)`, `var(--wui-c-black)` |
+| Anything else, such as `vars.color('700')` or an opacity | As written |
+
+- The override is merged into the ones the colors have: a later call changes the values it names and keeps the
+  others.
+- A color name in `colors` may hold several names separated by commas, as in `'amber,lime'`.
+- An unknown variant logs an error, and the call is skipped.
+- `Variant.colors` holds the overrides by color name, so `addVariant` and `updateVariant` can set them too.
+- The [`overrides`](/reference/options#overrides) option takes the same as data;
+  [`overrideMode`](/reference/options#overridemode) chooses how they are emitted.
+
+See [Override a variant for some colors](/guide/customizing#override-a-variant-for-some-colors).
 
 ## Context
 
@@ -112,6 +159,7 @@ Factories and updaters receive a context object.
 | `vars.size('spacing-3')` | `var(--wui-s-spacing-3)` |
 | `vars.size('text')`, `vars.size('line-height')` | `var(--wui-s-text)`, `var(--wui-s-line-height)` |
 | `vars.c(name)`, `vars.v(name)`, `vars.s(name)` | The bare variable name, for example `--wui-c-600` |
+| `vars.cv('solid-bg')` | `--wui-cv-solid-bg`: an [override variable](/reference/css-variables#override-variables) |
 
 The prefix follows the [`prefix`](/reference/options#prefix) option.
 
@@ -160,8 +208,11 @@ interface Variant {
 	// values per state, keyed by pseudo-class (':hover', ':active', ...)
 	pseudos?: Record<string, Partial<VariantProperties>>;
 
-	// values for dark mode; same shape, without `dark`
-	dark?: Partial<Omit<Variant, 'dark'>>;
+	// values for dark mode; same shape, without `dark` and `colors`
+	dark?: Partial<Omit<Variant, 'dark' | 'colors'>>;
+
+	// overrides by color name; see Overrides
+	colors?: Record<string, VariantOverride>;
 }
 ```
 

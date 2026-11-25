@@ -1,6 +1,6 @@
 import { chromium, type Page } from 'playwright-core';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { tailwind4 } from './helpers';
+import { tailwind3, tailwind4 } from './helpers';
 
 // What a snapshot cannot prove: how the emitted CSS cascades and inherits in a real browser.
 // It drives an installed Chrome or Edge, so there is no browser download.
@@ -267,9 +267,179 @@ describe.skipIf(!browser)('in a browser', () => {
 		});
 	});
 
-	// Both blocked upstream: Tailwind v4 puts `addComponents` CSS in the utilities layer, so `.btn:hover` beats a plain
-	// utility, and a rule in `@layer base` or `components` loses to `.btn`
-	// (https://github.com/tailwindlabs/tailwindcss/issues/15045). The guide documents the workarounds.
-	it.todo('keeps an override through hover');
-	it.todo('lets a hand-written compound rule win from each cascade layer');
+	// #39: a `c-*` class gives its overrides to a `v-*` class wherever the two are.
+	describe.each([
+		['4', compile, (n: number) => `rgb(${n}, ${n}, ${n})`],
+		['3', tailwind3(), (n: number) => `${n} ${n} ${n}`],
+	] as const)('with per-color overrides on Tailwind %s', (ver, compileWith, rgb) => {
+		// Painted like the element they are compared with, with the variant value set inline
+		const ref = (id: string, classes: string, value: string, name = 'bg') => `<span id="${id}" class="${classes}" style="--wui-v-${name}: ${value}"></span>`;
+		const shades = ['yellow-300', 'yellow-600', 'yellow-700', 'yellow-800', 'blue-600', 'gray-600'];
+
+		const html = `
+			<button id="one" class="btn c-yellow v-solid">one</button>
+			<button id="reversed" class="btn v-solid c-yellow">reversed</button>
+			<div class="c-yellow"><button id="parent" class="btn v-solid">parent</button></div>
+			<div class="c-yellow"><div class="c-blue"><button id="nested" class="btn v-solid">nested</button></div></div>
+			<span id="applied" class="yellow-solid">applied</span>
+			<button id="hover" class="btn c-yellow hover:v-solid">hover</button>
+			<button id="md" class="btn md:c-yellow v-solid">md</button>
+			<button id="dark" class="btn dark:c-yellow v-solid">dark</button>
+			<button id="recipe" class="btn c-yellow v-light">recipe</button>
+			<button id="alias" class="btn c-primary v-solid">alias</button>
+			<div class="c-yellow"><button id="alias-nested" class="btn c-primary v-solid">alias nested</button></div>
+			<button id="brand" class="btn c-brand v-solid">brand</button>
+			${['none', 'utilities', 'components', 'base'].map(l => `<span id="l-${l}" class="c-yellow v-solid bg-v l-${l}"></span>`).join('')}
+			${shades.map(s => ref(s, `btn v-solid c-${s.split('-')[0]}`, `var(--wui-c-${s.split('-')[1]})`)).join('')}
+			${['300', '700'].map(s => ref(`text-yellow-${s}`, 'btn v-light c-yellow', `var(--wui-c-${s})`, 'fg')).join('')}
+			${[1, 4, 7].map(n => ref(`rgb-${n}`, 'btn v-solid', rgb(n))).join('')}
+			${ref('bg-v-yellow-700', 'c-yellow v-solid bg-v', 'var(--wui-c-700)')}
+			${ref('bg-v-mark', 'c-yellow v-solid bg-v', rgb(5))}
+		`;
+
+		// A hand-written compound rule from each cascade layer
+		const css = `
+			.yellow-solid { @apply c-yellow v-solid bg-v; }
+			.c-yellow.v-solid.l-none { --wui-v-bg: ${rgb(5)}; }
+			@layer utilities { .c-yellow.v-solid.l-utilities { --wui-v-bg: ${rgb(5)}; } }
+			@layer components { .c-yellow.v-solid.l-components { --wui-v-bg: ${rgb(5)}; } }
+			@layer base { .c-yellow.v-solid.l-base { --wui-v-bg: ${rgb(5)}; } }
+		`;
+
+		const modes = ['vars', 'compound'] as const;
+		const pages = {} as Record<typeof modes[number], Page>;
+		const bg = (page: Page, id: string) => style(page, id, 'backgroundColor');
+		const setMode = (page: Page, mode: string) => page.evaluate(`document.documentElement.className = '${mode}'`);
+
+		beforeAll(async () => {
+			for (const overrideMode of modes) {
+				const built = await compileWith(html.match(/[^\s"<>=]+/g)!, { darkMode: ['selector', '.dark'] }, {
+					overrideMode,
+					build: builder => builder
+						.overrideVariant('solid', 'yellow', { bg: '700', pseudos: { ':hover': { bg: '800' } } })
+						.overrideVariant('light', 'yellow', { fg: '700' })
+						.addColor('primary', { vars: '--ui-color-primary', overrideVars: { variants: ['solid'] } })
+						.addColor('brand', { vars: '--ui-color-brand', overrideVars: { variants: ['solid'] } })
+						.overrideVariant('solid', 'brand', { bg: '800' }),
+				}, css);
+
+				pages[overrideMode] = await browser!.newPage();
+				await pages[overrideMode].setContent(`<style>
+					:root { --ui-color-primary-600: ${rgb(1)}; --ui-color-brand-600: ${rgb(3)}; --ui-color-brand-800: ${rgb(4)}; }
+					${built}
+				</style>${html}`);
+			}
+		});
+
+		it('overrides on one element in either class order, from a parent and from `@apply`, and not inside another color', async () => {
+			const page = pages.vars;
+			for (const id of ['one', 'reversed', 'parent']) {
+				expect(await bg(page, id)).toBe(await bg(page, 'yellow-700'));
+			}
+
+			expect(await bg(page, 'applied')).toBe(await bg(page, 'bg-v-yellow-700'));
+			expect(await bg(page, 'nested')).toBe(await bg(page, 'blue-600'));
+		});
+
+		it('keeps the override through hover, also with `hover:v-solid`', async () => {
+			const page = pages.vars;
+			for (const id of ['one', 'hover']) {
+				await page.hover(`#${id}`);
+				expect(await bg(page, id)).toBe(await bg(page, 'yellow-800'));
+			}
+
+			await page.mouse.move(0, 0);
+		});
+
+		it('follows `md:c-yellow` and `dark:c-yellow`', async () => {
+			const page = pages.vars;
+			expect(await bg(page, 'md')).toBe(await bg(page, 'yellow-700'));
+			await page.setViewportSize({ width: 600, height: 720 });
+			expect(await bg(page, 'md')).toBe(await bg(page, 'gray-600'));
+			await page.setViewportSize({ width: 1280, height: 720 });
+
+			expect(await bg(page, 'dark')).toBe(await bg(page, 'gray-600'));
+			await setMode(page, 'dark');
+			expect(await bg(page, 'dark')).toBe(await bg(page, 'yellow-700'));
+			await setMode(page, 'light');
+		});
+
+		it.each(modes)('keeps the dark value of the variant where the override has none, in the %s mode', async (mode) => {
+			const page = pages[mode];
+			const text = (id: string) => style(page, id, 'color');
+			expect(await text('recipe')).toBe(await text('text-yellow-700'));
+			await setMode(page, 'dark');
+			expect(await text('recipe')).toBe(await text('text-yellow-300'));
+			await setMode(page, 'light');
+		});
+
+		it('only reaches both classes on one element in the compound mode', async () => {
+			const page = pages.compound;
+			expect(await bg(page, 'one')).toBe(await bg(page, 'yellow-700'));
+			expect(await bg(page, 'reversed')).toBe(await bg(page, 'yellow-700'));
+			expect(await bg(page, 'parent')).toBe(await bg(page, 'yellow-600'));
+		});
+
+		it('forwards the override variables of a palette given by CSS variables', async () => {
+			const page = pages.vars;
+			// Unset: the variant's shade, or the static override
+			expect(await bg(page, 'alias')).toBe(await bg(page, 'rgb-1'));
+			expect(await bg(page, 'alias-nested')).toBe(await bg(page, 'rgb-1'));
+			expect(await bg(page, 'brand')).toBe(await bg(page, 'rgb-4'));
+
+			await page.evaluate(`['primary', 'brand'].forEach(c => document.documentElement.style.setProperty(\`--ui-color-\${c}-solid-bg\`, '${rgb(7)}'))`);
+			for (const id of ['alias', 'alias-nested', 'brand']) {
+				expect(await bg(page, id)).toBe(await bg(page, 'rgb-7'));
+			}
+
+			await page.evaluate(`document.documentElement.removeAttribute('style')`);
+		});
+
+		// Tailwind 4 emits `v-*` in the utilities layer, also the components of a plugin
+		// (https://github.com/tailwindlabs/tailwindcss/issues/15045), so a rule in an earlier layer loses whatever its specificity.
+		it.runIf(ver === '4')('lets a hand-written compound rule win unlayered and from `@layer utilities` only', async () => {
+			const page = pages.vars;
+			for (const layer of ['none', 'utilities']) {
+				expect(await bg(page, `l-${layer}`)).toBe(await bg(page, 'bg-v-mark'));
+			}
+			for (const layer of ['components', 'base']) {
+				expect(await bg(page, `l-${layer}`)).toBe(await bg(page, 'bg-v-yellow-700'));
+			}
+		});
+
+		// `:root` is `c-default`; `&:is(.dark *)` alone never matches the root element itself.
+		it('applies the dark overrides of the root with the `class` dark mode', async () => {
+			const html = `
+				<button id="root-outline" class="btn v-outline">root</button>
+				<button id="gray-outline" class="btn v-outline c-gray">gray</button>
+				<button id="root-solid" class="btn v-solid">root</button>
+				${ref('gray-400', 'btn v-solid c-gray', 'var(--wui-c-400)')}
+			`;
+			const built = await compileWith(html.match(/[^\s"<>=]+/g)!, { darkMode: 'class' }, {
+				overrides: { outline: { default: { fg: '900' } }, solid: { default: { bg: '700', dark: { bg: '400' } } } },
+			});
+
+			const page = await browser!.newPage();
+			await page.setContent(`<style>${built}</style>${html}`);
+			await setMode(page, 'dark');
+			expect(await style(page, 'root-outline', 'color')).toBe(await style(page, 'gray-outline', 'color'));
+			expect(await bg(page, 'root-solid')).toBe(await bg(page, 'gray-400'));
+			await page.close();
+		});
+
+		// `&:not(.light *)` alone always matches the root element itself.
+		it('leaves out the dark overrides of the root on a page set to light with a `:not()` dark mode', async () => {
+			const html = `<button id="root-solid" class="btn v-solid">root</button>${ref('gray-700', 'btn v-solid c-gray', 'var(--wui-c-700)')}`;
+			const built = await compileWith(html.match(/[^\s"<>=]+/g)!, {}, {
+				darkSelector: ['variant', ['@media (prefers-color-scheme: dark) { &:not(.light *) }', '&:is(.dark *)']],
+				overrides: { solid: { default: { bg: '700', dark: { bg: '400' } } } },
+			});
+
+			const page = await browser!.newPage({ colorScheme: 'dark' });
+			await page.setContent(`<style>${built}</style>${html}`);
+			await setMode(page, 'light');
+			expect(await bg(page, 'root-solid')).toBe(await bg(page, 'gray-700'));
+			await page.close();
+		});
+	});
 });

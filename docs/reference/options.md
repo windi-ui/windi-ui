@@ -94,7 +94,7 @@ selector, not a theme scope.
 
 ## `default` and `accent`
 
-- Type: `string | { vars: string } | Record<shade, string>`
+- Type: `string | { vars: string, overrideVars?: OverrideVars } | Record<shade, string>`
 - Default: none; a complete `default` or `accent` palette of the Tailwind theme, or else `gray` and `blue`
 
 The palettes behind the names [`default` and `accent`](/guide/colors#default-and-accent).
@@ -103,6 +103,7 @@ The palettes behind the names [`default` and `accent`](/guide/colors#default-and
 | --- | --- |
 | `'slate'` | The palette of that name in the Tailwind theme. In an `@plugin` block this is the only form. |
 | `{ vars: '--brand' }` | The 11 shades are `var(--brand-50)` to `var(--brand-950)`. You define those variables. |
+| `{ vars: '--brand', overrideVars: {} }` | The same, and the root also takes the palette's [variant overrides](/guide/colors#variant-overrides-at-runtime) from variables. |
 | `{ 50: '#f8fafc', ..., 950: '#020617' }` | The 11 shades themselves. |
 
 ```ts
@@ -206,6 +207,54 @@ Things to know about `'element'` and `'inherit'`:
   variant.
 - **Other classes with `v-`.** The reset rule also matches classes such as `nav-item`. The only effect is that
   their children get the same reset.
+
+## `overrides`
+
+- Type: `Record<string, Record<string, VariantOverride>>`
+- Default: none
+
+Values of a variant for some colors, by variant name and then by color name. A color key may name several
+colors, separated by commas.
+
+```ts
+windiui({
+	overrides: {
+		solid: {
+			yellow: { bg: '700', pseudos: { ':hover': { bg: '800' } }, dark: { bg: '600' } },
+			'amber,lime': { bg: '700' },
+		},
+	},
+});
+```
+
+It does the same as [`overrideVariant`](/reference/builder#overrides) in `build`, as data, and is applied
+after `build`. See [Override a variant for some colors](/guide/customizing#override-a-variant-for-some-colors).
+The type is exported from `@windi-ui/core` as `VariantOverride`.
+
+An override of a value the variant does not define, such as `fg-muted` for a variant without it, makes the
+variant set that value itself, for every color: the override for its colors, and the `default` variant's
+value for the others. With `variantScope: 'inherit'` those other colors then stop inheriting it from an
+enclosing variant. The same goes for [`overrideVars`](/guide/colors#variant-overrides-at-runtime) with such
+values in `props`.
+
+## `overrideMode`
+
+- Type: `'vars' | 'compound' | 'both'`
+- Default: `'vars'`
+
+How a per-color override reaches the variant.
+
+| Value | What is emitted | Works with |
+| --- | --- | --- |
+| `'vars'` | The `c-*` class sets override variables, `--wui-cv-<variant>-<prop>`, that the `v-*` class reads; every other color class and the root reset them. | Both classes on one element, a `c-*` class on a parent, `@apply`, and Tailwind variants such as `hover:v-solid` or `md:c-yellow`. |
+| `'compound'` | A `.c-<color>.v-<variant>` rule, nested in the variant class, with a dark block that repeats the variant's dark values it would hide. | Both classes on one element only. |
+| `'both'` | The two. | |
+
+A palette with [`overrideVars`](/guide/colors#variant-overrides-at-runtime) uses override variables in every mode.
+In an `@plugin` block it is written `override-mode: compound;`.
+
+The compound rule names the color class without a Tailwind v4 `prefix(...)`, which a plugin cannot read, so it
+never matches `tw:c-yellow`. With a v4 prefix use `'vars'`. Tailwind v3 adds its `prefix` to the rule itself.
 
 ## `darkSelector`
 
@@ -395,8 +444,9 @@ These are not WindiUI options, but they shape its output:
 | Default size | `:root`, or `rootSelector` |
 | Reset of the variant variables | `:where([class*="v-"]) > *` (`variantScope: 'element'`) |
 | Default variant | `*` (`variantScope: 'universal'` only) |
-| One class per palette, plus one per accent palette | `.c-<name>`, `.c-accent-<name>` |
+| One class per palette, plus one per accent palette, with the [override variables](/reference/css-variables#override-variables) when there are overrides | `.c-<name>`, `.c-accent-<name>` |
 | One class per variant | `.v-<name>` |
+| Per-color overrides with [`overrideMode`](#overridemode) `'compound'` or `'both'` | `.v-<name>.c-<color>` |
 | One class per size | `.s-<name>` |
 | Variant utilities | `.bg-v`, `.text-v`, `.border-v` and their `-soft`, `-muted`, `-accent` levels |
 | Variant boundary | `.v-scope` (not with `variantScope: 'universal'`) |

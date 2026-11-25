@@ -3,7 +3,7 @@ import type { ColorShade, ExColorShade } from './colors';
 import type { SizeProperty } from './size';
 import { defaultVariantVars, type VariantProperty } from './variants';
 
-export type VarType = 'c' | 'v' | 's';
+export type VarType = 'c' | 'v' | 's' | 'cv';
 export type VarName<T extends VarType = VarType> = `${T}-${string}`;
 export type CSSVarName<T extends VarType = VarType> = `--${string}-${VarName<T>}`;
 export type CSSVarValue<T extends VarType = VarType> = `var(${CSSVarName<T>})`;
@@ -13,6 +13,8 @@ export interface VarsProvider {
 	c(n: string): CSSVarName<'c'>;
 	v(n: string): CSSVarName<'v'>;
 	s(n: string): CSSVarName<'s'>;
+	/** An override variable, such as `cv('solid-bg')`: a `c-*` class sets it and the `v-*` class reads it. */
+	cv(n: string): CSSVarName<'cv'>;
 
 	color: {
 		(name: ExColorShade, fallback?: string): CSSVarValue<'c'>;
@@ -36,6 +38,7 @@ export function varsProvider(prefix: string): VarsProvider {
 	const c = (v: string) => vName(`c-${v}`);
 	const v = (v: string) => vName(`v-${v}`);
 	const s = (v: string) => vName(`s-${v}`);
+	const cv = (v: string) => vName(`cv-${v}`);
 
 	function color(name: ExColorShade, fallback?: string) {
 		return varFunc(c(name), fallback);
@@ -45,7 +48,7 @@ export function varsProvider(prefix: string): VarsProvider {
 	color.accent = (name: ColorShade) => color(`accent-${name}`);
 
 	const vars: VarsProvider = {
-		c, v, s,
+		c, v, s, cv,
 		color,
 
 		variant(name, fallback) {

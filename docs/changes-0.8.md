@@ -236,3 +236,25 @@ The built-in variants paint what they painted, at rest and on hover, in light an
 - `@windi-ui/core` no longer uses `Set.prototype.union`, which needs Node 22 or a browser from 2024.
 
 **Migration:** none. A `pseudos` block inside `dark` that only repeats the light `pseudos` can be removed.
+
+### Per-color variant overrides
+
+A variant used the same shades with every color
+([#39](https://github.com/windi-ui/windi-ui/issues/39)). White text on shade 600 fails the WCAG contrast of 4.5:1
+with nine of Tailwind's palettes, among them yellow, amber and lime, and the only way out was a second variant.
+New:
+
+- `overrideVariant(variant, colors, override)` on the builder, the [`overrides`](/reference/options#overrides)
+  option, and `colors` on a variant, which change values of a variant for some colors only. A value is a shade
+  such as `'700'` or a reference, at every level: `pseudos`, `dark` and `dark.pseudos`. See
+  [Override a variant for some colors](/guide/customizing#override-a-variant-for-some-colors).
+- The [`overrideMode`](/reference/options#overridemode) option. With `'vars'`, the default, the `c-*` class sets
+  [override variables](/reference/css-variables#override-variables) that the `v-*` class reads, so an override
+  works wherever the two classes are. `'compound'` emits a `.c-yellow.v-solid` rule instead, and `'both'` both.
+- `overrideVars` on a palette given by variables, which takes its overrides from variables at runtime. See
+  [Variant overrides at runtime](/guide/colors#variant-overrides-at-runtime).
+- `vars.cv(name)`, and the types `VariantOverride`, `OverrideVars` and `OverrideMode` from `@windi-ui/core`.
+
+Without an override the CSS is unchanged.
+
+**Migration:** none.
