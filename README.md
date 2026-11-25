@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="docs/public/logo-lockup.svg" alt="WindUI" width="280">
+	<img src="https://raw.githubusercontent.com/windi-ui/windi-ui/main/docs/public/logo-lockup.svg" alt="WindUI" width="280">
 </p>
 
 # WindiUI
@@ -37,7 +37,7 @@ On Tailwind v4, load it from your stylesheet:
 ```
 
 Options go in the `@plugin` block, or in a `windui.config.ts` that you load with `@plugin "./windui.config.ts"`;
-see [Installation](docs/guide/installation.md) and [Config file](docs/reference/config-file.md).
+see [Installation](https://windi-ui.github.io/windi-ui/guide/installation) and [Config file](https://windi-ui.github.io/windi-ui/reference/config-file).
 
 On Tailwind v3, add the plugin to your `tailwind.config.ts` / `tailwind.config.js` file:
 
@@ -84,7 +84,7 @@ WindiUI comes with a few built-in components (e.g. `btn`, `badge`, ... more to c
 </button>
 ```
 
-You can find more code examples in the [playground](/playground/vue-tailwindv4/src/App.vue).
+You can find more code examples in the [playground](https://github.com/windi-ui/windi-ui/blob/main/playground/vue-tailwindv4/src/App.vue).
 
 #### Class names built at runtime
 
@@ -105,11 +105,11 @@ safelistSource({}, { palettes: ['blue', 'red'] }); // the string above; without 
 
 On Tailwind v3, `windui({ safelist: true })` emits every `c-*`, `v-*` and `s-*` class.
 
-See [the `safelist` option](docs/reference/options.md#safelist) for the details.
+See [the `safelist` option](https://windi-ui.github.io/windi-ui/reference/options#safelist) for the details.
 
 ## Upgrading from 0.7
 
-See [Changes in 0.8](docs/changes-0.8.md). The one thing to check: 0.8 no longer sets the default variant on every
+See [Changes in 0.8](https://windi-ui.github.io/windi-ui/changes-0.8). The one thing to check: 0.8 no longer sets the default variant on every
 element with a `*` rule (the new `variantScope` option, default `'element'`). `btn`, `badge` and the `bg-v`,
 `text-v`, `border-v` utilities look the same, but your own CSS that reads a variant variable directly, such as
 `background: var(--wui-v-bg)`, on an element without a `v-*` class no longer gets a value. Either set
@@ -119,7 +119,8 @@ inherit the variant.
 
 ## Documentation
 
-The full guide and reference live in [`docs/`](docs/guide/introduction.md), a VitePress site with live examples.
+The full guide and reference are on [the docs site](https://windi-ui.github.io/windi-ui/guide/introduction), a VitePress site
+in `docs/` with live examples.
 Run it locally with `pnpm build && pnpm docs:dev`.
 
 ## Contributing
@@ -129,8 +130,8 @@ Contributions are welcome! Please submit issues or pull requests.
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/Waleed-KH/WindUI.git
-   cd WindUI
+   git clone https://github.com/windi-ui/windi-ui.git
+   cd windi-ui
    ```
 
 2. Install dependencies:
@@ -193,4 +194,4 @@ The repository is organized as a monorepo with the following packages:
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/windi-ui/windi-ui/blob/main/LICENSE) file for details.

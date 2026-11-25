@@ -18,7 +18,8 @@
 	},
 	"type": "module",
 	"scripts": {
-		"build": "tsdown"
+		"build": "tsdown",
+		"prepack": "node -e \"fs.copyFileSync('../../README.md', 'README.md')\""
 	},
 	"module": "./dist/index.mjs",
 	"main": "./dist/index.cjs",

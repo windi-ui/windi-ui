@@ -32,3 +32,5 @@ coverage
 
 *.tsbuildinfo
 
+# The root README, copied into each package by its `prepack` script
+packages/*/README.md
