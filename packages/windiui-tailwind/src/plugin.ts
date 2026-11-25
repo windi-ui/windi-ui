@@ -56,7 +56,7 @@ export interface TailwindV4Plugin {
 	config?: any;
 }
 
-const OPTIONS = ['prefix', 'rootSelector', 'default', 'accent', 'variantScope', 'overrides', 'overrideMode', 'darkSelector', 'presets', 'build', 'safelist', 'debug', 'config'];
+const OPTIONS = ['prefix', 'rootSelector', 'default', 'accent', 'variantScope', 'overrides', 'overrideMode', 'variantUtilities', 'darkSelector', 'presets', 'build', 'safelist', 'debug', 'config'];
 
 /**
  * Inline options over those of the config file. An `@plugin` block writes the names in kebab-case.
@@ -76,6 +76,9 @@ function resolveOptions(options: PluginOptions = {}, strict = false): Config {
 
 		if (key === 'build' && value != null && typeof value !== 'function') {
 			throw new Error('WindiUI: `build` is a function, which an `@plugin` block cannot hold. Put it in a config file or a plugin module.');
+		}
+		if ((key === 'overrides' || key === 'variantUtilities') && value != null && (typeof value !== 'object' || Array.isArray(value))) {
+			throw new Error(`WindiUI: \`${key}\` is an object, which an \`@plugin\` block cannot hold. Put it in a config file or a plugin module.`);
 		}
 
 		// Tailwind splits an unquoted `root-selector: :root, .scope` of an `@plugin` block at the comma.
@@ -243,6 +246,37 @@ function WindiUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof crea
 			// Tailwind 3 drops `bg-[#123456]` as ambiguous before the callback runs unless the type is narrowed.
 			...(tp.ver === 3 ? { type: ['lookup'] } : {})
 		});
+
+		tw.matchUtilities({
+			// `apply-v` with no value, or the props and states of `apply-v-[bg,text,focus-visible]`
+			'apply-v': (val) => (gt.variants.applyCss(val) as CSSRuleObject | undefined) ?? NOTHING,
+		}, { values: { DEFAULT: '' } });
+
+		const variantUtils = Object.entries(wiu.config.variantUtilities ?? {}).filter(([prop, variant]) => {
+			// A JSON or JavaScript config is not type-checked
+			if (!['bg', 'border', 'text'].includes(prop)) {
+				console.error(`WindiUI: \`variantUtilities\` takes bg, border and text, not "${prop}".`);
+				return false;
+			}
+			if (!variantNames.includes(variant)) console.error(`WindiUI: \`variantUtilities\` names the variant "${variant}", which does not exist.`);
+			return variantNames.includes(variant);
+		}) as [ApplyVariantMainProp, string][];
+
+		if (variantUtils.length) {
+			// A color of Tailwind's own with a single value, such as `white` or a palette's `DEFAULT`, keeps its utilities
+			const theme = tp.colors();
+			const named = colorNames.filter(c => !(c.startsWith('accent-') && colorNames.includes(c.slice(7))) && !(c in theme));
+
+			tw.matchUtilities(Object.fromEntries(variantUtils.map(([prop, variant]) => [
+				prop,
+				known(named, (color, ext) => applyDark(darkSelector, gt.colors.variantUtilCss(color, prop, variant, ext.modifier ?? undefined) as RecursiveRecord) as CSSRuleObject)
+			])), {
+				values: keyValuePairs(named),
+				modifiers: tw.theme('opacity'),
+				// Named values only: an arbitrary `text-[red]` names a color too, and stays Tailwind's.
+				type: ['lookup'],
+			});
+		}
 
 		tw.matchUtilities({
 			s: known(sizeNames, (val) => gt.sizes.cssVars(val))

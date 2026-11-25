@@ -2,7 +2,7 @@ import type { CSS } from "./types";
 import { type VarsProvider, type CSSVarName, type CSSVarValue, cssVars } from "./vars";
 import { type BuilderContext, VarsGeneratorBase } from "./base";
 import type { OverrideMode, OverrideVars, VariantScope } from "./config";
-import { COLOR_SHADE_EX_REGEX, type ColorCssVars, type ColorShade, type ExColorShade } from "./colors";
+import { APPLY, COLOR_SHADE_EX_REGEX, VAR_PROP, type ColorCssVars, type ColorShade, type ExColorShade } from "./colors";
 import { cssEsc } from "./utils";
 
 export type VariantVars = Record<CSSVarName<'v'>, string>;
@@ -65,6 +65,14 @@ interface Flat { light: Values, dark: Values }
 
 const CALIBRATED = ['bg', 'fg', 'border', 'bg-:hover', 'fg-:hover', 'border-:hover'];
 const ACCENT_KEY = /^(bg|border|fg)-accent(-:|$)/;
+
+const APPLY_PROPS = (['bg', 'border', 'text'] as const).flatMap(p => [p, `${p}-soft`, `${p}-muted`, `${p}-accent`] as const);
+/** The states `apply-v-[...]` takes, by name without the colon. */
+const APPLY_STATES: CSS.SimplePseudos[] = [
+	':hover', ':focus', ':focus-visible', ':focus-within', ':active', ':visited', ':target', ':checked', ':indeterminate',
+	':disabled', ':enabled', ':invalid', ':valid', ':user-invalid', ':user-valid', ':required', ':optional', ':read-only',
+	':placeholder-shown', ':autofill', ':open',
+];
 
 export interface VariantContext {
 	apply(
@@ -557,6 +565,49 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 	}
 
 	/**
+	 * The CSS of `apply-v`: what `btn` gets, `bg`, `border` and `text` with `:hover`. `list` names props and states
+	 * instead, such as `bg,text,focus-visible`: the props are applied at rest and in each state. Without props it is
+	 * all three, without states `:hover`. A name it does not know gives `undefined`.
+	 */
+	applyCss(list?: string): CSS.Properties | undefined {
+		const tokens = list ? list.split(',').map(t => t.trim()) : [];
+		const props = tokens.filter((t): t is ApplyVariantProp => (APPLY_PROPS as string[]).includes(t));
+		const states = tokens.map(t => `:${t}` as CSS.SimplePseudos).filter(s => APPLY_STATES.includes(s));
+		if (props.length + states.length !== tokens.length)
+			return;
+
+		const v = props.length ? props : true;
+		return this.withFallback(this.apply(v, Object.fromEntries((states.length ? states : [':hover']).map(s => [s, v]))));
+	}
+
+	/**
+	 * The values of a variant on an element of `color`, its overrides applied as the `c-*` and `v-*` classes would
+	 * resolve them. `dark` holds the values that change in dark mode.
+	 */
+	colorValues(name: string, color: string): Flat | undefined {
+		if (!this.items.has(name)) {
+			console.error(`Variant "${name}" not found.`);
+			return;
+		}
+
+		const { values, entries } = this.resolved(name);
+		const entry = entries.get(color);
+		// An override that reads a variable which is not set leaves the variant's value, as the `var()` of the `v-*` class does
+		const or = (value: string, base: string) => {
+			const read = /^var\((--[^,()\s]+)\)$/.exec(value)?.[1];
+			return read && !read.startsWith(this.vars.c('')) ? `var(${read}, ${base})` : value;
+		};
+
+		// In dark mode the `c-*` class resets a light override where the variant has a dark value, so `values.dark` stays
+		const light: Values = { ...values.light };
+		const dark: Values = { ...values.dark };
+		for (const [k, v] of Object.entries(entry?.light ?? {})) light[k] = or(v, values.light[k]);
+		for (const [k, v] of Object.entries(entry?.dark ?? {})) dark[k] = or(v, values.dark[k] ?? values.light[k]);
+
+		return { light, dark };
+	}
+
+	/**
 	 * The two switches a fallback picks its light or dark value with: `var(on-light, <light>) var(on-dark, <dark>)`.
 	 * The one of the current mode is not set, so its fallback is used, and the other one is empty.
 	 * They inherit, so a pseudo-element is in the mode of its element, which a dark selector nested in its rule cannot tell.
@@ -646,21 +697,20 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 	}
 
 	private vApplyProp(mProp: ApplyVariantMainProp, sProp?: ApplyVariantSubProp, target: CSS.Properties = {}, pseudo?: CSS.SimplePseudos, alpha?: string) {
-		const mvp = mProp === 'text' ? 'fg' : mProp;
+		const mvp = VAR_PROP[mProp];
 		const vp = (sProp && sProp !== 'default') ? `${mvp}-${sProp}` as const : mvp;
 
 		const aVar = pseudo ? `${mvp}-opacity-${pseudo}` as const : `${mvp}-opacity` as const;
 
-		const vVal = this.vars.variant(pseudo ? `${vp}-${pseudo}` : vp);
+		const key = pseudo ? `${vp}-${pseudo}` as const : vp;
+		// A state that the default variant has no value for is set by the variants that have one; elsewhere it is the base value,
+		// except under such a variant in the `universal` scope, whose `*` rule does not reset it
+		const vVal = this.vars.variant(key, !pseudo || key in this.values('default').light ? undefined : this.vars.variant(vp));
 		// Outside the `universal` scope the default variant's opacity is the fallback, which `withFallback` fills in
 		const one = this.scope === 'universal' ? '1' : undefined;
 		const vAlpha = this.vars.variant(aVar, pseudo ? this.vars.variant(`${mvp}-opacity`, one) : one);
 
-		switch (mProp) {
-			case 'bg': this.theme.applyBackgroundColor(vVal, target, vAlpha); break;
-			case 'border': this.theme.applyBorderColor(vVal, target, vAlpha); break;
-			case 'text': this.theme.applyTextColor(vVal, target, vAlpha); break;
-		}
+		this.theme[APPLY[mProp]](vVal, target, vAlpha);
 
 		if (alpha) {
 			target[this.vars.v(aVar)] = `${alpha} !important`;

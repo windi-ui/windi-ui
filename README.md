@@ -105,6 +105,25 @@ WindiUI comes with a few built-in components (e.g. `btn`, `badge`, ... more to c
 
 You can find more code examples in the [playground](https://github.com/windi-ui/windi-ui/blob/main/playground/vue-tailwindv4/src/App.vue).
 
+#### Variants in your own CSS
+
+`apply-v` paints the background, border and text from the current variant, at rest and on hover, as `btn` does. It works as a class and under `@apply`, and carries the default variant as a fallback, so it is the supported way to read a variant in a stylesheet. A list in brackets chooses the properties and the states:
+
+```css
+.card-action { @apply apply-v; }                                          /* bg, border, text + :hover */
+.chip        { @apply apply-v-[bg,text]; }                                /* chosen properties */
+.hint        { @apply apply-v-[bg-muted,text-muted]; }                    /* other levels */
+.tab         { @apply apply-v-[hover,focus-visible,active,disabled]; }    /* chosen states */
+```
+
+The `variantUtilities` option adds color shortcuts painted from a variant, such as `bg-primary` with the `solid` background of `primary`, its overrides and dark values included:
+
+```ts
+windiui({ variantUtilities: { bg: 'solid', text: 'outline', border: 'outline' } });
+```
+
+Tailwind's own utilities keep precedence: a single-value color such as `bg-white`, a palette with a `DEFAULT`, and arbitrary values such as `bg-[#123456]` are left to Tailwind. See [Utilities](https://windi-ui.github.io/windi-ui/guide/utilities#apply-v).
+
 #### Sizes
 
 `s-xs`, `s-sm`, `s-md` (the default size, also `s-default`), `s-lg` and `s-xl` set these variables, which `:root` sets to the default size:

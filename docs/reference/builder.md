@@ -294,7 +294,8 @@ type ApplyVariantProp =
 ```
 
 - `applyVariant: true` paints `bg`, `border` and `text`. An array paints the listed properties only, at most one level per property.
-- `applyVariantPseudos: [':hover']` repeats that for the state, using the variant's pseudo values. The record form chooses the properties per state.
+- `applyVariantPseudos: [':hover']` repeats that for the state, using the variant's pseudo values. The record form chooses the properties per state. A state that the `default` variant has no value for, such as `:focus-visible`, falls back to the value at rest where the variant has none either.
+- The [`apply-v`](/guide/utilities#apply-v) utility gives the same CSS without a component: `apply-v` is `applyVariant: true, applyVariantPseudos: [':hover']`.
 
 `@windi-ui/core/components` exports `defineComponent`, a typed identity helper for writing a component in its own
 file, along with the built-in `button` and `badge` definitions:

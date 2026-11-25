@@ -296,3 +296,28 @@ had to be hard-coded next to `s-*`, or passed with a type cast. New:
 A size without keys of your own writes the variables of 0.7, in the same order.
 
 **Migration:** none. A size you added as `md` stays yours.
+
+### `apply-v`, and color utilities from a variant
+
+A component painted from the current variant, hover included, could only be built in JavaScript, with
+`applyVariant` on a component. A stylesheet had to read the escaped `var(--wui-v-bg-\:hover)` and write the
+opacity `color-mix()` by hand, and outside the universal scope add a fallback as well
+([#42](https://github.com/windi-ui/windi-ui/issues/42)). New:
+
+- The [`apply-v`](/guide/utilities#apply-v) utility: what `btn` gets from the variant, the background, border and
+  text, at rest and on hover, with the `default` variant as the fallback. It works as a class and under `@apply`.
+- Its bracket forms, which choose the properties and the states: `apply-v-[bg,text]`,
+  `apply-v-[bg-muted,text-muted]`, `apply-v-[hover,focus-visible,active,disabled]`, and the two combined. A
+  list with a name it does not know emits nothing.
+- The [`variantUtilities`](/reference/options#variantutilities) option, off by default:
+  `{ bg: 'solid', text: 'outline', border: 'outline' }` adds `bg-{color}`, `text-{color}` and `border-{color}`,
+  painted with that variant's value for the color, its overrides and dark values included. Tailwind's own
+  single-value colors and arbitrary values keep their utilities.
+
+Also fixed: a state that the `default` variant has no value for, such as `:focus-visible` in
+`applyVariantPseudos`, was read with no fallback, so a variant without a value for it painted a transparent
+background in that state. It now falls back to the value at rest. `:hover` is read as before.
+
+Without these the CSS is unchanged.
+
+**Migration:** none.

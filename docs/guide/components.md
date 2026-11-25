@@ -141,5 +141,6 @@ Inbox
 
 ## Your own components
 
-Use the [variant utilities](/guide/utilities) for one-off elements, or register a component class with the
-[builder API](/guide/customizing#components).
+Use the [variant utilities](/guide/utilities) for one-off elements, [`apply-v`](/guide/utilities#apply-v) for
+what `btn` gets from the variant, hover included, in a class or under `@apply`, or register a component class
+with the [builder API](/guide/customizing#components).

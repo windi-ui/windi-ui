@@ -1,7 +1,8 @@
 import { cssVars, type CSSVarName } from './vars';
 import { type BuilderContext, VarsGeneratorBase } from "./base";
 import type { ColorValue, Config } from "./config";
-import type { VariantsGenerator } from "./variants";
+import type { ApplyVariantMainProp, VariantsGenerator } from "./variants";
+import type { CSS } from "./types";
 
 export type ColorShade = '50' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900' | '950';
 export type ExColorShade = ColorShade | `default-${ColorShade}` | `accent-${ColorShade}` | 'black' | 'white';
@@ -18,6 +19,10 @@ export const COLOR_SHADES: ColorShade[] = ['50', '100', '200', '300', '400', '50
 
 const COLOR_SHADE_REGEX = /50|950|[1-9]00/;
 export const COLOR_SHADE_EX_REGEX = new RegExp(`^((?:(default|accent)-)?(${COLOR_SHADE_REGEX.source})|black|white)$`);
+/** The theme method that paints each main property of `apply-v`, `btn` and `variantUtilities`. */
+export const APPLY = { bg: 'applyBackgroundColor', border: 'applyBorderColor', text: 'applyTextColor' } as const;
+/** The variant variable that each main property of `apply-v`, `btn` and `variantUtilities` reads. */
+export const VAR_PROP = { bg: 'bg', border: 'border', text: 'fg' } as const;
 const COLOR_PALETTE_REGEX = new RegExp(`^(.+)-(${COLOR_SHADE_REGEX.source})$`);
 
 const FLAT_COLORS: Record<string, string> = {
@@ -185,6 +190,31 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 		addPalette('accent', this.items.get('accent') ?? new Map<ColorShade, string>());
 
 		return cRoot;
+	}
+
+	/**
+	 * `bg-{color}` and the like of `variantUtilities`: the value of `variant` for this color, overrides included, with
+	 * its opacity unless `alpha` is given, light and dark. A shade is this palette's, not the element's `c-*` class.
+	 */
+	variantUtilCss(color: string, prop: ApplyVariantMainProp, variant: string, alpha?: string) {
+		const palette = this.items.get(color);
+		const values = palette && this.variants.colorValues(variant, color);
+		if (!values) return {};
+
+		const key = VAR_PROP[prop];
+		const shade = new RegExp(`var\\(${this.vars.c('')}(${COLOR_SHADE_REGEX.source})\\)`, 'g');
+		const paint = (v: Record<string, string>) => {
+			const target: CSS.Properties = {};
+			const value = v[key].replace(shade, (read, s: ColorShade) => palette.get(s) ?? read);
+			this.theme[APPLY[prop]](value, target, alpha ?? v[`${key}-opacity`]);
+			return target;
+		};
+
+		const { light, dark } = values;
+		const css: CSS.Properties & { '@dark'?: CSS.Properties } = paint(light);
+		if (key in dark || `${key}-opacity` in dark) css['@dark'] = paint({ ...light, ...dark });
+
+		return css;
 	}
 
 	toValue(name: ExColorShade | (string & {}), alpha?: number | string) {

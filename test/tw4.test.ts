@@ -1,3 +1,4 @@
+import { applyV } from './apply';
 import { cases } from './cases';
 import { builderColors, palettes, palettesCss, rootSelectorCss } from './colors';
 import { autoDark, darkSelector } from './dark';
@@ -13,6 +14,7 @@ const compile = tailwind4('tw4');
 baseline('tw4', compile);
 cases(compile);
 overrides(compile);
+applyV(compile);
 presets(compile);
 presetsCss(compile);
 palettes(compile);

@@ -442,4 +442,77 @@ describe.skipIf(!browser)('in a browser', () => {
 			await page.close();
 		});
 	});
+
+	// #42: `apply-v` paints like `btn`, and a utility of `variantUtilities` like the variant on an element of that color.
+	describe.each([
+		['4', compile, (n: number) => `rgb(${n}, ${n}, ${n})`],
+		['3', tailwind3(), (n: number) => `${n} ${n} ${n}`],
+	] as const)('with `apply-v` and `variantUtilities` on Tailwind %s', (_, compileWith, rgb) => {
+		// Each element, then the one it paints like
+		const pairs = [
+			['apply-v c-blue v-light', 'btn c-blue v-light'],
+			['action c-blue v-light', 'btn c-blue v-light'],
+			['apply-v-[bg,disabled] c-blue v-solid', 'apply-v-[bg] c-blue v-solid'],
+			['bg-yellow', 'c-yellow v-solid bg-v'],
+			['bg-amber', 'c-amber v-solid bg-v'],
+			['text-yellow', 'c-yellow v-light text-v'],
+			['border border-blue', 'c-blue v-outline border border-v'],
+			['bg-primary', 'c-primary v-solid bg-v'],
+		];
+		// A state that no variant sets keeps the value at rest; the browser's own color of a disabled button is on both
+		const disabled = ' disabled';
+		const html = pairs.map(([el, ref], i) => `<button id="el-${i}" class="${el}"${i === 2 ? disabled : ''}>x</button><button id="ref-${i}" class="${ref}"${i === 2 ? disabled : ''}>x</button>`).join('')
+			+ '<span id="yellow-600" class="c-yellow bg-c-600"></span>';
+
+		let page: Page;
+		// As painted pixels: `bg-v` gives a `color-mix()` in oklab, which serializes otherwise than the same color in oklch
+		const colors = (id: string) => page.evaluate<string[]>(`(s => [s.backgroundColor, s.color, s.borderTopColor].map(c => {
+			const x = document.createElement('canvas').getContext('2d');
+			x.fillStyle = c;
+			x.fillRect(0, 0, 1, 1);
+			return x.getImageData(0, 0, 1, 1).data.join();
+		}))(getComputedStyle(document.getElementById('${id}')))`);
+		const expectPairs = async () => {
+			for (const i of pairs.keys()) expect(await colors(`el-${i}`), pairs[i][0]).toEqual(await colors(`ref-${i}`));
+		};
+
+		beforeAll(async () => {
+			const css = await compileWith(html.match(/[^\s"<>=]+/g)!, { darkMode: ['selector', '.dark'] }, {
+				variantUtilities: { bg: 'solid', text: 'light', border: 'outline' },
+				build: builder => builder
+					.overrideVariant('solid', 'yellow', { bg: '700' })
+					.overrideVariant('light', 'yellow', { fg: '700' })
+					.addColor('primary', { vars: '--ui-color-primary', overrideVars: { variants: ['solid'] } }),
+			}, '.action { @apply apply-v; }');
+
+			page = await browser!.newPage();
+			await page.setContent(`<style>:root { --ui-color-primary-600: ${rgb(1)}; } ${css}</style>${html}`);
+		});
+
+		afterAll(() => page.close());
+
+		it.each(['light', 'dark'])('paints each pair alike in %s mode, at rest and on hover', async (mode) => {
+			await page.evaluate(`document.documentElement.className = '${mode}'`);
+			await expectPairs();
+
+			for (const i of [0, 1]) {
+				await page.hover(`#el-${i}`);
+				const hovered = await colors(`el-${i}`);
+				await page.hover(`#ref-${i}`);
+				expect(hovered).toEqual(await colors(`ref-${i}`));
+			}
+
+			await page.mouse.move(0, 0);
+			await page.evaluate(`document.documentElement.className = ''`);
+		});
+
+		it('follows the override and the variables of a palette given by them', async () => {
+			expect((await colors('el-3'))[0]).not.toBe((await colors('yellow-600'))[0]);
+
+			await page.evaluate(`document.documentElement.style.setProperty('--ui-color-primary-solid-bg', '${rgb(7)}')`);
+			expect((await colors('el-7'))[0]).toBe('7,7,7,255');
+			await expectPairs();
+			await page.evaluate(`document.documentElement.removeAttribute('style')`);
+		});
+	});
 });

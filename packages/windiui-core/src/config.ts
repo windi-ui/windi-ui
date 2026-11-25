@@ -1,6 +1,6 @@
 import { Builder } from "./builder";
 import type { ColorShade } from "./colors";
-import type { VariantOverride, VariantProperty } from "./variants";
+import type { ApplyVariantMainProp, VariantOverride, VariantProperty } from "./variants";
 import type { Preset } from "./preset";
 import { nuxtUi } from "./presets/nuxt-ui";
 
@@ -72,6 +72,11 @@ export interface ResolvedConfig {
 	/** Per-color overrides of variants: `{ solid: { yellow: { bg: '700' }, 'amber,lime': { ... } } }`. */
 	overrides?: Record<string, Record<string, VariantOverride>>;
 	overrideMode: OverrideMode;
+	/**
+	 * Color utilities from a variant: `{ bg: 'solid' }` gives `bg-{color}` the `solid` background of that color, its
+	 * overrides and dark value included. Left out, there are none.
+	 */
+	variantUtilities?: Partial<Record<ApplyVariantMainProp, string>>;
 	/** Left out, dark mode follows Tailwind's own. */
 	darkSelector?: DarkSelectorOption;
 	/** Run in order, before `build`. */
@@ -108,6 +113,7 @@ export function resolveConfig(config: Config): ResolvedConfig {
 		variantScope,
 		overrides: config.overrides,
 		overrideMode,
+		variantUtilities: config.variantUtilities,
 		darkSelector,
 		presets: presets.map(p => typeof p !== 'string' ? p : Object.hasOwn(PRESETS, p) ? PRESETS[p]() : unknownPreset(p)),
 		build,

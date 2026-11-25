@@ -9,6 +9,8 @@ const config: Config = {
 		windiui({
 			// The demo of guide/presets.md; the prefix keeps its `ghost` apart from the one below
 			presets: [nuxtUi({ prefix: 'nui' })],
+			// The demo of guide/utilities.md
+			variantUtilities: { bg: 'solid', text: 'outline', border: 'outline' },
 			// The examples of guide/customizing.md, live. Keep the two in sync.
 			build(builder) {
 				builder

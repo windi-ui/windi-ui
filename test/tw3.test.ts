@@ -1,3 +1,4 @@
+import { applyV } from './apply';
 import { expect, it } from 'vitest';
 import { cases } from './cases';
 import { builderColors, palettes } from './colors';
@@ -13,6 +14,7 @@ const compile = tailwind3();
 baseline('tw3', compile);
 cases(compile);
 overrides(compile);
+applyV(compile);
 presets(compile);
 palettes(compile);
 builderColors(compile);

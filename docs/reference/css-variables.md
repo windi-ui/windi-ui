@@ -173,8 +173,10 @@ This ignores the variant's opacity variables. The [variant utilities](/guide/uti
 
 A variant variable read on an element that has no variant is invalid, and the property falls back to its
 initial value (a transparent background, for example). Besides `@apply v-*` or a `v-*` class on the element,
-there are two more ways to read them safely:
+there are more ways to read them safely:
 
+- [`apply-v`](/guide/utilities#apply-v) under `@apply` paints the background, border and text, their states and
+  opacities, with the `default` variant as the fallback: `.card-action { @apply apply-v; }`.
 - CSS built in JavaScript can add the default as a fallback with
   [`vars.variant(name, { fallback: true })`](/reference/builder#vars).
 - [`variantScope: 'universal'`](/reference/options#variantscope) sets the `default` variant on every element, as

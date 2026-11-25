@@ -6,10 +6,10 @@ type Build = NonNullable<NonNullable<Parameters<Compile>[2]>['build']>;
 const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** The light value of a variable in the first rule `selector`. */
-const light = (css: string, selector: string, name: string) => new RegExp(`${esc(selector)} \\{[^{}]*?${esc(name)}: ([^;\n]+)`).exec(css)?.[1];
+export const light = (css: string, selector: string, name: string) => new RegExp(`${esc(selector)} \\{[^{}]*?${esc(name)}: ([^;\n]+)`).exec(css)?.[1];
 
 /** Its dark value, with `darkSelector: '.dark'`: nested on Tailwind 4, a rule of its own on Tailwind 3. */
-const dark = (css: string, selector: string, name: string) => new RegExp(
+export const dark = (css: string, selector: string, name: string) => new RegExp(
 	`${esc(selector)}(?: \\{[^}]*?&)?:where\\(\\.dark, \\.dark \\*\\) \\{[^}]*?${esc(name)}: ([^;\n]+)`
 ).exec(css)?.[1];
 

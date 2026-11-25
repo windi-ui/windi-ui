@@ -256,6 +256,35 @@ In an `@plugin` block it is written `override-mode: compound;`.
 The compound rule names the color class without a Tailwind v4 `prefix(...)`, which a plugin cannot read, so it
 never matches `tw:c-yellow`. With a v4 prefix use `'vars'`. Tailwind v3 adds its `prefix` to the rule itself.
 
+## `variantUtilities`
+
+- Type: `{ bg?: string, text?: string, border?: string }`
+- Default: none
+
+Adds `bg-{color}`, `text-{color}` and `border-{color}` for every palette, painted with the value of the named
+variant for that color: its background, text or border color, with its opacity.
+
+```ts
+windiui({ variantUtilities: { bg: 'solid', text: 'outline', border: 'outline' } });
+```
+
+```css
+/* the solid background of yellow: shade 600, or 700 with an override */
+.bg-yellow { background-color: <yellow-700>; }
+/* a palette given by variables with `overrideVars` */
+.bg-primary { background-color: var(--ui-color-primary-solid-bg, var(--ui-color-primary-600)); }
+```
+
+- The shades are those of the named color, not of the element's `c-*` class.
+- [Overrides](#overrides) of that color and the variant's dark values apply, as on `c-<color> v-<variant>`.
+- An opacity modifier replaces the variant's opacity: `bg-yellow/50`.
+- Tailwind's own utilities win. A color of the theme with a single value, such as `white` or a palette with a
+  `DEFAULT`, gets no utility from WindiUI, and arbitrary values such as `bg-[#123456]` stay Tailwind's.
+- A variant that does not exist is reported, and its utility is left out.
+
+The option is an object, so on Tailwind v4 it needs a [config file or a plugin module](/reference/config-file),
+not an `@plugin` block. See [Color utilities from a variant](/guide/utilities#color-utilities-from-a-variant).
+
 ## `darkSelector`
 
 - Type: `'media' | 'class' | 'selector' | ['class' | 'selector', string] | ['variant', string | string[]] | string`
@@ -452,7 +481,7 @@ These are not WindiUI options, but they shape its output:
 | --- | --- |
 | `theme.colors` | The `c-*` classes: one per palette with all 11 shades. See [Colors](/guide/colors). |
 | `theme.spacing`, `theme.fontSize` | The values of the built-in [sizes](/guide/sizes). |
-| `theme.opacity` | The modifiers of `bg-v`, `text-v` and `border-v`. |
+| `theme.opacity` | The modifiers of `bg-v`, `text-v`, `border-v` and the [`variantUtilities`](#variantutilities). |
 | `darkMode`, or on v4 the `dark` variant | The selector or media query for dark variant values, unless [`darkSelector`](#darkselector) is set. See [Dark mode](/guide/dark-mode). |
 
 ## What the plugin adds to the theme
@@ -477,6 +506,8 @@ These are not WindiUI options, but they shape its output:
 | Per-color overrides with [`overrideMode`](#overridemode) `'compound'` or `'both'` | `.v-<name>.c-<color>` |
 | One class per size | `.s-<name>` |
 | Variant utilities | `.bg-v`, `.text-v`, `.border-v` and their `-soft`, `-muted`, `-accent` levels |
+| The variant on an element, with its states | `.apply-v`, `.apply-v-[<props and states>]` |
+| Color utilities from a variant, with [`variantUtilities`](#variantutilities) | `.bg-<color>`, `.text-<color>`, `.border-<color>` |
 | Variant boundary | `.v-scope` (not with `variantScope: 'universal'`) |
 | Components | `.btn`, `.badge` and those you add |
 
