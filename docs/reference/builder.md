@@ -47,6 +47,8 @@ remove(name: string): Builder;
   that earlier calls gave it.
 - The `default` variant, the `default` size and the `default` color can be updated or replaced with `set`, but
   not added or removed.
+- The `md` size is the `default` size under a second name. `updateSize('md', ...)` makes it a size of its own,
+  starting from the values of `default`. `addSize` and `setSize` replace it, and `removeSize('md')` removes it.
 - `build` can run more than once per compilation; see [`utilities`](#colors).
 
 Built-in names:
@@ -54,7 +56,7 @@ Built-in names:
 | Kind | Names |
 | --- | --- |
 | Variants | `default`, `solid`, `outline`, `light` |
-| Sizes | `default`, `xs`, `sm`, `lg`, `xl` |
+| Sizes | `default`, `md`, `xs`, `sm`, `lg`, `xl` |
 | Components | `btn`, `badge` |
 
 ## Colors
@@ -190,6 +192,7 @@ Factories and updaters receive a context object.
 | `vars.variant('fg-:hover', { fallback: true })` | `var(--wui-v-fg-\:hover, var(--wui-v-fg, var(--wui-c-800)))`: a state the `default` variant does not set falls back to the base variable first |
 | `vars.size('spacing-3')` | `var(--wui-s-spacing-3)` |
 | `vars.size('text')`, `vars.size('line-height')` | `var(--wui-s-text)`, `var(--wui-s-line-height)` |
+| `vars.size('ring')` | `var(--wui-s-ring)`: a key of your own, which type-checks too |
 | `vars.c(name)`, `vars.v(name)`, `vars.s(name)` | The bare variable name, for example `--wui-c-600` |
 | `vars.cv('solid-bg')` | `--wui-cv-solid-bg`: an [override variable](/reference/css-variables#override-variables) |
 
@@ -262,8 +265,16 @@ interface Size {
 		'4': string;
 	};
 	text: FontSize; // as returned by theme.fontSize()
+
+	// keys of your own, each written to `--wui-s-<key>`
+	[key: string]: unknown;
 }
 ```
+
+A string or a number is written to `--wui-s-<key>`, and an object of strings to `--wui-s-<key>-<name>`, as
+`spacing` is. Keys of your own come after the built-in variables, so a size without them writes what it wrote in
+0.7, in the same order. `Size` and `SizeProperty`, the names `vars.size()` takes, are exported from
+`@windi-ui/core`.
 
 ## Component
 

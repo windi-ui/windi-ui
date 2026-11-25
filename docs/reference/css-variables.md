@@ -135,6 +135,9 @@ A value that no color overrides has no variable, and is emitted as before.
 | `--wui-s-line-height` | Line height, when the theme's font size defines one |
 | `--wui-s-letter-spacing` | Letter spacing, when the theme's font size defines one |
 | `--wui-s-font-weight` | Font weight, when the theme's font size defines one |
+| `--wui-s-<key>` | A [key of your own](/guide/sizes#controls-that-sit-together) on a size, such as `ring` |
+
+A variable that a size does not set keeps the value of the enclosing size, or of `:root`.
 
 ## Using them in your own CSS
 

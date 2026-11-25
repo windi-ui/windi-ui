@@ -193,7 +193,9 @@ The `default` variant can be updated but not added or removed.
 ## Sizes
 
 A size has a `spacing` object with the five slots `1`, `1.5`, `2`, `3` and `4`, and a `text` font size. Read the
-values from the Tailwind theme with `theme.spacing(key)` and `theme.fontSize(key)`, or write CSS lengths.
+values from the Tailwind theme with `theme.spacing(key)` and `theme.fontSize(key)`, or write CSS lengths. A size
+can also take [keys of your own](/guide/sizes#controls-that-sit-together): a string or a number is written to
+`--wui-s-<key>`.
 
 ```ts
 builder.addSize('2xl', ({ theme }) => ({
@@ -223,7 +225,12 @@ builder.addSize('2xl', ({ theme }) => ({
 builder.updateSize('sm', (size) => {
 	size.spacing['3'] = '0.625rem';
 });
+
+// .s-sm also gets --wui-s-height: 2rem and --wui-s-ring: 2px
+builder.updateSize('sm', (size) => ({ ...size, height: '2rem', ring: '2px' }));
 ```
+
+`md` is the `default` size under a second name, and follows it. Updating `md` makes it a size of its own.
 
 ## Components
 

@@ -1,6 +1,6 @@
-import { expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 // The built package: the root does not depend on it, and the typecheck takes no source outside its project.
-import { create, type ThemeProvider } from '../packages/windiui-core/dist/index.mjs';
+import { create, type Config, type Size, type ThemeProvider } from '../packages/windiui-core/dist/index.mjs';
 
 const theme = { colors: () => ({}), spacing: () => '0', fontSize: () => '1rem', colorValue: (v: string) => v } as unknown as ThemeProvider;
 
@@ -71,4 +71,46 @@ it('gives the root the dark overrides of `c-accent-accent`, and drops the forwar
 
 	expect(root.rootVars()['@dark']).toMatchObject({ '--wui-cv-solid-bg-accent': 'var(--wui-c-accent-400)' });
 	expect(removed.variants.cssVars('solid')).toEqual(gen().variants.cssVars('solid'));
+});
+
+// #41
+describe('sizes', () => {
+	const spacing = (k: string) => k === 'px' ? '1px' : `${Number(k) / 4}rem`;
+	const sizes = (config: Config = {}) => create(config).generator({ ...theme, spacing, fontSize: () => ['1rem', '1.5rem'] }).sizes;
+
+	it('has `md` next to `default`, with the same values, which follow a change of `default`', () => {
+		const s = sizes({ build: b => b.updateSize('default', s => void (s.spacing['3'] = '1rem')) });
+
+		expect(s.names()).toEqual(['default', 'md', 'xs', 'sm', 'lg', 'xl']);
+		expect(s.cssVars('md')).toEqual(s.cssVars('default'));
+		expect(s.cssVars('md')['--wui-s-spacing-3']).toBe('1rem');
+	});
+
+	it('writes keys of your own, strings and numbers, after the built-in variables', () => {
+		const brand: Size = { ring: '2px', spacing: { '1': '1px', '1.5': '2px', '2': '3px', '3': '4px', '4': '5px' }, text: ['1rem', '1.5rem'], 'line-clamp': 2 };
+		const s = sizes({ build: b => b
+			.addSize('brand', () => brand)
+			.addComponent('field', ({ vars }) => ({ name: 'field', style: { outlineWidth: vars.size('ring') } })) });
+
+		expect(Object.keys(s.cssVars('default'))).toEqual([
+			'--wui-s-spacing-1', '--wui-s-spacing-2', '--wui-s-spacing-3', '--wui-s-spacing-4', '--wui-s-spacing-1\\.5',
+			'--wui-s-text', '--wui-s-line-height',
+		]);
+		expect(Object.entries(s.cssVars('brand')).slice(-3)).toEqual([['--wui-s-line-height', '1.5rem'], ['--wui-s-ring', '2px'], ['--wui-s-line-clamp', '2']]);
+	});
+
+	it('makes `md` a size of its own when it is updated, added or removed', () => {
+		const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const updated = sizes({ build: b => b.updateSize('md', s => void (s.spacing['3'] = '1rem')) });
+		const added = sizes({ build: b => b.addSize('md', () => ({ spacing: { '1': '1px', '1.5': '2px', '2': '3px', '3': '4px', '4': '5px' }, text: '2rem' })) });
+		const removed = sizes({ build: b => b.removeSize('md') });
+
+		expect(updated.cssVars('md')['--wui-s-spacing-3']).toBe('1rem');
+		expect(updated.cssVars('default')['--wui-s-spacing-3']).toBe('0.75rem');
+		expect(added.names()).toEqual(['default', 'xs', 'sm', 'lg', 'xl', 'md']);
+		expect(added.cssVars('md')['--wui-s-text']).toBe('2rem');
+		expect(removed.names()).not.toContain('md');
+		expect(error).not.toHaveBeenCalled();
+		error.mockRestore();
+	});
 });

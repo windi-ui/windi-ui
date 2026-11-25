@@ -7,7 +7,7 @@ export type VarType = 'c' | 'v' | 's' | 'cv';
 export type VarName<T extends VarType = VarType> = `${T}-${string}`;
 export type CSSVarName<T extends VarType = VarType> = `--${string}-${VarName<T>}`;
 export type CSSVarValue<T extends VarType = VarType> = `var(${CSSVarName<T>})`;
-export type CSSValues = Record<string, string | Record<string, string>>;
+export type CSSValues = Record<string, string | number | Record<string, string>>;
 
 export interface VarsProvider {
 	c(n: string): CSSVarName<'c'>;
@@ -73,8 +73,8 @@ export function cssVars<TKey extends string>(
 ): Record<TKey, string> {
 	for (const p in obj) {
 		const val = obj[p];
-		if (typeof val === 'string') {
-			vars[cssEsc(keyMap(p))] = val;
+		if (typeof val === 'string' || typeof val === 'number') {
+			vars[cssEsc(keyMap(p))] = String(val);
 		} else {
 			cssVars(val, (cp) => `${keyMap(p)}-${cp}`, vars);
 		}

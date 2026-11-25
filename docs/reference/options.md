@@ -348,14 +348,14 @@ import { safelistSource } from '@windi-ui/tailwind';
 import config from './windiui.config';
 
 safelistSource(config);
-// '{c-{accent,accent-accent,...,zinc},v-{default,light,outline,solid},s-{default,lg,sm,xl,xs}}'
+// '{c-{accent,accent-accent,...,zinc},v-{default,light,outline,solid},s-{default,lg,md,sm,xl,xs}}'
 safelistSource(config, { axes: ['c', 'v'] });
 safelistSource(config, { axes: ['c'], palettes: ['red', 'green'] });
 // 'c-{accent,accent-accent,accent-default,accent-green,accent-red,default,green,red}'
 ```
 
 ```css
-@source inline("{c-{...},v-{default,light,outline,solid},s-{default,lg,sm,xl,xs}}");
+@source inline("{c-{...},v-{default,light,outline,solid},s-{default,lg,md,sm,xl,xs}}");
 ```
 
 The line is written by hand. A test keeps it current:

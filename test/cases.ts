@@ -63,4 +63,13 @@ export function cases(compile: Compile) {
 		expect(css).toContain('outline-color: var(--wui-v-bg-\\:hover, var(--wui-c-100));');
 		expect(css).toContain('caret-color: var(--wui-v-fg-\\:hover, var(--wui-v-fg, var(--wui-c-800)));');
 	});
+
+	// #41
+	it('emits `s-md` as `s-default`', async () => {
+		const css = await compile(['s-md', 's-default']);
+		const rule = (name: string) => new RegExp(`\\.s-${name} \\{([^}]*)\\}`).exec(css)?.[1];
+
+		expect(rule('md')).toContain('--wui-s-text: 1rem;');
+		expect(rule('md')).toBe(rule('default'));
+	});
 }

@@ -105,6 +105,17 @@ WindiUI comes with a few built-in components (e.g. `btn`, `badge`, ... more to c
 
 You can find more code examples in the [playground](https://github.com/windi-ui/windi-ui/blob/main/playground/vue-tailwindv4/src/App.vue).
 
+#### Sizes
+
+`s-xs`, `s-sm`, `s-md` (the default size, also `s-default`), `s-lg` and `s-xl` set these variables, which `:root` sets to the default size:
+
+| Variable | Meaning |
+| --- | --- |
+| `--wui-s-spacing-1`, `-1\.5`, `-2`, `-3`, `-4` | Spacing slots |
+| `--wui-s-text`, `--wui-s-line-height` | Font size and line height |
+
+A size can carry keys of your own, such as `builder.updateSize('sm', (s) => ({ ...s, height: '2rem' }))` for `--wui-s-height`. See [Sizes](https://windi-ui.github.io/windi-ui/guide/sizes).
+
 #### Class names built at runtime
 
 Tailwind only emits the classes it finds in your source. A class built at runtime, such as `c-${color}` from a
@@ -113,7 +124,7 @@ component prop, has to be safelisted.
 On Tailwind v4, add one line to the stylesheet. `safelistSource()` returns the string for your config:
 
 ```css
-@source inline("{c-{accent,accent-accent,accent-blue,accent-default,accent-red,blue,default,red},v-{default,light,outline,solid},s-{default,lg,sm,xl,xs}}");
+@source inline("{c-{accent,accent-accent,accent-blue,accent-default,accent-red,blue,default,red},v-{default,light,outline,solid},s-{default,lg,md,sm,xl,xs}}");
 ```
 
 ```ts

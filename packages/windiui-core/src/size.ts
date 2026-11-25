@@ -3,7 +3,7 @@ import { type CSSValues, type CSSVarName, cssVars } from "./vars";
 import { type BuilderContext, VarsGeneratorBase } from "./base";
 
 export type SizeVars = Record<CSSVarName<'s'>, string>;
-export type SizeProperty = 'text' | `spacing-${keyof Size['spacing']}` | 'line-height';
+export type SizeProperty = 'text' | `spacing-${keyof Size['spacing']}` | 'line-height' | 'letter-spacing' | 'font-weight' | (string & {});
 
 export type Size = {
 	spacing: {
@@ -14,6 +14,8 @@ export type Size = {
 		'4': string;
 	};
 	text: FontSize;
+	/** A key of your own: a string or a number is written to `--wui-s-<key>`, after the built-in variables. */
+	[key: string]: unknown;
 };
 
 export function sizes(themeProvider: ThemeProvider) {
@@ -73,23 +75,45 @@ export function sizes(themeProvider: ThemeProvider) {
 
 export class SizesGenerator extends VarsGeneratorBase<Size, SizeVars> {
 	protected readonly items: Map<string, Size>;
+	/** Whether `md` names the `default` size while no size of that name exists. Removing `md` ends it. */
+	private md = true;
 
 	constructor(ctx: BuilderContext) {
 		super(ctx);
 		this.items = new Map(Object.entries(sizes(this.theme)));
 	}
 
+	private alias(name: string) {
+		return name === 'md' && this.md && !this.items.has('md');
+	}
+
+	names(): string[] {
+		const names = super.names();
+		return this.alias('md') ? names.flatMap(n => n === 'default' ? [n, 'md'] : [n]) : names;
+	}
+
+	update(name: string, builder: (element: Size, ctx: BuilderContext) => Size | void) {
+		// The alias becomes a size of its own, so that the change leaves `default` as it is.
+		if (this.alias(name)) this.items.set(name, structuredClone(this.items.get('default')!));
+		super.update(name, builder);
+	}
+
+	remove(name: string) {
+		const alias = this.alias(name);
+		if (name === 'md') this.md = false;
+		if (!alias) super.remove(name);
+	}
+
 	cssVars(name: string): SizeVars {
-		const size = this.items.get(name);
+		const size = this.items.get(this.alias(name) ? 'default' : name);
 		if (!size) {
 			console.error(`Size "${name}" not found.`);
 			return {};
 		}
 
-		const rSize = { ...size } as CSSValues;
-		const sText = size.text;
+		const { spacing, text: sText, ...own } = size;
+		const rSize: CSSValues = { spacing, text: Array.isArray(sText) ? sText[0] : sText };
 		if (Array.isArray(sText)) {
-			rSize.text = sText[0];
 			const rVal = sText[1];
 			if (typeof rVal === 'string') {
 				rSize['line-height'] = rVal;
@@ -99,6 +123,9 @@ export class SizesGenerator extends VarsGeneratorBase<Size, SizeVars> {
 				if (rVal.fontWeight) rSize['font-weight'] = rVal.fontWeight;
 			}
 		}
+
+		// Keys of your own come last, so that the built-in variables keep their order.
+		Object.assign(rSize, own);
 
 		return cssVars(rSize, n => this.vars.s(n));
 	}

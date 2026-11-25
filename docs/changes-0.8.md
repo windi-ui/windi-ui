@@ -279,3 +279,20 @@ name that exists logs an error and is skipped
 Without a preset the variants are `default`, `solid`, `outline` and `light`, and the CSS is unchanged.
 
 **Migration:** none.
+
+### Keys of your own on sizes, and `s-md`
+
+A size had only five spacing slots and a font size, and `vars.size()` took only their names
+([#41](https://github.com/windi-ui/windi-ui/issues/41)). A value per size of your own, such as a control height,
+had to be hard-coded next to `s-*`, or passed with a type cast. New:
+
+- `Size` accepts keys of your own. A string or a number is written to `--wui-s-<key>`, after the built-in
+  variables. See [Controls that sit together](/guide/sizes#controls-that-sit-together), which also shows how to
+  line up controls without a height variable.
+- `vars.size()` takes any name, and still suggests the built-in ones. `Size` and `SizeProperty` are exported from
+  `@windi-ui/core`.
+- `s-md`, the default size under a second name. It follows a change made to `default`.
+
+A size without keys of your own writes the variables of 0.7, in the same order.
+
+**Migration:** none. A size you added as `md` stays yours.

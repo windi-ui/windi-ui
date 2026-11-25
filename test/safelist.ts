@@ -10,7 +10,7 @@ const used = ['.c-red {', '.c-accent-indigo {', '.c-default {', '.v-solid {', '.
 export function source() {
 	it('lists the classes of a config, sorted', () => {
 		const config = defineConfig({ build: builder => builder.removeVariant('outline').addColor('brand', 'red') });
-		const expected = '{c-{accent,accent-accent,accent-blue,accent-brand,accent-default,accent-red,blue,brand,default,red},v-{default,light,solid},s-{default,lg,sm,xl,xs}}';
+		const expected = '{c-{accent,accent-accent,accent-blue,accent-brand,accent-default,accent-red,blue,brand,default,red},v-{default,light,solid},s-{default,lg,md,sm,xl,xs}}';
 
 		expect(safelistSource(config, { palettes: ['red', 'blue'] })).toBe(expected);
 		// the plugin made from the config, as a plugin module exports it
@@ -19,7 +19,7 @@ export function source() {
 
 	it('lists the axes that are asked for', () => {
 		expect(safelistSource({}, { axes: ['v'] })).toBe('v-{default,light,outline,solid}');
-		expect(safelistSource({}, { axes: ['s', 'v'] })).toBe('{s-{default,lg,sm,xl,xs},v-{default,light,outline,solid}}');
+		expect(safelistSource({}, { axes: ['s', 'v'] })).toBe('{s-{default,lg,md,sm,xl,xs},v-{default,light,outline,solid}}');
 	});
 }
 

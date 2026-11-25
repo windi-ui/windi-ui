@@ -422,6 +422,15 @@
     --wui-s-text: 1.125rem;
     --wui-s-line-height: calc(1.75 / 1.125);
   }
+  .s-md {
+    --wui-s-spacing-1: 0.25rem;
+    --wui-s-spacing-2: 0.5rem;
+    --wui-s-spacing-3: 0.75rem;
+    --wui-s-spacing-4: 1rem;
+    --wui-s-spacing-1\.5: 0.375rem;
+    --wui-s-text: 1rem;
+    --wui-s-line-height: calc(1.5 / 1);
+  }
   .s-sm {
     --wui-s-spacing-1: 0.125rem;
     --wui-s-spacing-2: 0.375rem;
