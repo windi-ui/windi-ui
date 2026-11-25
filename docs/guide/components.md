@@ -49,6 +49,20 @@ What `btn` does:
 
 Everything else is up to utilities: `btn` composes with `rounded-full`, `w-full`, `gap-2` and so on.
 
+::: warning Overriding `btn` colors on Tailwind v4
+Tailwind v4 puts `addComponents` CSS in the utilities layer, not the components layer
+([tailwindcss#15045](https://github.com/tailwindlabs/tailwindcss/issues/15045)). So `btn`'s own `:hover` rule
+beats a plain color utility: `btn bg-red-500` is red at rest and loses the red on hover. Repeat the utility for the
+state, or mark it important:
+
+```html
+<button class="btn bg-red-500 hover:bg-red-500">Red</button>
+<button class="btn bg-red-500!">Red</button>
+```
+
+Tailwind v3 keeps components in their own layer, so a plain utility wins there.
+:::
+
 ::: tip Border style
 `btn` sets `border-width` only and expects Tailwind's preflight to make borders `solid`.
 :::

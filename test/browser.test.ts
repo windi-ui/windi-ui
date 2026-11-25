@@ -183,6 +183,9 @@ describe.skipIf(!browser)('in a browser', () => {
 		});
 	});
 
+	// Both blocked upstream: Tailwind v4 puts `addComponents` CSS in the utilities layer, so `.btn:hover` beats a plain
+	// utility, and a rule in `@layer base` or `components` loses to `.btn`
+	// (https://github.com/tailwindlabs/tailwindcss/issues/15045). The guide documents the workarounds.
 	it.todo('keeps an override through hover');
 	it.todo('lets a hand-written compound rule win from each cascade layer');
 });
