@@ -8,7 +8,12 @@
 	"rangeStrategy": "bump",
 	"automerge": true,
 	"automergeStrategy": "squash",
+	"internalChecksFilter": "strict",
 	"packageRules": [{
+		"description": "pnpm refuses npm versions younger than a day (its default minimumReleaseAge), so wait as long before proposing one",
+		"matchDatasources": ["npm"],
+		"minimumReleaseAge": "1 day"
+	}, {
 		"matchDepTypes": ["peerDependencies"],
 		"enabled": false
 	}, {
