@@ -63,10 +63,10 @@ jobs:
 
       # `-r` publishes core before tailwind and skips a version that is already on the registry, so a re-run after a
       # partial failure finishes the release instead of failing on the first package.
+      # npm trusted publishing: the job's OIDC token (`id-token: write`) signs in, so no npm token is stored.
       - name: Publish to NPM registry (${{steps.release.outputs.tag}})
         run: pnpm -r --filter "./packages/*" publish --access public --no-git-checks --tag ${{steps.release.outputs.tag}}
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           NPM_CONFIG_PROVENANCE: true
 
       - name: Generate changelog and release on GitHub
