@@ -13,7 +13,7 @@ export function source() {
 		const expected = '{c-{accent,accent-accent,accent-blue,accent-brand,accent-default,accent-red,blue,brand,default,red},v-{default,light,solid},s-{default,lg,sm,xl,xs}}';
 
 		expect(safelistSource(config, { palettes: ['red', 'blue'] })).toBe(expected);
-		// the plugin made from the config, as a `windiui.config.ts` exports it
+		// the plugin made from the config, as a plugin module exports it
 		expect(safelistSource(windiui({ ...config, config: false }), { palettes: ['red', 'blue'] })).toBe(expected);
 	});
 

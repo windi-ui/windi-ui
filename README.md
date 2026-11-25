@@ -36,8 +36,9 @@ On Tailwind v4, load it from your stylesheet:
 @plugin "@windi-ui/tailwind";
 ```
 
-Options go in the `@plugin` block, or in a `windiui.config.ts` that you load with `@plugin "./windiui.config.ts"`;
-see [Installation](https://windi-ui.github.io/windi-ui/guide/installation) and [Config file](https://windi-ui.github.io/windi-ui/reference/config-file).
+Options go in the `@plugin` block, in a `windiui.config.ts` config file that exports them with `defineConfig`, or in
+a `windiui.plugin.ts` plugin module that exports `windiui({ ... })` and is loaded with `@plugin "./windiui.plugin.ts"`;
+see [Installation](https://windi-ui.github.io/windi-ui/guide/installation) and [Config file and plugin module](https://windi-ui.github.io/windi-ui/reference/config-file).
 
 On Tailwind v3, add the plugin to your `tailwind.config.ts` / `tailwind.config.js` file:
 
@@ -98,7 +99,7 @@ On Tailwind v4, add one line to the stylesheet. `safelistSource()` returns the s
 ```
 
 ```ts
-import { safelistSource } from '@windi-ui/tailwind/safelist';
+import { safelistSource } from '@windi-ui/tailwind';
 
 safelistSource({}, { palettes: ['blue', 'red'] }); // the string above; without `palettes`, every palette of the default theme
 ```

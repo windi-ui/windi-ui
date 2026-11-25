@@ -32,7 +32,7 @@ windiui({
 ```
 
 ```ts [windiui.config.ts]
-import { defineConfig } from '@windi-ui/tailwind/config';
+import { defineConfig } from '@windi-ui/tailwind';
 
 export default defineConfig({
 	prefix: 'wui',
@@ -47,7 +47,7 @@ export default defineConfig({
 :::
 
 - An `@plugin` block takes the options that are plain values, with their names in kebab-case. `build` is a
-  function, so it needs JavaScript: a [config module or a config file](/reference/config-file).
+  function, so it needs JavaScript: a [config file or a plugin module](/reference/config-file).
 - Options given inline, in JavaScript or in the block, override those of a config file.
 - An option name WindiUI does not know is an error.
 
@@ -269,7 +269,7 @@ A plugin cannot safelist on Tailwind v4; the stylesheet does it with `@source in
 returns the string to put there:
 
 ```ts
-import { safelistSource } from '@windi-ui/tailwind/safelist';
+import { safelistSource } from '@windi-ui/tailwind';
 import config from './windiui.config';
 
 safelistSource(config);
@@ -288,7 +288,7 @@ The line is written by hand. A test keeps it current:
 ```ts
 import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
-import { safelistSource } from '@windi-ui/tailwind/safelist';
+import { safelistSource } from '@windi-ui/tailwind';
 import config from './windiui.config';
 
 it('safelists the WindiUI classes', () => {
@@ -298,7 +298,7 @@ it('safelists the WindiUI classes', () => {
 
 | Argument | Description |
 | --- | --- |
-| `config` | The WindiUI options, or the plugin made from them, which is what a [config module](/reference/config-file#config-module) exports. Its `build` runs, so colors, variants and sizes of the builder are listed. |
+| `config` | The WindiUI options, or the plugin made from them, which is what a [plugin module](/reference/config-file#plugin-module) exports. Its `build` runs, so colors, variants and sizes of the builder are listed. |
 | `options.axes` | Which kinds to list, in that order: `'c'`, `'v'`, `'s'`. All three by default. |
 | `options.palettes` | The names of the theme's palettes with all 11 shades. By default the 26 of Tailwind v4's default theme. |
 
@@ -334,7 +334,7 @@ warning and is ignored, as it was ignored in 0.7.
 
 ```css
 @plugin "@windi-ui/tailwind" {
-	config: "./config/windiui.ts";
+	config: "./config/windiui.config.ts";
 }
 ```
 
@@ -342,14 +342,32 @@ warning and is ignored, as it was ignored in 0.7.
 
 | Import | What it is |
 | --- | --- |
-| `@windi-ui/tailwind` | The plugin. It builds for the Tailwind that runs it. |
+| `@windi-ui/tailwind` | The plugin, as the default export. It builds for the Tailwind that runs it. |
 | `@windi-ui/tailwind/v4` | The same, always building for Tailwind v4 and typed for v4's `Config`. |
 | `@windi-ui/tailwind/v3` | The same, always building for Tailwind v3. |
-| `@windi-ui/tailwind/config` | `defineConfig` and [`loadWindiUIConfig`](/reference/config-file#loadwindiuiconfig). Node.js only. |
-| `@windi-ui/tailwind/safelist` | [`safelistSource`](#tailwind-v4). Node.js only. |
 
 The `/v3` and `/v4` entries are for a setup where the automatic choice is wrong. All three plugin entries
 work with `@plugin` and take the same options.
+
+`@windi-ui/tailwind` also has these named exports, for Node.js:
+
+- `defineConfig`, for a [config file](/reference/config-file#config-file).
+- [`loadWindiUIConfig`](/reference/config-file#loadwindiuiconfig).
+- [`safelistSource`](#tailwind-v4), and `classSource`, which writes given class names as the same brace
+  expression.
+
+```ts
+import windiui, { defineConfig, safelistSource } from '@windi-ui/tailwind';
+```
+
+In CommonJS, `require('@windi-ui/tailwind')` is the plugin, as in 0.7, and carries the helpers as properties:
+`const { safelistSource } = require('@windi-ui/tailwind');`. The default import of ESM has no such properties;
+import the helpers by name.
+
+The `@windi-ui/tailwind/config` (`defineConfig`, `loadWindiUIConfig`) and `@windi-ui/tailwind/safelist`
+(`safelistSource`, `classSource`) entries export the same helpers. ES modules that run with Tailwind v3, such
+as a Node.js script or a test, must import the helpers from these two: the main entry imports
+`tailwindcss/plugin`, which Node.js cannot resolve from an ES module in Tailwind v3.
 
 ## What the plugin reads from Tailwind
 

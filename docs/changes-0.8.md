@@ -75,18 +75,22 @@ a plugin ([#33](https://github.com/windi-ui/windi-ui/issues/33)). It now loads W
 ```css
 @plugin "@windi-ui/tailwind";                      /* zero config */
 @plugin "@windi-ui/tailwind" { prefix: app; }      /* options, in kebab-case */
-@plugin "./windiui.config.ts";                      /* a module that exports windiui({ ... }) */
+@plugin "./windiui.plugin.ts";                      /* a plugin module: exports windiui({ ... }) */
 ```
 
 Also new:
 
-- [Config files](/reference/config-file): `windiui.config.{ts,mts,cts,js,mjs,cjs,json}` and
-  `package.json#windiui` are found from the working directory, or named with the new
-  [`config`](/reference/options#config) option. Inline options override the file.
+- [Config files](/reference/config-file#config-file): `windiui.config.{ts,mts,cts,js,mjs,cjs,json}` and
+  `package.json#windiui`, which export the options. They are found from the working directory, or named with
+  the new [`config`](/reference/options#config) option. Inline options override the file.
+- [Plugin modules](/reference/config-file#plugin-module): a `windiui.plugin.ts` that exports
+  `windiui({ ... })`, loaded with `@plugin "./windiui.plugin.ts"`.
 - `@windi-ui/tailwind/v4` and `@windi-ui/tailwind/v3`, which build for one Tailwind major whatever runs them.
   `/v4` is typed for Tailwind v4's `Config`, so a v4 JavaScript config no longer needs `@ts-expect-error`.
-- `defineConfig`, from `@windi-ui/core` and `@windi-ui/tailwind/config`.
-- `loadWindiUIConfig()` from `@windi-ui/tailwind/config`, for tools that need the config the plugin uses.
+- Named exports of `@windi-ui/tailwind` beside the plugin: `defineConfig` (also in `@windi-ui/core`),
+  `loadWindiUIConfig()` for tools that need the config the plugin uses, and `safelistSource()` (see
+  [below](#a-safelist-for-class-names-built-at-runtime)). The `/config` and `/safelist` entries export them too.
+  In CommonJS, `require('@windi-ui/tailwind')` is still the plugin, as in 0.7, and carries them as properties.
 
 `plugins: [windiui()]` and `plugins: [windiui({...})]` work as before, on Tailwind v3 and v4.
 
@@ -98,7 +102,7 @@ Also new:
 2. **An unknown option name logs a warning.** `windiui({ prefx: 'app' })` was ignored silently. It is still
    ignored, and now logs `WindiUI: unknown option "prefx"`. In an `@plugin` block, which is new, it is an error.
 
-On Tailwind v4 you can replace `@config` with `@plugin "./windiui.config.ts"` if the JavaScript config only
+On Tailwind v4 you can replace `@config` with `@plugin "./windiui.plugin.ts"` if the JavaScript config only
 existed to load WindiUI.
 
 ## Dark mode follows the app's dark variant on Tailwind v4
@@ -185,7 +189,7 @@ a hand-written safelist for them ([#37](https://github.com/windi-ui/windi-ui/iss
 
 - On Tailwind v3, the [`safelist`](/reference/options#safelist) option emits every `c-*`, `v-*` and `s-*`
   class.
-- On Tailwind v4, `safelistSource()` from the new `@windi-ui/tailwind/safelist` entry returns the string for
-  one `@source inline("...")` line in the stylesheet.
+- On Tailwind v4, `safelistSource()` from `@windi-ui/tailwind` returns the string for one `@source inline("...")`
+  line in the stylesheet.
 
 **Migration:** none. Without the option the output is unchanged.

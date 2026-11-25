@@ -70,7 +70,7 @@ function resolveOptions(options: PluginOptions = {}, strict = false): Config {
 		}
 
 		if (key === 'build' && value != null && typeof value !== 'function') {
-			throw new Error('WindiUI: `build` is a function, which an `@plugin` block cannot hold. Put it in a config module or a config file.');
+			throw new Error('WindiUI: `build` is a function, which an `@plugin` block cannot hold. Put it in a config file or a plugin module.');
 		}
 
 		// Tailwind splits an unquoted `root-selector: :root, .scope` of an `@plugin` block at the comma.
@@ -78,7 +78,7 @@ function resolveOptions(options: PluginOptions = {}, strict = false): Config {
 	}
 
 	const { config: file, ...config } = inline as PluginOptions;
-	// A `build` function can only come from a module, and that module is then the config file.
+	// A call with `build` is written in code, a plugin module or a Tailwind config, and is taken as the whole config.
 	if (file === false || (file == null && config.build) || isLoadingConfig()) return config;
 
 	return { ...loadWindiUIConfig({ config: file }).config, ...config };
@@ -209,7 +209,7 @@ function WindiUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof crea
 		// Tailwind 4 takes no safelist from a plugin; the stylesheet has to name the classes.
 		if (wiu.config.safelist && tp.ver === 4 && !safelistReported) {
 			safelistReported = true;
-			console.warn(`WindiUI: \`safelist\` only works on Tailwind 3. On Tailwind 4, add this line to the stylesheet (\`safelistSource()\` from "@windi-ui/tailwind/safelist" returns the string, to keep it current with a test):\n@source inline("${classSource({ c: colorNames, v: variantNames, s: sizeNames })}");`);
+			console.warn(`WindiUI: \`safelist\` only works on Tailwind 3. On Tailwind 4, add this line to the stylesheet (\`safelistSource()\` from "@windi-ui/tailwind" returns the string, to keep it current with a test):\n@source inline("${classSource({ c: colorNames, v: variantNames, s: sizeNames })}");`);
 		}
 
 		tw.matchUtilities({

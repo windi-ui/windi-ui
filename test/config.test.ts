@@ -87,7 +87,7 @@ it.each([
 	expect(loadWindiUIConfig().config).toEqual({ prefix: 'two' });
 });
 
-it('searches from a config module without `build`, unless it says `config: false`', async () => {
+it('searches from a plugin module without `build`, unless it says `config: false`', async () => {
 	write('windiui.config.json', { variantScope: 'universal' });
 
 	const entry = pathToFileURL(resolve(import.meta.dirname, '../packages/windiui-tailwind/dist/index.mjs')).href;
@@ -105,7 +105,7 @@ it('searches from a config module without `build`, unless it says `config: false
 });
 
 it('takes the config of a file that exports the plugin', () => {
-	const { config } = loadWindiUIConfig({ config: resolve(import.meta.dirname, 'config/windiui.config.ts') });
+	const { config } = loadWindiUIConfig({ config: resolve(import.meta.dirname, 'config/windiui.plugin.ts') });
 
 	expect(config.prefix).toBe('mod');
 	expect(config.build).toBeTypeOf('function');

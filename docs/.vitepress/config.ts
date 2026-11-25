@@ -53,7 +53,7 @@ export default defineConfig({
 				text: 'Reference',
 				items: [
 					{ text: 'Options', link: '/reference/options' },
-					{ text: 'Config file', link: '/reference/config-file' },
+					{ text: 'Config file and plugin module', link: '/reference/config-file' },
 					{ text: 'Builder API', link: '/reference/builder' },
 					{ text: 'CSS variables', link: '/reference/css-variables' },
 				],

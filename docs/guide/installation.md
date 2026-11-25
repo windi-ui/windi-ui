@@ -27,7 +27,7 @@ The package is published as both ESM and CommonJS.
 
 ## Tailwind CSS v4
 
-Load WindiUI from your stylesheet with `@plugin`. There are three forms; pick the first one that covers what
+Load WindiUI from your stylesheet with `@plugin`. There are four forms; pick the first one that covers what
 you need.
 
 **Zero config.** The built-in colors, variants, sizes and components:
@@ -48,18 +48,44 @@ kebab-case:
 }
 ```
 
-**A config module.** For the [builder API](/guide/customizing), point `@plugin` at a module of your own that
-exports the configured plugin. The path is relative to the stylesheet, and Tailwind rebuilds when the module
-changes:
+**A config file.** All options, the [builder API](/guide/customizing) included, in a `windiui.config.ts`
+that exports them with `defineConfig`. The first two forms find it from the working directory, and so do
+tools that read the same config:
 
 ::: code-group
 
 ```css [main.css]
 @import "tailwindcss";
-@plugin "./windiui.config.ts";
+@plugin "@windi-ui/tailwind";
 ```
 
 ```ts [windiui.config.ts]
+import { defineConfig } from '@windi-ui/tailwind';
+
+export default defineConfig({
+	build(builder) {
+		// ...
+	}
+});
+```
+
+:::
+
+Tailwind does not watch a config file: an edit applies on the next full rebuild. To change `build` while the
+dev server runs, use a plugin module. See [Rebuilds](/reference/config-file#rebuilds).
+
+**A plugin module.** The plugin, configured in a `windiui.plugin.ts` of your own, and `@plugin` points at it.
+The path is relative to the stylesheet, and Tailwind rebuilds when the module changes. Use it in a monorepo or
+a layered app, where the working directory can be the wrong place to search from:
+
+::: code-group
+
+```css [main.css]
+@import "tailwindcss";
+@plugin "./windiui.plugin.ts";
+```
+
+```ts [windiui.plugin.ts]
 import windiui from '@windi-ui/tailwind';
 
 export default windiui({
@@ -71,8 +97,8 @@ export default windiui({
 
 :::
 
-With the first two forms WindiUI also looks for a `windiui.config.*` file by itself. See
-[Config file](/reference/config-file) for the lookup rules and its limits.
+Keep the two names apart: `windiui.config.ts` exports options, `windiui.plugin.ts` exports the plugin. See
+[Config file and plugin module](/reference/config-file) for when to use which, the lookup rules and the limits.
 
 ### In a JavaScript config
 
@@ -127,6 +153,12 @@ module.exports = {
 ```
 
 :::
+
+`windiui()` also reads a [config file](/reference/config-file#config-file), and `plugins` takes a
+[plugin module](/reference/config-file#plugin-module) as well.
+
+In CommonJS, `require('@windi-ui/tailwind')` is the plugin and also carries the helpers:
+`const { safelistSource } = require('@windi-ui/tailwind');`.
 
 ## Try it
 

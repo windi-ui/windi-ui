@@ -1,9 +1,9 @@
 import type { Config } from '@windi-ui/core';
 
-/** Set on the plugin `windiui()` returns, so that a config file may export either the config or the plugin made from it. */
+/** Set on the plugin `windiui()` returns, so that `safelistSource()` and the config loader also take the plugin a plugin module exports. */
 export const CONFIG = Symbol.for('windiui.config');
 
-/** The config of what a config file or module exports: the options themselves, or the plugin made from them. */
+/** The config of the options themselves, or of the plugin made from them. */
 export const unwrap = <F>(exported: F): Config => (exported as { [CONFIG]?: Config })[CONFIG] ?? (exported as Config);
 
 // A config file that calls `windiui()` runs in another instance of this module, so the flag has to be global.

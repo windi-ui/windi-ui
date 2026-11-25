@@ -5,10 +5,10 @@ import type { Compile, CompileCss } from './helpers';
 
 const candidates = ['c-red', 'v-solid', 's-lg', 'bg-v', 'bg-c-500', 'btn', 'badge'];
 
-const tsModule = resolve(import.meta.dirname, 'config/windiui.config.ts');
+const tsModule = resolve(import.meta.dirname, 'config/windiui.plugin.ts');
 // The same module in JavaScript, in a place that resolves the plugin and that neither git nor ESLint looks at.
 // One per worker, as the test files run side by side.
-const jsModule = resolve(import.meta.dirname, `../node_modules/.cache/windiui-test-${process.env.VITEST_POOL_ID}/windiui.config.js`);
+const jsModule = resolve(import.meta.dirname, `../node_modules/.cache/windiui-test-${process.env.VITEST_POOL_ID}/windiui.plugin.js`);
 mkdirSync(resolve(jsModule, '..'), { recursive: true });
 writeFileSync(jsModule, `
 	import windiui from '@windi-ui/tailwind';
@@ -34,7 +34,7 @@ export function forms(compile: Compile & { css: CompileCss }) {
 		await expect(compile.css('@plugin "@windi-ui/tailwind" { build: x; }', candidates)).rejects.toThrow('`build` is a function');
 	});
 
-	it.each([tsModule, jsModule])('loads the config module %s', async (path) => {
+	it.each([tsModule, jsModule])('loads the plugin module %s', async (path) => {
 		const css = await compile.css(`@plugin "${path.replaceAll('\\', '/')}";`, candidates);
 		expect(css).toContain('--mod-c-500');
 		expect(css).toContain('.btn');
