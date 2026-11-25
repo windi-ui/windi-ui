@@ -25,6 +25,6 @@
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.74.0",
 		"unbuild": "^3.6.1",
-		"vite": "^7.3.8"
+		"vite": "^8.3.8"
 	}
 }
