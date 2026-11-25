@@ -365,9 +365,7 @@ In CommonJS, `require('@windi-ui/tailwind')` is the plugin, as in 0.7, and carri
 import the helpers by name.
 
 The `@windi-ui/tailwind/config` (`defineConfig`, `loadWindiUIConfig`) and `@windi-ui/tailwind/safelist`
-(`safelistSource`, `classSource`) entries export the same helpers. ES modules that run with Tailwind v3, such
-as a Node.js script or a test, must import the helpers from these two: the main entry imports
-`tailwindcss/plugin`, which Node.js cannot resolve from an ES module in Tailwind v3.
+(`safelistSource`, `classSource`) entries export the same helpers, without loading the plugin.
 
 ## What the plugin reads from Tailwind
 

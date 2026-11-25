@@ -173,8 +173,7 @@ error and the search is skipped. A plugin module has no such requirement.
 ## `loadWindiUIConfig`
 
 The loader behind the named file and the search, for tools that need the same config as the plugin. Node.js
-only. On Tailwind v3, an ES module imports it from `@windi-ui/tailwind/config`, see
-[Entry points](/reference/options#entry-points).
+only.
 
 ```ts
 import { loadWindiUIConfig } from '@windi-ui/tailwind';

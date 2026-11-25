@@ -1,4 +1,5 @@
-import { default as createPlugin } from 'tailwindcss/plugin';
+import { createRequire } from 'node:module';
+import type createPluginType from 'tailwindcss/plugin';
 import type { CSSRuleObject, DarkModeConfig } from 'tailwindcss/types/config';
 import { create, type Builder, type Config, type ColorShade, type ColorValue, type ApplyVariantMainProp, type ApplyVariantSubProp } from "@windi-ui/core";
 import { loadWindiUIConfig } from './config';
@@ -8,6 +9,10 @@ import type { RecursiveRecord } from './types';
 import { createTailwindTheme, flattenColorPalette } from './theme';
 import { getDarkSelector, applyDark, toDarkMode, VARIANT_DARK } from './utils/darkMode';
 import { calledByTailwind, tailwindAtLeast } from './utils/version';
+
+// Tailwind 3 has no `exports` map, so Node's ESM resolver cannot find `tailwindcss/plugin` (no extension); `require` can,
+// on both majors.
+const createPlugin = createRequire(import.meta.url)('tailwindcss/plugin') as typeof createPluginType;
 
 function keyValuePairs(
 	keys: string[],
