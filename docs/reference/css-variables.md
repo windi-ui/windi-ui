@@ -44,8 +44,8 @@ for example `var(--wui-c-600)` or `var(--wui-c-accent-100)`.
 
 ### State variables
 
-When a variant defines `pseudos`, every property also gets a copy per state, named with the pseudo-class as a
-suffix:
+When a variant defines `pseudos`, every property also gets a variable per state, named with the pseudo-class as
+a suffix:
 
 ```css
 --wui-v-bg-\:hover
@@ -55,6 +55,18 @@ suffix:
 
 The colon is part of the name and is escaped in CSS. Components that apply a state read these variables inside
 the matching pseudo-class; the opacity falls back to the non-state opacity when the state does not set one.
+
+A property that the state does not set refers to its base variable:
+
+```css
+.v-outline {
+	--wui-v-fg: var(--wui-c-600);
+	--wui-v-fg-\:hover: var(--wui-v-fg);
+}
+```
+
+The reference resolves on the element, so the state follows the dark value of the base variable, and any rule
+that sets the base variable on the element.
 
 ### Dark mode
 

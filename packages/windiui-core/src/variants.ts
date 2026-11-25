@@ -285,13 +285,14 @@ function getCssVars(vars: VarsProvider, props: Omit<Partial<Variant>, 'dark'>) {
 	const cssObj = vProps as CSSValues;
 
 	if (vPseudos) {
-		const propKeys = new Set(Object.keys(vProps) as (keyof VariantProperties)[]);
+		const propKeys = Object.keys(vProps) as (keyof VariantProperties)[];
 		for (const vpk in vPseudos) {
 			const vp = vPseudos[vpk as CSS.SimplePseudos];
 			if (vp) {
-				const vpPropKeys = (new Set(Object.keys(vp) as (keyof VariantProperties)[])).union(propKeys);
+				const vpPropKeys = new Set([...Object.keys(vp) as (keyof VariantProperties)[], ...propKeys]);
 				for (const vppk of vpPropKeys) {
-					cssObj[`${vppk}-${vpk}`] = (vppk in vp) ? vp[vppk]! : vProps[vppk]!;
+					// A reference, not a copy: it resolves on the element, so a dark block or an override of the base value reaches the state
+					cssObj[`${vppk}-${vpk}`] = vp[vppk] ?? vars.variant(vppk);
 				}
 			}
 		}
@@ -303,7 +304,17 @@ function getCssVars(vars: VarsProvider, props: Omit<Partial<Variant>, 'dark'>) {
 /** The light values of the built-in default variant, by CSS variable name. */
 export function defaultVariantVars(vars: VarsProvider): VariantVars {
 	const { dark: _, ...props } = defaultVariant(vars);
-	return getCssVars(vars, props);
+	const light = getCssVars(vars, props);
+
+	// A state value that refers to its base value needs the base value as its own fallback
+	for (const [name, value] of Object.entries(light)) {
+		const base = /^var\((--[^,()\s]+)\)$/.exec(value)?.[1];
+		if (base && base in light) {
+			light[name as CSSVarName<'v'>] = `var(${base}, ${light[base as CSSVarName<'v'>]})`;
+		}
+	}
+
+	return light;
 }
 
 export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars> implements VariantContext {

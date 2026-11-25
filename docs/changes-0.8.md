@@ -1,3 +1,7 @@
+---
+outline: [2, 3]
+---
+
 # Changes in 0.8
 
 What you can observe when upgrading from 0.7. Class names, options and the builder API are unchanged; every
@@ -193,3 +197,42 @@ a hand-written safelist for them ([#37](https://github.com/windi-ui/windi-ui/iss
   line in the stylesheet.
 
 **Migration:** none. Without the option the output is unchanged.
+
+## Changes in 0.8.0
+
+What changed after 0.8.0-beta.1.
+
+### Hover keeps the dark values of a variant
+
+A state variable that `pseudos` leaves out was a copy of the base value
+([#38](https://github.com/windi-ui/windi-ui/issues/38)):
+
+```css
+.v-outline {
+	--wui-v-fg: var(--wui-c-600);
+	--wui-v-fg-\:hover: var(--wui-c-600);
+}
+```
+
+A dark block sets only the variables it names, so the copy kept the light value in dark mode, unless the dark
+block repeated `pseudos`. Anything else that set `--wui-v-fg` on the element was lost on hover as well. The state
+variable is now a reference to the base variable, which resolves on the element:
+
+```css
+.v-outline {
+	--wui-v-fg: var(--wui-c-600);
+	--wui-v-fg-\:hover: var(--wui-v-fg);
+}
+```
+
+The built-in variants paint what they painted, at rest and on hover, in light and dark mode. What changes:
+
+- A variant whose `dark` block has no `pseudos` now shows its dark values on hover, for the values that
+  `pseudos` does not set. Before, a `btn` with such a variant had the light text color on hover in dark mode.
+- A rule that sets a base variable such as `--wui-v-fg` on an element now also changes its hover state.
+- Outside the universal scope, the hover fallback of a component reads the base variable first:
+  `var(--wui-v-fg-\:hover, var(--wui-v-fg, <default>))`. `vars.variant('fg-:hover', { fallback: true })` gives
+  the same.
+- `@windi-ui/core` no longer uses `Set.prototype.union`, which needs Node 22 or a browser from 2024.
+
+**Migration:** none. A `pseudos` block inside `dark` that only repeats the light `pseudos` can be removed.

@@ -51,10 +51,6 @@ builder.addVariant('ghost', ({ vars }) => ({
 	dark: {
 		'bg': vars.color('800'),
 		'fg': vars.color('300'),
-
-		pseudos: {
-			':hover': { 'bg-opacity': '1' }
-		}
 	}
 }));
 ```
@@ -77,8 +73,10 @@ Notes:
 - `pseudos` keys are CSS pseudo-classes written with the colon, such as `':hover'`. A component only uses the
   states it applies; `btn` applies `:hover`.
 - `dark` takes the same shape (without a nested `dark`) and only needs the values that differ.
-- If the variant has `pseudos` and `dark` changes a value, repeat the pseudo inside `dark` as above. Otherwise the
-  state keeps the light value in dark mode ([#38](https://github.com/windi-ui/windi-ui/issues/38)).
+- A state value that `pseudos` leaves out follows the base value, also the dark one: on hover, `v-ghost` keeps
+  its dark `bg` and `fg` without a `pseudos` inside `dark`.
+- `dark` can have its own `pseudos`, for state values that differ in dark mode. With them, a value that `dark`
+  sets and its `pseudos` leave out follows the dark base value on hover, also when the light `pseudos` set it.
 
 ### Update a variant
 

@@ -50,11 +50,17 @@ export function cases(compile: Compile) {
 			variantScope: 'universal',
 			build: builder => builder.addComponent('direct', ({ vars }) => ({
 				name: 'direct',
-				style: { color: vars.variant('fg', { fallback: true }), outlineColor: vars.variant('bg-:hover', { fallback: true }) },
+				style: {
+					color: vars.variant('fg', { fallback: true }),
+					outlineColor: vars.variant('bg-:hover', { fallback: true }),
+					// #38: a state value that the variant leaves out refers to the base value
+					caretColor: vars.variant('fg-:hover', { fallback: true }),
+				},
 			})),
 		});
 
 		expect(css).toContain('color: var(--wui-v-fg, var(--wui-c-800));');
 		expect(css).toContain('outline-color: var(--wui-v-bg-\\:hover, var(--wui-c-100));');
+		expect(css).toContain('caret-color: var(--wui-v-fg-\\:hover, var(--wui-v-fg, var(--wui-c-800)));');
 	});
 }

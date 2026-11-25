@@ -108,6 +108,7 @@ Factories and updaters receive a context object.
 | `vars.variant('bg')` | `var(--wui-v-bg)` |
 | `vars.variant('fg-soft', fallback)` | `var(--wui-v-fg-soft, <fallback>)` |
 | `vars.variant('bg', { fallback: true })` | `var(--wui-v-bg, var(--wui-c-white))`: the fallback is the light value of the built-in `default` variant |
+| `vars.variant('fg-:hover', { fallback: true })` | `var(--wui-v-fg-\:hover, var(--wui-v-fg, var(--wui-c-800)))`: a state the `default` variant does not set falls back to the base variable first |
 | `vars.size('spacing-3')` | `var(--wui-s-spacing-3)` |
 | `vars.size('text')`, `vars.size('line-height')` | `var(--wui-s-text)`, `var(--wui-s-line-height)` |
 | `vars.c(name)`, `vars.v(name)`, `vars.s(name)` | The bare variable name, for example `--wui-c-600` |

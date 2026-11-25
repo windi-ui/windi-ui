@@ -63,7 +63,8 @@ describe.skipIf(!browser)('in a browser', () => {
 		}
 	});
 
-	afterAll(() => browser?.close());
+	// Closing Chrome can outlast the 10 s default while the other test files run alongside
+	afterAll(() => browser?.close(), 30_000);
 
 	describe.each(['universal', 'element'] as const)('with the %s scope', (scope) => {
 		it('gives the descendants of a variant host the default variant', async () => {
@@ -180,6 +181,89 @@ describe.skipIf(!browser)('in a browser', () => {
 			expect(await backgrounds(outside)).toEqual(Array(3).fill('rgb(2, 2, 2)'));
 			// Elsewhere the default palette was resolved at the root.
 			expect(await style(page, 'other-default', 'backgroundColor')).toBe('rgb(2, 2, 2)');
+		});
+	});
+
+	// #38: a state value that a variant leaves out is a reference to the base value, resolved on the element.
+	describe('with the hover state of a variant', () => {
+		const subs = ['soft', 'muted', 'accent'] as const;
+		const levels = ['', ...subs];
+		const builtIn = ['default', 'solid', 'outline', 'light'].flatMap(v => levels.map(l => `${v}${l && `-${l}`}`));
+		const ids = [...builtIn, 'night'];
+		// `btn` paints the base levels; a `levels-*` component paints the others.
+		const states = ids.map(id => {
+			const [v, l] = id.split('-');
+			return `<span id="${id}" class="${l ? `levels-${l}` : 'btn'} c-blue v-${v}">${id}</span>`;
+		}).join('');
+
+		const pages = {} as Record<Scope, Page>;
+
+		const colors = (page: Page, id: string) => page.evaluate<string[]>(
+			`(s => [s.backgroundColor, s.color, s.borderTopColor])(getComputedStyle(document.getElementById('${id}')))`
+		);
+
+		const paint = async (page: Page, list: string[]) => {
+			const painted: Record<string, { rest: string[], hover: string[] }> = {};
+			for (const mode of ['light', 'dark']) {
+				await page.evaluate(`document.documentElement.className = '${mode}'`);
+				for (const id of list) {
+					// The page's margin: no element there
+					await page.mouse.move(0, 0);
+					const rest = await colors(page, id);
+					await page.hover(`#${id}`);
+					painted[`${mode} ${id}`] = { rest, hover: await colors(page, id) };
+				}
+			}
+
+			return painted;
+		};
+
+		beforeAll(async () => {
+			for (const variantScope of scopes) {
+				const css = await compile(states.match(/[^\s"<>=]+/g)!, { darkMode: ['selector', '.dark'] }, {
+					variantScope,
+					build: (builder) => {
+						for (const l of subs) {
+							builder.addComponent(`levels-${l}`, () => ({
+								name: `levels-${l}`,
+								style: {},
+								applyVariant: [`bg-${l}`, `border-${l}`, `text-${l}`],
+								applyVariantPseudos: { ':hover': [`bg-${l}`, `border-${l}`, `text-${l}`] },
+							}));
+						}
+
+						// A dark block without `pseudos`
+						builder.addVariant('night', ({ vars }) => ({
+							'bg': vars.color('100'),
+							'border': vars.color('600'),
+							'fg': vars.color('700'),
+							pseudos: { ':hover': { 'bg': vars.color('200') } },
+							dark: { 'fg': vars.color('300') },
+						}));
+					},
+				});
+
+				pages[variantScope] = await browser!.newPage();
+				await pages[variantScope].setContent(`<style>${css}</style>${states}`);
+			}
+		});
+
+		// The snapshot was recorded from the literal copies of 0.7.
+		it('paints the built-in variants as before, in every scope', async () => {
+			const painted = await paint(pages.universal, builtIn);
+			await expect(JSON.stringify(painted, null, '\t')).toMatchFileSnapshot('./__snapshots__/browser/variant-states.json');
+
+			expect(await paint(pages.element, builtIn)).toEqual(painted);
+			expect(await paint(pages.inherit, builtIn)).toEqual(painted);
+		}, 30_000);
+
+		it.each(scopes)('gives the hover state the dark value of a dark block without `pseudos` in the %s scope', async (scope) => {
+			const { 'light night': light, 'dark night': dark } = await paint(pages[scope], ['night']);
+
+			expect(dark.rest[1]).not.toBe(light.rest[1]);
+			expect(dark.hover[1]).toBe(dark.rest[1]);
+			expect(light.hover[1]).toBe(light.rest[1]);
+			expect(dark.hover[0]).toBe(light.hover[0]);
 		});
 	});
 

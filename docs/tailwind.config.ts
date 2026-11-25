@@ -23,10 +23,6 @@ const config: Config = {
 						dark: {
 							'bg': vars.color('800'),
 							'fg': vars.color('300'),
-
-							pseudos: {
-								':hover': { 'bg-opacity': '1' }
-							}
 						}
 					}))
 					.addSize('2xl', ({ theme }) => ({

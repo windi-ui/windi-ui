@@ -168,17 +168,17 @@
     --wui-v-bg-soft-\:hover: var(--wui-c-200);
     --wui-v-bg-muted-\:hover: var(--wui-c-300);
     --wui-v-bg-accent-\:hover: var(--wui-c-accent-200);
-    --wui-v-bg-opacity-\:hover: 1;
-    --wui-v-border-\:hover: var(--wui-c-500);
-    --wui-v-border-soft-\:hover: var(--wui-c-400);
-    --wui-v-border-muted-\:hover: var(--wui-c-300);
-    --wui-v-border-accent-\:hover: var(--wui-c-accent-500);
-    --wui-v-border-opacity-\:hover: 1;
-    --wui-v-fg-\:hover: var(--wui-c-800);
-    --wui-v-fg-soft-\:hover: var(--wui-c-500);
-    --wui-v-fg-muted-\:hover: var(--wui-c-400);
-    --wui-v-fg-accent-\:hover: var(--wui-c-accent-700);
-    --wui-v-fg-opacity-\:hover: 1;
+    --wui-v-bg-opacity-\:hover: var(--wui-v-bg-opacity);
+    --wui-v-border-\:hover: var(--wui-v-border);
+    --wui-v-border-soft-\:hover: var(--wui-v-border-soft);
+    --wui-v-border-muted-\:hover: var(--wui-v-border-muted);
+    --wui-v-border-accent-\:hover: var(--wui-v-border-accent);
+    --wui-v-border-opacity-\:hover: var(--wui-v-border-opacity);
+    --wui-v-fg-\:hover: var(--wui-v-fg);
+    --wui-v-fg-soft-\:hover: var(--wui-v-fg-soft);
+    --wui-v-fg-muted-\:hover: var(--wui-v-fg-muted);
+    --wui-v-fg-accent-\:hover: var(--wui-v-fg-accent);
+    --wui-v-fg-opacity-\:hover: var(--wui-v-fg-opacity);
 }
 @media (prefers-color-scheme: dark) {
     * {
@@ -198,14 +198,14 @@
         --wui-v-bg-soft-\:hover: var(--wui-c-800);
         --wui-v-bg-muted-\:hover: var(--wui-c-700);
         --wui-v-bg-accent-\:hover: var(--wui-c-accent-900);
-        --wui-v-border-\:hover: var(--wui-c-700);
-        --wui-v-border-soft-\:hover: var(--wui-c-600);
-        --wui-v-border-muted-\:hover: var(--wui-c-500);
-        --wui-v-border-accent-\:hover: var(--wui-c-accent-700);
-        --wui-v-fg-\:hover: var(--wui-c-200);
-        --wui-v-fg-soft-\:hover: var(--wui-c-300);
-        --wui-v-fg-muted-\:hover: var(--wui-c-400);
-        --wui-v-fg-accent-\:hover: var(--wui-c-accent-200);
+        --wui-v-border-\:hover: var(--wui-v-border);
+        --wui-v-border-soft-\:hover: var(--wui-v-border-soft);
+        --wui-v-border-muted-\:hover: var(--wui-v-border-muted);
+        --wui-v-border-accent-\:hover: var(--wui-v-border-accent);
+        --wui-v-fg-\:hover: var(--wui-v-fg);
+        --wui-v-fg-soft-\:hover: var(--wui-v-fg-soft);
+        --wui-v-fg-muted-\:hover: var(--wui-v-fg-muted);
+        --wui-v-fg-accent-\:hover: var(--wui-v-fg-accent);
     }
 }
 .btn {
@@ -338,17 +338,17 @@
     --wui-v-bg-soft-\:hover: var(--wui-c-200);
     --wui-v-bg-muted-\:hover: var(--wui-c-300);
     --wui-v-bg-accent-\:hover: var(--wui-c-accent-200);
-    --wui-v-bg-opacity-\:hover: 1;
-    --wui-v-border-\:hover: var(--wui-c-500);
-    --wui-v-border-soft-\:hover: var(--wui-c-400);
-    --wui-v-border-muted-\:hover: var(--wui-c-300);
-    --wui-v-border-accent-\:hover: var(--wui-c-accent-500);
-    --wui-v-border-opacity-\:hover: 1;
-    --wui-v-fg-\:hover: var(--wui-c-800);
-    --wui-v-fg-soft-\:hover: var(--wui-c-500);
-    --wui-v-fg-muted-\:hover: var(--wui-c-400);
-    --wui-v-fg-accent-\:hover: var(--wui-c-accent-700);
-    --wui-v-fg-opacity-\:hover: 1;
+    --wui-v-bg-opacity-\:hover: var(--wui-v-bg-opacity);
+    --wui-v-border-\:hover: var(--wui-v-border);
+    --wui-v-border-soft-\:hover: var(--wui-v-border-soft);
+    --wui-v-border-muted-\:hover: var(--wui-v-border-muted);
+    --wui-v-border-accent-\:hover: var(--wui-v-border-accent);
+    --wui-v-border-opacity-\:hover: var(--wui-v-border-opacity);
+    --wui-v-fg-\:hover: var(--wui-v-fg);
+    --wui-v-fg-soft-\:hover: var(--wui-v-fg-soft);
+    --wui-v-fg-muted-\:hover: var(--wui-v-fg-muted);
+    --wui-v-fg-accent-\:hover: var(--wui-v-fg-accent);
+    --wui-v-fg-opacity-\:hover: var(--wui-v-fg-opacity);
 }
 @media (prefers-color-scheme: dark) {
     .v-default {
@@ -368,14 +368,14 @@
         --wui-v-bg-soft-\:hover: var(--wui-c-800);
         --wui-v-bg-muted-\:hover: var(--wui-c-700);
         --wui-v-bg-accent-\:hover: var(--wui-c-accent-900);
-        --wui-v-border-\:hover: var(--wui-c-700);
-        --wui-v-border-soft-\:hover: var(--wui-c-600);
-        --wui-v-border-muted-\:hover: var(--wui-c-500);
-        --wui-v-border-accent-\:hover: var(--wui-c-accent-700);
-        --wui-v-fg-\:hover: var(--wui-c-200);
-        --wui-v-fg-soft-\:hover: var(--wui-c-300);
-        --wui-v-fg-muted-\:hover: var(--wui-c-400);
-        --wui-v-fg-accent-\:hover: var(--wui-c-accent-200);
+        --wui-v-border-\:hover: var(--wui-v-border);
+        --wui-v-border-soft-\:hover: var(--wui-v-border-soft);
+        --wui-v-border-muted-\:hover: var(--wui-v-border-muted);
+        --wui-v-border-accent-\:hover: var(--wui-v-border-accent);
+        --wui-v-fg-\:hover: var(--wui-v-fg);
+        --wui-v-fg-soft-\:hover: var(--wui-v-fg-soft);
+        --wui-v-fg-muted-\:hover: var(--wui-v-fg-muted);
+        --wui-v-fg-accent-\:hover: var(--wui-v-fg-accent);
     }
 }
 .v-light {
@@ -406,9 +406,9 @@
     --wui-v-fg-soft-\:hover: var(--wui-c-100);
     --wui-v-fg-muted-\:hover: var(--wui-c-200);
     --wui-v-fg-accent-\:hover: var(--wui-c-accent-50);
-    --wui-v-bg-opacity-\:hover: 1;
-    --wui-v-border-opacity-\:hover: 0;
-    --wui-v-fg-opacity-\:hover: 1;
+    --wui-v-bg-opacity-\:hover: var(--wui-v-bg-opacity);
+    --wui-v-border-opacity-\:hover: var(--wui-v-border-opacity);
+    --wui-v-fg-opacity-\:hover: var(--wui-v-fg-opacity);
 }
 @media (prefers-color-scheme: dark) {
     .v-light {
@@ -435,9 +435,9 @@
         --wui-v-border-muted-\:hover: var(--wui-c-400);
         --wui-v-border-accent-\:hover: var(--wui-c-accent-600);
         --wui-v-fg-\:hover: var(--wui-c-50);
-        --wui-v-fg-soft-\:hover: var(--wui-c-400);
-        --wui-v-fg-muted-\:hover: var(--wui-c-500);
-        --wui-v-fg-accent-\:hover: var(--wui-c-accent-300);
+        --wui-v-fg-soft-\:hover: var(--wui-v-fg-soft);
+        --wui-v-fg-muted-\:hover: var(--wui-v-fg-muted);
+        --wui-v-fg-accent-\:hover: var(--wui-v-fg-accent);
     }
 }
 .v-outline {
@@ -461,16 +461,16 @@
     --wui-v-bg-muted-\:hover: var(--wui-c-100);
     --wui-v-bg-accent-\:hover: var(--wui-c-accent-100);
     --wui-v-bg-opacity-\:hover: 0.75;
-    --wui-v-border-\:hover: var(--wui-c-600);
-    --wui-v-border-soft-\:hover: var(--wui-c-500);
-    --wui-v-border-muted-\:hover: var(--wui-c-400);
-    --wui-v-border-accent-\:hover: var(--wui-c-accent-600);
-    --wui-v-border-opacity-\:hover: 1;
-    --wui-v-fg-\:hover: var(--wui-c-600);
-    --wui-v-fg-soft-\:hover: var(--wui-c-500);
-    --wui-v-fg-muted-\:hover: var(--wui-c-400);
-    --wui-v-fg-accent-\:hover: var(--wui-c-accent-600);
-    --wui-v-fg-opacity-\:hover: 1;
+    --wui-v-border-\:hover: var(--wui-v-border);
+    --wui-v-border-soft-\:hover: var(--wui-v-border-soft);
+    --wui-v-border-muted-\:hover: var(--wui-v-border-muted);
+    --wui-v-border-accent-\:hover: var(--wui-v-border-accent);
+    --wui-v-border-opacity-\:hover: var(--wui-v-border-opacity);
+    --wui-v-fg-\:hover: var(--wui-v-fg);
+    --wui-v-fg-soft-\:hover: var(--wui-v-fg-soft);
+    --wui-v-fg-muted-\:hover: var(--wui-v-fg-muted);
+    --wui-v-fg-accent-\:hover: var(--wui-v-fg-accent);
+    --wui-v-fg-opacity-\:hover: var(--wui-v-fg-opacity);
 }
 @media (prefers-color-scheme: dark) {
     .v-outline {
@@ -487,14 +487,14 @@
         --wui-v-bg-muted-\:hover: var(--wui-c-900);
         --wui-v-bg-accent-\:hover: var(--wui-c-accent-900);
         --wui-v-bg-opacity-\:hover: 0.50;
-        --wui-v-border-\:hover: var(--wui-c-400);
-        --wui-v-border-soft-\:hover: var(--wui-c-500);
-        --wui-v-border-muted-\:hover: var(--wui-c-600);
-        --wui-v-border-accent-\:hover: var(--wui-c-accent-400);
-        --wui-v-fg-\:hover: var(--wui-c-400);
-        --wui-v-fg-soft-\:hover: var(--wui-c-500);
-        --wui-v-fg-muted-\:hover: var(--wui-c-600);
-        --wui-v-fg-accent-\:hover: var(--wui-c-accent-400);
+        --wui-v-border-\:hover: var(--wui-v-border);
+        --wui-v-border-soft-\:hover: var(--wui-v-border-soft);
+        --wui-v-border-muted-\:hover: var(--wui-v-border-muted);
+        --wui-v-border-accent-\:hover: var(--wui-v-border-accent);
+        --wui-v-fg-\:hover: var(--wui-v-fg);
+        --wui-v-fg-soft-\:hover: var(--wui-v-fg-soft);
+        --wui-v-fg-muted-\:hover: var(--wui-v-fg-muted);
+        --wui-v-fg-accent-\:hover: var(--wui-v-fg-accent);
     }
 }
 .v-solid {
@@ -522,12 +522,12 @@
     --wui-v-border-muted-\:hover: var(--wui-c-500);
     --wui-v-border-accent-\:hover: var(--wui-c-accent-700);
     --wui-v-fg-\:hover: var(--wui-c-50);
-    --wui-v-bg-opacity-\:hover: 1;
-    --wui-v-border-opacity-\:hover: 0;
-    --wui-v-fg-soft-\:hover: var(--wui-c-200);
-    --wui-v-fg-muted-\:hover: var(--wui-c-300);
-    --wui-v-fg-accent-\:hover: var(--wui-c-accent-200);
-    --wui-v-fg-opacity-\:hover: 1;
+    --wui-v-bg-opacity-\:hover: var(--wui-v-bg-opacity);
+    --wui-v-border-opacity-\:hover: var(--wui-v-border-opacity);
+    --wui-v-fg-soft-\:hover: var(--wui-v-fg-soft);
+    --wui-v-fg-muted-\:hover: var(--wui-v-fg-muted);
+    --wui-v-fg-accent-\:hover: var(--wui-v-fg-accent);
+    --wui-v-fg-opacity-\:hover: var(--wui-v-fg-opacity);
 }
 .bg-v {
     --tw-bg-opacity: var(--wui-v-bg-opacity, 1);
@@ -661,11 +661,11 @@
         --wui-v-border-muted-\:hover: var(--wui-c-500);
         --wui-v-border-accent-\:hover: var(--wui-c-accent-700);
         --wui-v-fg-\:hover: var(--wui-c-50);
-        --wui-v-bg-opacity-\:hover: 1;
-        --wui-v-border-opacity-\:hover: 0;
-        --wui-v-fg-soft-\:hover: var(--wui-c-200);
-        --wui-v-fg-muted-\:hover: var(--wui-c-300);
-        --wui-v-fg-accent-\:hover: var(--wui-c-accent-200);
-        --wui-v-fg-opacity-\:hover: 1;
+        --wui-v-bg-opacity-\:hover: var(--wui-v-bg-opacity);
+        --wui-v-border-opacity-\:hover: var(--wui-v-border-opacity);
+        --wui-v-fg-soft-\:hover: var(--wui-v-fg-soft);
+        --wui-v-fg-muted-\:hover: var(--wui-v-fg-muted);
+        --wui-v-fg-accent-\:hover: var(--wui-v-fg-accent);
+        --wui-v-fg-opacity-\:hover: var(--wui-v-fg-opacity);
     }
 }
