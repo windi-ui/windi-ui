@@ -5,6 +5,7 @@ import { darkClass, darkSelector } from './dark';
 import { baseline, candidates } from './baseline';
 import { tailwind3 } from './helpers';
 import { overrides } from './overrides';
+import { presets } from './presets';
 import { safelist, source } from './safelist';
 
 const compile = tailwind3();
@@ -12,6 +13,7 @@ const compile = tailwind3();
 baseline('tw3', compile);
 cases(compile);
 overrides(compile);
+presets(compile);
 palettes(compile);
 builderColors(compile);
 source();

@@ -84,6 +84,14 @@ windiui({
 
 See [Override a variant for some colors](https://windi-ui.github.io/windi-ui/guide/customizing#override-a-variant-for-some-colors).
 
+More variants come from presets. The `nuxt-ui` preset adds `v-soft`, `v-subtle`, `v-ghost` and `v-link`, whose text reaches a contrast of 4.5:1 with every palette of Tailwind's default theme:
+
+```ts
+windiui({ presets: ['nuxt-ui'] });
+```
+
+See [Presets](https://windi-ui.github.io/windi-ui/guide/presets).
+
 #### Components
 
 WindiUI comes with a few built-in components (e.g. `btn`, `badge`, ... more to come) that can be styled with `c-*`, `v-*` utilities, some components also support `s-*` utility to control its size.

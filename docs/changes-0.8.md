@@ -258,3 +258,24 @@ New:
 Without an override the CSS is unchanged.
 
 **Migration:** none.
+
+### Presets, and `set*` on the builder
+
+A set of variants could not be packaged and shared, and the builder could not add or replace: `addVariant` on a
+name that exists logs an error and is skipped
+([#40](https://github.com/windi-ui/windi-ui/issues/40)). New:
+
+- `setVariant`, `setSize` and `setComponent` on the builder, next to `setColor`. They add an item or replace the
+  one of that name, `default` included, and log nothing.
+- The [`presets`](/reference/options#presets) option, which runs presets in order before `build`, and
+  `definePreset(name, build)`, which makes one. Every preset takes `override`, `prefix` and `only`. See
+  [Presets](/guide/presets).
+- The `nuxt-ui` preset, with `soft`, `subtle`, `ghost` and `link`. Its text reaches a contrast of 4.5:1 with
+  every palette of Tailwind's default theme, in every state and mode. `presets: nuxt-ui;` works in an `@plugin`
+  block, and `"presets": ["nuxt-ui"]` in a JSON config file.
+- The `@windi-ui/core/presets` and `@windi-ui/tailwind/presets` entries, and `definePreset` and `nuxtUi` as named
+  exports of `@windi-ui/tailwind`. The types `Preset`, `PresetOptions` and `PresetName` from `@windi-ui/core`.
+
+Without a preset the variants are `default`, `solid`, `outline` and `light`, and the CSS is unchanged.
+
+**Migration:** none.

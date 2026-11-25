@@ -33,6 +33,10 @@
 			"import": "./dist/config.mjs",
 			"require": "./dist/config.cjs"
 		},
+		"./presets": {
+			"import": "./dist/presets.mjs",
+			"require": "./dist/presets.cjs"
+		},
 		"./safelist": {
 			"import": "./dist/safelist.mjs",
 			"require": "./dist/safelist.cjs"

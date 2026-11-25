@@ -1,11 +1,14 @@
 import type { Config } from 'tailwindcss';
 import windiui from '@windi-ui/tailwind/v4';
+import { nuxtUi } from '@windi-ui/tailwind/presets';
 
 const config: Config = {
 	// VitePress toggles a `.dark` class on <html>
 	darkMode: ['selector', '.dark'],
 	plugins: [
 		windiui({
+			// The demo of guide/presets.md; the prefix keeps its `ghost` apart from the one below
+			presets: [nuxtUi({ prefix: 'nui' })],
 			// The examples of guide/customizing.md, live. Keep the two in sync.
 			build(builder) {
 				builder

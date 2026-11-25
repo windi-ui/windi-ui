@@ -5,7 +5,8 @@ export default defineBuildConfig({
 	v3: './src/v3.ts',
 	v4: './src/v4.ts',
 	config: './src/config.ts',
-	safelist: './src/safelist.ts'
+	safelist: './src/safelist.ts',
+	presets: './src/presets.ts'
 }, {
 	// With named exports beside the default, `cjsDefault` no longer makes the plugin `module.exports`. A Tailwind 3
 	// config calls `require('@windi-ui/tailwind')()`, so the plugin becomes the module and carries the named exports.

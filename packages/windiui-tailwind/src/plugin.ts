@@ -56,7 +56,7 @@ export interface TailwindV4Plugin {
 	config?: any;
 }
 
-const OPTIONS = ['prefix', 'rootSelector', 'default', 'accent', 'variantScope', 'overrides', 'overrideMode', 'darkSelector', 'build', 'safelist', 'debug', 'config'];
+const OPTIONS = ['prefix', 'rootSelector', 'default', 'accent', 'variantScope', 'overrides', 'overrideMode', 'darkSelector', 'presets', 'build', 'safelist', 'debug', 'config'];
 
 /**
  * Inline options over those of the config file. An `@plugin` block writes the names in kebab-case.
@@ -80,6 +80,8 @@ function resolveOptions(options: PluginOptions = {}, strict = false): Config {
 
 		// Tailwind splits an unquoted `root-selector: :root, .scope` of an `@plugin` block at the comma.
 		if (value !== undefined) inline[key] = key === 'rootSelector' && Array.isArray(value) ? value.join(', ') : value;
+		// `presets: nuxt-ui` is a string, and `presets: nuxt-ui, other` a list.
+		if (key === 'presets' && typeof value === 'string') inline[key] = [value];
 	}
 
 	const { config: file, ...config } = inline as PluginOptions;
@@ -90,10 +92,10 @@ function resolveOptions(options: PluginOptions = {}, strict = false): Config {
 }
 
 /**
- * The palettes `build` adds with `utilities: true`. Tailwind resolves its theme before the builder can run, so `build`
- * is first run on a builder that does nothing but note them.
+ * The palettes the presets and `build` add with `utilities: true`. Tailwind resolves its theme before the builder can
+ * run, so they are first run on a builder that does nothing but note them.
  */
-function utilityColors(build: Config['build'], inTheme: (name: string) => boolean) {
+function utilityColors({ presets, build }: ReturnType<typeof create>['config'], inTheme: (name: string) => boolean) {
 	const found = new Map<string, ColorValue>();
 	const removed = new Set<string>();
 	const set: Builder['setColor'] = (name, value, options) => {
@@ -113,6 +115,7 @@ function utilityColors(build: Config['build'], inTheme: (name: string) => boolea
 	});
 
 	try {
+		for (const preset of presets) preset.build(builder);
 		build?.(builder);
 	} catch {
 		// The run on the real builder is the one that reports it.
@@ -288,7 +291,7 @@ function WindiUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof crea
 						if (wiu.config[name] == null && shades.length && shades.length < 11) missing[name] = shades;
 					}
 
-					utilities ??= utilityColors(wiu.config.build, inTheme);
+					utilities ??= utilityColors(wiu.config, inTheme);
 					const own: Record<string, unknown> = {};
 					for (const [name, value] of utilities) {
 						if (typeof value !== 'string') {

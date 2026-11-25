@@ -1,6 +1,13 @@
 import { Builder } from "./builder";
 import type { ColorShade } from "./colors";
 import type { VariantOverride, VariantProperty } from "./variants";
+import type { Preset } from "./preset";
+import { nuxtUi } from "./presets/nuxt-ui";
+
+const PRESETS = { 'nuxt-ui': nuxtUi };
+
+/** A preset of WindiUI by name, with its default options, as a config file or an `@plugin` block gives it. */
+export type PresetName = keyof typeof PRESETS;
 
 /**
  * Where the default variant comes from for an element without a `v-*` class of its own:
@@ -67,6 +74,8 @@ export interface ResolvedConfig {
 	overrideMode: OverrideMode;
 	/** Left out, dark mode follows Tailwind's own. */
 	darkSelector?: DarkSelectorOption;
+	/** Run in order, before `build`. */
+	presets: Preset[];
 	build?: (builder: Builder) => void;
 	/** Asks the host to emit every `c-*`, `v-*` and `s-*` class, also those it does not find in use. */
 	safelist: boolean;
@@ -74,7 +83,9 @@ export interface ResolvedConfig {
 	debug: boolean;
 }
 
-export type Config = Partial<ResolvedConfig>;
+export type Config = Partial<Omit<ResolvedConfig, 'presets'>> & {
+	presets?: (Preset | PresetName)[];
+};
 
 export function resolveConfig(config: Config): ResolvedConfig {
 	const {
@@ -83,6 +94,7 @@ export function resolveConfig(config: Config): ResolvedConfig {
 		variantScope = 'element',
 		overrideMode = 'vars',
 		darkSelector,
+		presets = [],
 		build,
 		safelist = false,
 		debug = false
@@ -97,10 +109,15 @@ export function resolveConfig(config: Config): ResolvedConfig {
 		overrides: config.overrides,
 		overrideMode,
 		darkSelector,
+		presets: presets.map(p => typeof p !== 'string' ? p : Object.hasOwn(PRESETS, p) ? PRESETS[p]() : unknownPreset(p)),
 		build,
 		safelist,
 		debug
 	};
+}
+
+function unknownPreset(name: string): never {
+	throw new Error(`WindiUI: unknown preset "${name}". The presets are: ${Object.keys(PRESETS).join(', ')}.`);
 }
 
 /** Types a config object, so that one object can be shared by the plugin, a config file and other tools. */

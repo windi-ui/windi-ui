@@ -5,7 +5,7 @@ examples see [Customizing](/guide/customizing).
 
 ## Methods
 
-Every `add*`, `update*` and `remove*` method returns the builder.
+Every `add*`, `set*`, `update*` and `remove*` method returns the builder.
 
 | Method | Description |
 | --- | --- |
@@ -14,13 +14,16 @@ Every `add*`, `update*` and `remove*` method returns the builder.
 | `updateColor(name, updater)` | Change the shades of an existing palette. |
 | `removeColor(name)` | Remove a palette and its classes. |
 | `addVariant(name, factory)` | Register a variant and its `v-<name>` class. |
+| `setVariant(name, factory)` | The same, replacing a variant of that name. |
 | `updateVariant(name, updater)` | Change an existing variant. |
 | `removeVariant(name)` | Remove a variant. |
 | `overrideVariant(variant, colors, override)` | Change values of a variant for some colors. See [Overrides](#overrides). |
 | `addSize(name, factory)` | Register a size and its `s-<name>` class. |
+| `setSize(name, factory)` | The same, replacing a size of that name. |
 | `updateSize(name, updater)` | Change an existing size. |
 | `removeSize(name)` | Remove a size. |
 | `addComponent(name, factory)` | Register a component class `.<name>`. |
+| `setComponent(name, factory)` | The same, replacing a component of that name. |
 | `updateComponent(name, updater)` | Change an existing component. |
 | `removeComponent(name)` | Remove a component. |
 | `colorsNames()` | Names of all `c-*` classes, including `accent-<name>`. |
@@ -32,6 +35,7 @@ Signatures:
 
 ```ts
 add(name: string, factory: (ctx: Context) => T): Builder;
+set(name: string, factory: (ctx: Context) => T): Builder;
 update(name: string, updater: (item: T, ctx: Context) => T | void): Builder;
 remove(name: string): Builder;
 ```
@@ -39,8 +43,10 @@ remove(name: string): Builder;
 - A `factory` returns the new item.
 - An `updater` either mutates the item it receives or returns a replacement.
 - `add` with an existing name, and `update` or `remove` with an unknown name, log a console error and do nothing.
-- The `default` variant, the `default` size and the `default` color can be updated, but not added or removed.
-  `setColor('default', ...)` replaces the color.
+- `set` adds the item, or replaces the one of that name, and logs nothing. A replaced variant loses the overrides
+  that earlier calls gave it.
+- The `default` variant, the `default` size and the `default` color can be updated or replaced with `set`, but
+  not added or removed.
 - `build` can run more than once per compilation; see [`utilities`](#colors).
 
 Built-in names:
@@ -132,6 +138,32 @@ type VariantOverride = Partial<Omit<Variant, 'colors'>>; // and each value may a
   [`overrideMode`](/reference/options#overridemode) chooses how they are emitted.
 
 See [Override a variant for some colors](/guide/customizing#override-a-variant-for-some-colors).
+
+## Presets
+
+```ts
+import { definePreset, type Preset, type PresetOptions } from '@windi-ui/tailwind/presets';
+
+function definePreset(name: string, build: (builder: Builder) => void): (options?: PresetOptions) => Preset;
+
+interface PresetOptions {
+	override?: boolean; // default false
+	prefix?: string;
+	only?: string[];
+}
+```
+
+`definePreset` is also exported from `@windi-ui/core` and `@windi-ui/core/presets`. The preset's `build` gets a
+builder that applies the options to the calls it makes:
+
+- `add*` and `set*` give the item the prefix. With `override: false`, a name that exists is kept, and the
+  preset logs one warning that names all of them. A name the preset added itself can be set again.
+- `update*`, `remove*` and `overrideVariant` reach an item of the preset under its prefix, and any other item,
+  such as `solid`, under its own name. They skip a name the preset kept.
+- `only` leaves out every call on a name that is not in it, the prefix left out.
+- `*Names()` list every item, those of the preset with their prefix.
+
+See [Presets](/guide/presets).
 
 ## Context
 

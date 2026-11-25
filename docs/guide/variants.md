@@ -167,4 +167,5 @@ exist, with `variantScope: 'universal'`.
 
 ## Custom variants
 
-Variants can be added, changed and removed with the [builder API](/guide/customizing#variants).
+Variants can be added, changed and removed with the [builder API](/guide/customizing#variants). More come from
+[presets](/guide/presets): `presets: ['nuxt-ui']` adds `v-soft`, `v-subtle`, `v-ghost` and `v-link`.

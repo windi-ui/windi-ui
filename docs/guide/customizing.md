@@ -21,7 +21,7 @@ export default {
 };
 ```
 
-Every `add*`, `update*` and `remove*` method returns the builder, so calls chain. The full list is in the
+Every `add*`, `set*`, `update*` and `remove*` method returns the builder, so calls chain. The full list is in the
 [builder reference](/reference/builder).
 
 The examples on this page are installed on this site, so the demos below are live.
@@ -77,6 +77,8 @@ Notes:
   its dark `bg` and `fg` without a `pseudos` inside `dark`.
 - `dark` can have its own `pseudos`, for state values that differ in dark mode. With them, a value that `dark`
   sets and its `pseudos` leave out follows the dark base value on hover, also when the light `pseudos` set it.
+- `setVariant(name, factory)` takes the same, and replaces a variant of that name, `default` included, where
+  `addVariant` logs an error. `setSize` and `setComponent` do the same for sizes and components.
 
 ### Update a variant
 
@@ -297,8 +299,8 @@ point of the build. `colorsNames()` includes the `accent-<name>` entries.
 ## Errors
 
 Adding a name that exists, or updating, removing or overriding one that does not, logs an error to the console and is
-skipped. The build does not fail. `setColor` adds or replaces; `set*` for the other kinds is tracked in
-[#40](https://github.com/windi-ui/windi-ui/issues/40).
+skipped. The build does not fail. `setColor`, `setVariant`, `setSize` and `setComponent` add or replace, and log
+nothing.
 
 `build` only describes what to register. It can run more than once per compilation, so keep other work out
 of it.
@@ -321,6 +323,11 @@ builder
 
 See [Palettes from the builder](/guide/colors#palettes-from-the-builder) and the
 [builder reference](/reference/builder#colors).
+
+## Presets
+
+A preset is a named set of these calls, which runs before `build`. WindiUI ships `nuxt-ui`, and
+`definePreset` makes your own. See [Presets](/guide/presets).
 
 ## Variable prefix
 

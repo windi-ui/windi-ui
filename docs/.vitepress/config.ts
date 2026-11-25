@@ -47,6 +47,7 @@ export default defineConfig({
 					{ text: 'Components', link: '/guide/components' },
 					{ text: 'Utilities', link: '/guide/utilities' },
 					{ text: 'Customizing', link: '/guide/customizing' },
+					{ text: 'Presets', link: '/guide/presets' },
 				],
 			},
 			{

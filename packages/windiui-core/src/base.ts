@@ -31,8 +31,12 @@ export abstract class BuilderBase<T, TContext extends BuilderContext> {
 			return;
 		}
 
-		const elem = builder(this.ctx);
-		this.items.set(name, elem);
+		this.set(name, builder);
+	}
+
+	/** Adds an item, or replaces the one of that name, `default` included. */
+	set(name: string, builder: (ctx: TContext) => T) {
+		this.items.set(name, builder(this.ctx));
 	}
 
 	update(name: string, builder: (element: T, ctx: TContext) => T | void) {

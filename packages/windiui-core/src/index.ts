@@ -1,5 +1,5 @@
 import type { ThemeProvider } from './types';
-import { resolveConfig, defineConfig, type ColorOptions, type ColorValue, type Config, type DarkSelectorOption, type OverrideMode, type OverrideVars, type VariantScope } from './config';
+import { resolveConfig, defineConfig, type ColorOptions, type ColorValue, type Config, type DarkSelectorOption, type OverrideMode, type OverrideVars, type PresetName, type VariantScope } from './config';
 import { varsProvider } from './vars';
 import { ColorsGenerator } from "./colors";
 import { VariantsGenerator } from "./variants";
@@ -28,10 +28,9 @@ export function create(config: Config) {
 			const sizes = new SizesGenerator(ctx);
 			const components = new ComponentsGenerator({ ...ctx, colors, variants });
 
-			if (rConfig.build) {
-				const builder = createBuilder(colors, variants, sizes, components);
-				rConfig.build(builder);
-			}
+			const builder = createBuilder(colors, variants, sizes, components);
+			for (const preset of rConfig.presets) preset.build(builder);
+			rConfig.build?.(builder);
 
 			for (const [variant, overrides] of Object.entries(rConfig.overrides ?? {})) {
 				for (const [color, override] of Object.entries(overrides)) {
@@ -47,7 +46,8 @@ export function create(config: Config) {
 export { varsProvider, type VarsProvider } from './vars';
 export type { Builder } from './builder';
 export { defineConfig };
-export type { ColorOptions, ColorValue, Config, DarkSelectorOption, OverrideMode, OverrideVars, VariantScope };
+export { definePreset, type Preset, type PresetOptions } from './preset';
+export type { ColorOptions, ColorValue, Config, DarkSelectorOption, OverrideMode, OverrideVars, PresetName, VariantScope };
 export type * from './types';
 export type { ColorShade, ExColorShade } from './colors';
 export type { Variant, VariantOverride, VariantProperties as VariantProps, ApplyVariant, ApplyVariantMainProp, ApplyVariantSubProp, ApplyVariantProp } from './variants';

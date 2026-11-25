@@ -5,6 +5,7 @@ import { baseline } from './baseline';
 import { forms } from './forms';
 import { tailwind4 } from './helpers';
 import { overrides } from './overrides';
+import { presets, presetsCss } from './presets';
 import { safelistSourceCss } from './safelist';
 
 const compile = tailwind4('tw4.1');
@@ -12,6 +13,8 @@ const compile = tailwind4('tw4.1');
 baseline('tw4.1', compile);
 cases(compile);
 overrides(compile);
+presets(compile);
+presetsCss(compile);
 palettes(compile);
 palettesCss(compile);
 builderColors(compile);

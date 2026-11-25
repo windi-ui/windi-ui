@@ -281,12 +281,38 @@ variant (`@custom-variant dark` included), then the media query. See
 [Dark mode](/guide/dark-mode#how-the-dark-selector-is-chosen) for the order and the table of forms. The type
 is exported from `@windi-ui/core` as `DarkSelectorOption`.
 
+## `presets`
+
+- Type: `(Preset | 'nuxt-ui')[]`
+- Default: `[]`
+
+Sets of variants, sizes, components, colors and overrides, run in order before [`build`](#build). A preset is
+given by name, with its default options, or as the object a preset function returns:
+
+```ts
+import { nuxtUi } from '@windi-ui/tailwind/presets';
+
+windiui({ presets: ['nuxt-ui'] });
+windiui({ presets: [nuxtUi({ prefix: 'nui', only: ['soft', 'ghost'] })] });
+```
+
+```css
+@plugin "@windi-ui/tailwind" {
+	presets: nuxt-ui;
+}
+```
+
+Every preset takes `override`, `prefix` and `only`. A config file in JSON takes the names. An unknown name is
+an error. See [Presets](/guide/presets). The types are exported from `@windi-ui/core` as `Preset`,
+`PresetOptions` and `PresetName`.
+
 ## `build`
 
 - Type: `(builder: Builder) => void`
 - Default: none
 
-Called after the built-in variants, sizes and components are registered and before CSS is generated. It runs
+Called after the built-in variants, sizes and components are registered, and after the [presets](#presets), and
+before CSS is generated. It runs
 twice per compilation, see [Builder](/reference/builder#colors). Use the [builder](/reference/builder) to add, update or remove them. See
 [Customizing](/guide/customizing) for a walkthrough.
 
@@ -394,6 +420,7 @@ warning and is ignored, as it was ignored in 0.7.
 | `@windi-ui/tailwind` | The plugin, as the default export. It builds for the Tailwind that runs it. |
 | `@windi-ui/tailwind/v4` | The same, always building for Tailwind v4 and typed for v4's `Config`. |
 | `@windi-ui/tailwind/v3` | The same, always building for Tailwind v3. |
+| `@windi-ui/tailwind/presets` | The [presets](/guide/presets) and `definePreset`, the same as `@windi-ui/core/presets`. |
 
 The `/v3` and `/v4` entries are for a setup where the automatic choice is wrong. All three plugin entries
 work with `@plugin` and take the same options.
@@ -404,6 +431,7 @@ work with `@plugin` and take the same options.
 - [`loadWindiUIConfig`](/reference/config-file#loadwindiuiconfig).
 - [`safelistSource`](#tailwind-v4), and `classSource`, which writes given class names as the same brace
   expression.
+- `definePreset` and the presets, such as `nuxtUi`. See [`presets`](#presets).
 
 ```ts
 import windiui, { defineConfig, safelistSource } from '@windi-ui/tailwind';

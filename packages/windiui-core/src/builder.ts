@@ -21,6 +21,10 @@ export interface Builder {
 
 	/** Adds a color, or replaces the one of that name. */
 	setColor: Builder['addColor'];
+	/** Adds a variant, or replaces the one of that name, `default` included. */
+	setVariant: BuilderFunc<VariantsGenerator['set']>;
+	setSize: BuilderFunc<SizesGenerator['set']>;
+	setComponent: BuilderFunc<ComponentsGenerator['set']>;
 
 	updateColor: BuilderFunc<ColorsGenerator['update']>;
 	updateVariant: BuilderFunc<VariantsGenerator['update']>;
@@ -62,6 +66,18 @@ export function createBuilder(colors: ColorsGenerator, variants: VariantsGenerat
 
 		setColor(name, value) {
 			colors.setColor(name, value);
+			return this;
+		},
+		setVariant(name, builder) {
+			variants.set(name, builder);
+			return this;
+		},
+		setSize(name, builder) {
+			sizes.set(name, builder);
+			return this;
+		},
+		setComponent(name, builder) {
+			components.set(name, builder);
 			return this;
 		},
 
