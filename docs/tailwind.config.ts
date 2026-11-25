@@ -31,6 +31,11 @@ const config: Config = {
 						}
 					}))
 					.overrideVariant('solid', 'yellow', { bg: '700', pseudos: { ':hover': { bg: '800' } } })
+					// The demo of guide/theming.md
+					.setColor('brand', {
+						vars: '--ui-color-brand',
+						overrideVars: { variants: ['solid'], props: ['bg', 'bg-:hover'] },
+					})
 					.addSize('2xl', ({ theme }) => ({
 						spacing: {
 							'1': theme.spacing('3'),

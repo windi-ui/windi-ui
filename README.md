@@ -6,22 +6,37 @@
 
 🚧 under development 🚧
 
-WindiUI is a modern, modular, and customizable UI component library designed to work seamlessly with Tailwind CSS. It provides developers with a set of reusable components and utilities to build beautiful and consistent user interfaces efficiently.
+WindiUI is a Tailwind CSS plugin that adds three axes to your classes: a color (`c-*`), a variant (`v-*`) and a size
+(`s-*`). Each one is a class that sets CSS variables, so `btn c-blue v-solid s-lg` is a large, solid, blue button, and
+the same `btn` takes every palette of your theme, in light and dark mode.
+
+**[Documentation](https://windi-ui.github.io/windi-ui/guide/introduction)** ·
+[Installation](https://windi-ui.github.io/windi-ui/guide/installation) ·
+[Options](https://windi-ui.github.io/windi-ui/reference/options) ·
+[Builder API](https://windi-ui.github.io/windi-ui/reference/builder) ·
+[Changes in 0.8](https://windi-ui.github.io/windi-ui/changes-0.8)
 
 ## Features
 
-- **Core Components**: A collection of essential UI components such as buttons, badges, and cards.
-- **Tailwind Integration**: Utilities and themes tailored for Tailwind CSS.
-- **Customizable**: Easily extend and modify components to fit your design system.
-- **Extensible**: Build your own components and variants with advanced utilities.
-- **Dark mode**: Automatically detect your dark mode config and apply appropriate style.
+- **Three axes.** `c-*` picks one of your palettes, `v-*` a variant and `s-*` a size. They combine freely, and colors
+  and sizes inherit down the tree.
+- **Calibrated variants.** `default`, `solid`, `outline` and `light` pick shades of the 11-shade palette for the
+  background, border and text, with soft, muted and accent levels, a hover state and dark values. A variant can use
+  other shades for some colors, such as a darker `solid` yellow.
+- **Presets.** `nuxt-ui` adds `soft`, `subtle`, `ghost` and `link`, with text that passes a contrast of 4.5:1.
+- **Components and utilities.** `btn`, `badge`, `bg-v`, `text-v`, `border-v`, and `apply-v` for your own CSS.
+- **Builder API.** Add, replace, change or remove colors, variants, sizes and components.
+- **Runtime palettes.** A color given by CSS variables follows a theme set at runtime.
+- **Dark mode.** Follows the dark variant of your Tailwind setup, with nothing to configure.
+- **Tailwind v3 and v4**, with the same class names.
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v22 or higher)
-- Tailwind v3/v4
+- Node.js 22 or higher, or 22.12 or higher to load a
+  [config file](https://windi-ui.github.io/windi-ui/reference/config-file). The tests run on Node.js 26.
+- Tailwind CSS v3.3 or higher, or v4. The tests run on Tailwind CSS 3.4, 4.1.16 and the current 4.3.
 
 ### Installation
 
@@ -36,137 +51,100 @@ On Tailwind v4, load it from your stylesheet:
 @plugin "@windi-ui/tailwind";
 ```
 
-Options go in the `@plugin` block, in a `windiui.config.ts` config file that exports them with `defineConfig`, or in
-a `windiui.plugin.ts` plugin module that exports `windiui({ ... })` and is loaded with `@plugin "./windiui.plugin.ts"`;
-see [Installation](https://windi-ui.github.io/windi-ui/guide/installation) and [Config file and plugin module](https://windi-ui.github.io/windi-ui/reference/config-file).
-
-On Tailwind v3, add the plugin to your `tailwind.config.ts` / `tailwind.config.js` file:
+On Tailwind v3, add it to the plugins of your Tailwind config:
 
 ```ts
 import type { Config } from 'tailwindcss';
 import windiui from '@windi-ui/tailwind';
 
 export default {
-	// ...
-	plugins: [
-		windiui()
-	],
+	content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
+	plugins: [windiui()],
 } satisfies Config;
 ```
 
+Options go in the `@plugin` block, in a `windiui.config.ts` config file, or in a plugin module; see
+[Installation](https://windi-ui.github.io/windi-ui/guide/installation) and
+[Options](https://windi-ui.github.io/windi-ui/reference/options).
+
 ### Usage
 
-#### Colors
-
-WindiUI automatically detect all the colors in your theme and make them available to be used with components and utility classes.
-
-First you choose the color you want with `c-*` (e.g. `c-blue`, ...), then apply it with Tailwind class (e.g. `bg-c-800`, ...)
-
 ```html
-<div class="c-blue bg-c-800/50 text-c-300 border border-c-500 p-5">Hello World</div>
+<button class="btn c-blue v-solid">Save</button>
+<button class="btn c-red v-outline s-sm">Delete</button>
+<button class="btn c-blue v-light s-lg">Inbox <span class="badge c-red v-solid">3</span></button>
+<div class="c-green v-light bg-v text-v border border-v-muted rounded p-4">A box painted by its variant</div>
+<div class="c-amber bg-c-100 text-c-800 p-4">Shades of the current color</div>
 ```
 
-To keep only the colors your app uses, list them: `windiui({ colors: { only: ['primary', 'error', 'default'] } })`, or `colors: primary, error, default;` in an `@plugin` block. The other palettes then get no `c-*` class.
-
-#### Variants
-
-Make your component more flexible by styling it with variant utilities classes, use (`bg-v`, `text-v`, `border-v`, ...) to apply the colors, then use `v-*` to change the style, WindiUI has the following built-in variants styles: `v-default`,  `v-solid`,  `v-outline`,  `v-light`.
-
-```html
-<span class="inline-block c-red v-solid bg-v-soft/60 text-v border border-v py-1 px-2 rounded">Test</span>
-```
-
-A variant can use other shades for some colors, for example a darker `solid` background for yellow, where white text on shade 600 is hard to read:
+A plugin module configures WindiUI with the builder API. This one adds the `nuxt-ui` variants, gives `solid` a darker
+background with yellow, and adds a `c-primary` color whose shades are CSS variables set at runtime:
 
 ```ts
-windiui({
-	build: (builder) => builder.overrideVariant('solid', 'yellow', { bg: '700', pseudos: { ':hover': { bg: '800' } } }),
+// windiui.plugin.ts
+import windiui from '@windi-ui/tailwind';
+
+export default windiui({
+	presets: ['nuxt-ui'],
+	build: (builder) => builder
+		.overrideVariant('solid', 'yellow', { bg: '700', pseudos: { ':hover': { bg: '800' } } })
+		.addColor('primary', { vars: '--ui-color-primary' }),
 });
 ```
 
-See [Override a variant for some colors](https://windi-ui.github.io/windi-ui/guide/customizing#override-a-variant-for-some-colors).
-
-More variants come from presets. The `nuxt-ui` preset adds `v-soft`, `v-subtle`, `v-ghost` and `v-link`, whose text reaches a contrast of 4.5:1 with every palette of Tailwind's default theme:
-
-```ts
-windiui({ presets: ['nuxt-ui'] });
+```css
+@import "tailwindcss";
+@plugin "./windiui.plugin.ts";
 ```
-
-See [Presets](https://windi-ui.github.io/windi-ui/guide/presets).
-
-#### Components
-
-WindiUI comes with a few built-in components (e.g. `btn`, `badge`, ... more to come) that can be styled with `c-*`, `v-*` utilities, some components also support `s-*` utility to control its size.
 
 ```html
-<button class="btn v-light c-blue s-lg">
-	Primary
-	<span class="badge v-solid c-red leading-none rounded-full absolute top-0 start-full -translate-1/2">32</span>
-</button>
+<button class="btn c-yellow v-solid">Solid yellow, on shade 700</button>
+<button class="btn c-primary v-soft">Soft, in the runtime color</button>
 ```
 
-You can find more code examples in the [playground](https://github.com/windi-ui/windi-ui/blob/main/playground/vue-tailwindv4/src/App.vue).
+The [guide](https://windi-ui.github.io/windi-ui/guide/introduction) covers each part, with live examples. The
+[playground](https://github.com/windi-ui/windi-ui/blob/main/playground/vue-tailwindv4/src/App.vue) has more.
 
-#### Variants in your own CSS
+#### Variants and sizes in your own CSS
 
-`apply-v` paints the background, border and text from the current variant, at rest and on hover, as `btn` does. It works as a class and under `@apply`, and carries the default variant as a fallback, so it is the supported way to read a variant in a stylesheet. A list in brackets chooses the properties and the states:
+`apply-v` paints the background, border and text from the current variant, at rest and on hover, as `btn` does. A
+list in brackets chooses the properties and the states. The `s-*` classes set size variables that a control of your
+own can read:
 
 ```css
-.card-action { @apply apply-v; }                                          /* bg, border, text + :hover */
-.chip        { @apply apply-v-[bg,text]; }                                /* chosen properties */
-.hint        { @apply apply-v-[bg-muted,text-muted]; }                    /* other levels */
-.tab         { @apply apply-v-[hover,focus-visible,active,disabled]; }    /* chosen states */
+@import "tailwindcss";
+@plugin "@windi-ui/tailwind";
+
+.card-action { @apply apply-v; }                                  /* bg, border, text + :hover */
+.tab         { @apply apply-v-[bg,text,hover,focus-visible]; }    /* chosen properties and states */
+.my-input {                                                       /* as tall as a btn of the same size */
+	padding: calc(var(--wui-s-spacing-1\.5) - 1px) calc(var(--wui-s-spacing-3) - 1px);
+	border: 1px solid;
+	font-size: var(--wui-s-text);
+	line-height: var(--wui-s-line-height);
+}
 ```
 
-The `variantUtilities` option adds color shortcuts painted from a variant, such as `bg-primary` with the `solid` background of `primary`, its overrides and dark values included:
-
-```ts
-windiui({ variantUtilities: { bg: 'solid', text: 'outline', border: 'outline' } });
-```
-
-Tailwind's own utilities keep precedence: a single-value color such as `bg-white`, a palette with a `DEFAULT`, and arbitrary values such as `bg-[#123456]` are left to Tailwind. See [Utilities](https://windi-ui.github.io/windi-ui/guide/utilities#apply-v).
-
-#### Sizes
-
-`s-xs`, `s-sm`, `s-md` (the default size, also `s-default`), `s-lg` and `s-xl` set these variables, which `:root` sets to the default size:
-
-| Variable | Meaning |
+| Size variable | Meaning |
 | --- | --- |
 | `--wui-s-spacing-1`, `-1\.5`, `-2`, `-3`, `-4` | Spacing slots |
 | `--wui-s-text`, `--wui-s-line-height` | Font size and line height |
+| `--wui-s-<key>` | A key of your own on a size, such as `height` for an app that wants a fixed control height |
 
-A size can carry keys of your own, such as `builder.updateSize('sm', (s) => ({ ...s, height: '2rem' }))` for `--wui-s-height`. See [Sizes](https://windi-ui.github.io/windi-ui/guide/sizes).
-
-#### Class names built at runtime
-
-Tailwind only emits the classes it finds in your source. A class built at runtime, such as `c-${color}` from a
-component prop, has to be safelisted.
-
-On Tailwind v4, add one line to the stylesheet. `safelistSource()` returns the string for your config:
-
-```css
-@source inline("{c-{accent,accent-accent,accent-blue,accent-default,accent-red,blue,default,red},v-{default,light,outline,solid},s-{default,lg,md,sm,xl,xs}}");
-```
-
-```ts
-import { safelistSource } from '@windi-ui/tailwind';
-
-safelistSource({}, { palettes: ['blue', 'red'] }); // the string above; without `palettes`, every palette of the default theme
-```
-
-On Tailwind v3, `windiui({ safelist: true })` emits every `c-*`, `v-*` and `s-*` class. With `colors.only`, both list only those colors.
-
-See [the `safelist` option](https://windi-ui.github.io/windi-ui/reference/options#safelist) for the details.
+The `variantUtilities` option adds color utilities painted from a variant, such as `bg-yellow` with the `solid`
+background of yellow, overrides and dark values included. See
+[Utilities](https://windi-ui.github.io/windi-ui/guide/utilities) and
+[Sizes](https://windi-ui.github.io/windi-ui/guide/sizes).
 
 ## Upgrading from 0.7
 
-See [Changes in 0.8](https://windi-ui.github.io/windi-ui/changes-0.8). The one thing to check: 0.8 no longer sets the default variant on every
-element with a `*` rule (the new `variantScope` option, default `'element'`). `btn`, `badge` and the `bg-v`,
-`text-v`, `border-v` utilities look the same, but your own CSS that reads a variant variable directly, such as
-`background: var(--wui-v-bg)`, on an element without a `v-*` class no longer gets a value. Either set
-`windiui({ variantScope: 'universal' })` to keep the 0.7 output, or give the rule a variant with
-`@apply v-default v-scope`. A rule that uses `@apply v-*` should also apply `v-scope`, so its children do not
-inherit the variant.
+See [Changes in 0.8](https://windi-ui.github.io/windi-ui/changes-0.8#upgrading-from-0-7). The one thing to check: 0.8
+no longer sets the default variant on every element with a `*` rule (the new `variantScope` option, default
+`'element'`). `btn`, `badge` and the `bg-v`, `text-v`, `border-v` utilities look the same, but your own CSS that
+reads a variant variable directly, such as `background: var(--wui-v-bg)`, on an element without a `v-*` class no
+longer gets a value. Either set `windiui({ variantScope: 'universal' })` to keep the 0.7 output, or give the rule a
+variant with `@apply v-default v-scope`. A rule that uses `@apply v-*` should also apply `v-scope`, so its children
+do not inherit the variant.
 
 ## Documentation
 
@@ -219,6 +197,9 @@ The tests are in `test/` and run on Vitest.
   snapshot diff with the code, so the review shows what changed for users.
 - **Browser.** `test/browser.test.ts` checks what a snapshot cannot: how the CSS cascades and inherits.
   It drives the Chrome or Edge already installed on the machine, and is skipped locally if there is neither.
+- **README.** `test/readme.ts` compiles every TypeScript sample of this file on each fixture and every CSS sample
+  on the Tailwind v4 ones, and checks that the classes of its HTML samples exist. Keep the samples compilable when
+  you change them.
 - A test file works with one fixture only, because the helper that loads a fixture changes the working directory.
 
 ### Project Structure

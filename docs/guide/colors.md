@@ -130,6 +130,18 @@ current color:
 <span class="c-accent-green v-light bg-v-accent text-v-accent border border-v-accent">...</span>
 ```
 
+So an element has two palettes at once: the current one from `c-*`, and the accent from `c-accent-*`. Both inherit,
+and they are set independently: `c-blue c-accent-amber` is a blue element with amber accents. What reads the accent:
+
+- the `accent` level of every [variant](/guide/variants#anatomy-of-a-variant) (`bg-accent`, `border-accent`,
+  `fg-accent`), which `bg-v-accent`, `text-v-accent` and `border-v-accent` paint;
+- `vars.color.accent('600')` in a variant or a component of your own, and `--wui-c-accent-*` in your CSS;
+- an [override](/guide/customizing#override-a-variant-for-some-colors) of an `-accent` value, which `c-accent-<name>`
+  applies.
+
+`:root` sets the `accent` palette, so without a `c-accent-*` class the accent is blue, or the palette of the
+[`accent` option](/reference/options#default-and-accent).
+
 ## Custom palettes
 
 Add a palette to your Tailwind theme and it becomes a `c-*` class:
@@ -245,7 +257,8 @@ name that is not a palette logs a warning. See [`colors`](/reference/options#col
 
 With `{ vars }` the colors are whatever the variables hold when the page is shown, so a `<style>` tag, a
 tenant's theme or a theme editor can set them later. WindiUI only writes the references; you define
-`--ui-color-primary-50` to `--ui-color-primary-950`:
+`--ui-color-primary-50` to `--ui-color-primary-950`. [Runtime theming](/guide/theming) walks through a complete
+setup, with a live demo:
 
 ```css
 :root {

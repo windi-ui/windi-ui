@@ -2,8 +2,11 @@
 
 ## Requirements
 
-- Node.js 22 or higher
-- Tailwind CSS v3 (3.3 or higher) or v4
+- Node.js 22 or higher. A [config file](/reference/config-file#node-js) needs 22.12 or higher.
+- Tailwind CSS v3 (3.3 or higher) or v4.
+
+The tests run on Node.js 26 with Tailwind CSS 3.4, 4.1.16 and the current 4.3. On Tailwind v4 below 4.1.17, dark
+mode needs [`darkSelector`](/guide/dark-mode#tailwind-v4) to follow a `@custom-variant dark`.
 
 ## Install
 
@@ -155,7 +158,9 @@ module.exports = {
 :::
 
 `windiui()` also reads a [config file](/reference/config-file#config-file), and `plugins` takes a
-[plugin module](/reference/config-file#plugin-module) as well.
+[plugin module](/reference/config-file#plugin-module) as well. `@windi-ui/tailwind/v3` is the same plugin, always
+building for Tailwind v3, for a setup where the automatic choice is wrong; see
+[Entry points](/reference/options#entry-points).
 
 In CommonJS, `require('@windi-ui/tailwind')` is the plugin and also carries the helpers:
 `const { safelistSource } = require('@windi-ui/tailwind');`.

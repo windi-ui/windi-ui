@@ -7,6 +7,7 @@ import { forms } from './forms';
 import { tailwind4 } from './helpers';
 import { overrides } from './overrides';
 import { presets, presetsCss } from './presets';
+import { readmeSamples } from './readme';
 import { safelistSourceCss } from './safelist';
 
 const compile = tailwind4('tw4.1');
@@ -32,5 +33,6 @@ safelistSourceCss(compile, {
 });
 forms(compile);
 darkSelector(compile);
+readmeSamples(compile);
 // The fixture is below 4.1.17.
 autoDark(compile, false);

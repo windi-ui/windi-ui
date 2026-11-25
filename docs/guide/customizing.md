@@ -188,7 +188,7 @@ Palettes given by CSS variables can take their overrides from variables at runti
 builder.removeVariant('outline');
 ```
 
-The `default` variant can be updated but not added or removed.
+The `default` variant can be updated, or replaced with `setVariant`, but not added or removed.
 
 ## Sizes
 
@@ -219,7 +219,8 @@ builder.addSize('2xl', ({ theme }) => ({
 <button class="btn v-solid c-blue s-2xl">s-2xl</button>
 ```
 
-`updateSize` and `removeSize` work like their variant counterparts. The `default` size can only be updated.
+`setSize`, `updateSize` and `removeSize` work like their variant counterparts. The `default` size can be updated,
+or replaced with `setSize`, but not removed.
 
 ```ts
 builder.updateSize('sm', (size) => {

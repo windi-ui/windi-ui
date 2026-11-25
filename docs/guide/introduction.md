@@ -4,7 +4,8 @@ WindiUI is a Tailwind CSS plugin for building components that can be recolored, 
 three short classes, without writing a class list per combination.
 
 ::: warning Under development
-WindiUI is pre-1.0. This site documents `0.7.x`. See the [roadmap](/roadmap) for what is coming.
+WindiUI is pre-1.0. This site documents `0.8`; what differs from `0.7.x` is in [Changes in 0.8](/changes-0.8).
+See the [roadmap](/roadmap) for what is coming.
 :::
 
 ## The three axes
@@ -13,7 +14,7 @@ WindiUI is pre-1.0. This site documents `0.7.x`. See the [roadmap](/roadmap) for
 | --- | --- | --- | --- |
 | Color | `c-*` | The current palette: 11 shades as CSS variables | `c-blue`, `c-red`, `c-accent-green` |
 | Variant | `v-*` | Which shade is used for background, border and text | `v-default`, `v-solid`, `v-outline`, `v-light` |
-| Size | `s-*` | A spacing and font size scale | `s-xs`, `s-sm`, `s-lg`, `s-xl` |
+| Size | `s-*` | A spacing and font size scale | `s-xs`, `s-sm`, `s-md`, `s-lg`, `s-xl` |
 
 Each class only sets CSS variables (`--wui-c-*`, `--wui-v-*`, `--wui-s-*`). Nothing is painted until a
 component or a utility reads them:
@@ -33,8 +34,9 @@ component or a utility reads them:
 ```
 
 Because they are plain CSS variables, the color and size axes inherit. Set `c-red` on a card and every `btn`,
-`badge` or `bg-v` inside it is red until a descendant sets another color. Variants are the exception today:
-set `v-*` on the element that is painted (see [Variants](/guide/variants#where-to-put-the-class)).
+`badge` or `bg-v` inside it is red until a descendant sets another color. Variants stay on their element by
+default: set `v-*` on the element that is painted, or let a container set it for its content with
+[`variantScope: 'inherit'`](/reference/options#variantscope) (see [Variants](/guide/variants#where-to-put-the-class)).
 
 ## How variants pick shades
 
@@ -56,9 +58,13 @@ resolve it. The shade tables are calibrated per variant and include dark mode va
 
 - `c-*`, `v-*` and `s-*` classes for every palette, variant and size.
 - Theme colors `c-50` to `c-950` that follow the current color: `bg-c-100`, `text-c-700`. See [Colors](/guide/colors).
-- Variant utilities: `bg-v`, `text-v`, `border-v` and their `soft`, `muted` and `accent` levels. See [Utilities](/guide/utilities).
+- Variant utilities: `bg-v`, `text-v`, `border-v` and their `soft`, `muted` and `accent` levels, and `apply-v`,
+  which paints an element from its variant, hover included. See [Utilities](/guide/utilities).
 - Two components, `btn` and `badge`. See [Components](/guide/components).
-- A [builder API](/guide/customizing) to add or change variants, sizes and components.
+- A [builder API](/guide/customizing) to add, replace, change or remove colors, variants, sizes and components,
+  and to [override a variant for some colors](/guide/customizing#override-a-variant-for-some-colors).
+- [Presets](/guide/presets), packaged sets of variants: `nuxt-ui` ships with WindiUI.
+- Palettes given by CSS variables, for [themes set at runtime](/guide/theming).
 
 ## Packages
 

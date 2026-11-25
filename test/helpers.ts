@@ -21,6 +21,7 @@ type PostCSS = (plugins: unknown[]) => { process(css: string, options: { from: u
 
 export type Compile = (
 	candidates: string[],
+	/** A config with `plugins` of its own keeps them, and `options` are not used. */
 	config?: TailwindConfig,
 	options?: Parameters<WindiUI>[0],
 	/** CSS appended to the entry stylesheet, for example a rule that uses `@apply`. */
@@ -77,7 +78,7 @@ export function tailwind4(fixture: Exclude<Fixture, 'tw3'>): Compile & { css: Co
 		async (candidates, config = {}, options, extra = '') => run(
 			`@config "./tailwind.config.js";\n${extra}`,
 			candidates,
-			{ ...config, plugins: [(await plugin)(options)] }
+			{ ...config, plugins: config.plugins ?? [(await plugin)(options)] }
 		),
 		{ css: run }
 	);
@@ -99,7 +100,7 @@ export function tailwind3(entry = '@windi-ui/tailwind'): Compile {
 			// Tailwind 3 caches its context by a hash of the config that sees no difference between two plugin instances.
 			run: run++,
 			content: [{ raw: candidates.join(' ') }],
-			plugins: [plugin(options)],
+			plugins: config.plugins ?? [plugin(options)],
 		})]).process(`@tailwind base;\n@tailwind components;\n@tailwind utilities;\n${extra}`, { from: undefined });
 
 		return result.css;

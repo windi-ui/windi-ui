@@ -30,10 +30,10 @@ features:
     details: Variants carry their own dark shades and follow the dark mode of your Tailwind setup, `@custom-variant dark` included.
     link: /guide/dark-mode
   - title: Your palette
-    details: Every color in your Tailwind theme that has all 11 shades becomes a <code>c-*</code> class automatically.
+    details: Every color in your Tailwind theme that has all 11 shades becomes a <code>c-*</code> class automatically. A palette can also be CSS variables that a theme sets at runtime.
     link: /guide/colors
   - title: Builder API
-    details: Add, update or remove variants, sizes and components from the plugin options.
+    details: "Add, replace, update or remove colors, variants, sizes and components, give a variant other shades for some colors, or load a preset such as <code>nuxt-ui</code>."
     link: /guide/customizing
   - title: Tailwind v3 and v4
     details: One plugin for both major versions, with the same class names.

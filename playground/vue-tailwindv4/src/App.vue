@@ -105,6 +105,29 @@
 				</div>
 			</div>
 			<div class="c-blue bg-c-800/50 text-c-300 border border-c-500 p-5">Hello World</div>
+			<h3 class="text-lg my-4">Variants of the nuxt-ui preset</h3>
+			<div class="space-x-4">
+				<button class="btn v-soft c-blue">Soft</button>
+				<button class="btn v-subtle c-blue">Subtle</button>
+				<button class="btn v-ghost c-blue">Ghost</button>
+				<button class="btn v-link c-blue">Link</button>
+			</div>
+			<h3 class="text-lg my-4">A per-color override: solid yellow on shade 700</h3>
+			<div class="space-x-4">
+				<button class="btn v-solid c-amber">Amber</button>
+				<button class="btn v-solid c-yellow">Yellow</button>
+				<span class="c-yellow"><button class="btn v-solid">Yellow from the parent</button></span>
+			</div>
+			<h3 class="text-lg my-4">apply-v</h3>
+			<div class="space-x-4">
+				<a href="#" class="apply-v c-violet v-light border px-3 py-1 rounded">v-light</a>
+				<a href="#" class="apply-v-[bg,text,focus-visible] c-violet v-solid px-3 py-1 rounded">v-solid</a>
+			</div>
+			<h3 class="text-lg my-4">Controls that sit together</h3>
+			<div class="s-lg flex gap-2">
+				<input class="v-outline border border-v rounded-md px-[var(--wui-s-spacing-3)] text-[length:var(--wui-s-text)]" placeholder="Find a color">
+				<button class="btn v-solid c-blue">Search</button>
+			</div>
 		</div>
 	</div>
 </template>

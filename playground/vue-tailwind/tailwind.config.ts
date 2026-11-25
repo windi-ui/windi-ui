@@ -26,7 +26,10 @@ const config: Config = {
 		},
 	},
 	plugins: [
-		windiui()
+		windiui({
+			presets: ['nuxt-ui'],
+			build: (builder) => builder.overrideVariant('solid', 'yellow', { bg: '700', pseudos: { ':hover': { bg: '800' } } }),
+		})
 	],
 };
 

@@ -48,6 +48,7 @@ export default defineConfig({
 					{ text: 'Utilities', link: '/guide/utilities' },
 					{ text: 'Customizing', link: '/guide/customizing' },
 					{ text: 'Presets', link: '/guide/presets' },
+					{ text: 'Runtime theming', link: '/guide/theming' },
 				],
 			},
 			{

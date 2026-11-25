@@ -49,9 +49,27 @@ export default defineConfig({
 - An `@plugin` block takes the options that are plain values, with their names in kebab-case. `build` is a
   function, so it needs JavaScript: a [config file or a plugin module](/reference/config-file).
 - Options given inline, in JavaScript or in the block, override those of a config file.
-- An option name WindiUI does not know is an error.
+- An option name WindiUI does not know is an error in an `@plugin` block. In JavaScript it logs a warning and is
+  ignored.
 
 All options are optional. The type is exported from `@windi-ui/core` as `Config`.
+
+| Option | Default | In an `@plugin` block | What it does |
+| --- | --- | --- | --- |
+| [`prefix`](#prefix) | `'wui'` | `prefix: app;` | Prefix of the CSS variables |
+| [`rootSelector`](#rootselector) | `':root'` | `root-selector: ":root, .scope";` | Where the root color and size variables are declared |
+| [`default`, `accent`](#default-and-accent) | the theme's, or `gray`, `blue` | `default: slate;` | The palettes behind `default` and `accent` |
+| [`colors`](#colors) | every palette | `colors: primary, error;` | Which palettes get a `c-*` class |
+| [`variantScope`](#variantscope) | `'element'` | `variant-scope: inherit;` | Where the `default` variant comes from, and whether a variant reaches the children |
+| [`overrides`](#overrides) | none | no | Values of a variant for some colors |
+| [`overrideMode`](#overridemode) | `'vars'` | `override-mode: compound;` | How an override reaches the variant |
+| [`variantUtilities`](#variantutilities) | none | no | `bg-{color}`, `text-{color}`, `border-{color}` painted from a variant |
+| [`darkSelector`](#darkselector) | follows Tailwind | `dark-selector: .dark;` | What the dark values apply under |
+| [`presets`](#presets) | `[]` | `presets: nuxt-ui;` | Presets, run before `build` |
+| [`build`](#build) | none | no | The builder callback |
+| [`safelist`](#safelist) | `false` | no, Tailwind v3 only | Emit every `c-*`, `v-*` and `s-*` class |
+| [`debug`](#debug) | `false` | `debug: true;` | Log what is skipped silently |
+| [`config`](#config) | search | `config: "./windiui.config.ts";` | The config file to load, or `false` |
 
 ## `prefix`
 
@@ -282,6 +300,23 @@ How a per-color override reaches the variant.
 | `'compound'` | A `.c-<color>.v-<variant>` rule, nested in the variant class, with a dark block that repeats the variant's dark values it would hide. | Both classes on one element only. |
 | `'both'` | The two. | |
 
+```ts
+windiui({
+	overrideMode: 'compound',
+	overrides: { solid: { yellow: { bg: '700' } } },
+});
+```
+
+```css
+/* 'compound', on Tailwind v4 */
+.v-solid {
+	--wui-v-bg: var(--wui-c-600);
+	&.c-yellow {
+		--wui-v-bg: var(--wui-c-700);
+	}
+}
+```
+
 A palette with [`overrideVars`](/guide/colors#variant-overrides-at-runtime) uses override variables in every mode.
 In an `@plugin` block it is written `override-mode: compound;`.
 
@@ -373,9 +408,20 @@ an error. See [Presets](/guide/presets). The types are exported from `@windi-ui/
 - Default: none
 
 Called after the built-in variants, sizes and components are registered, and after the [presets](#presets), and
-before CSS is generated. It runs
-twice per compilation, see [Builder](/reference/builder#colors). Use the [builder](/reference/builder) to add, update or remove them. See
+before CSS is generated. Use the [builder](/reference/builder) to add, replace, update or remove them. It runs twice
+per compilation, see [Builder](/reference/builder#colors), so keep other work out of it. See
 [Customizing](/guide/customizing) for a walkthrough.
+
+```ts
+windiui({
+	build: (builder) => builder
+		.setColor('primary', 'indigo')
+		.updateVariant('light', (light) => {
+			light['bg-opacity'] = '0.30';
+		})
+		.removeComponent('badge'),
+});
+```
 
 ## `safelist`
 
@@ -457,6 +503,16 @@ it('safelists the WindiUI classes', () => {
 
 Logs what WindiUI otherwise skips silently. Today that is one message per theme palette that does not have all
 11 shades and therefore gets no `c-*` class.
+
+```ts
+windiui({ debug: true });
+```
+
+```css
+@plugin "@windi-ui/tailwind" {
+	debug: true;
+}
+```
 
 ## `config`
 

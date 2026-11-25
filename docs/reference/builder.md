@@ -31,6 +31,54 @@ Every `add*`, `set*`, `update*` and `remove*` method returns the builder.
 | `sizesNames()` | Names of the registered sizes. |
 | `componentsNames()` | Names of the registered components. |
 
+One call of each:
+
+```ts
+windiui({
+	build(builder) {
+		builder
+			// colors
+			.addColor('primary', { vars: '--ui-color-primary' }, { utilities: true })
+			.setColor('danger', 'red')
+			.updateColor('primary', (palette) => {
+				palette.set('950', 'var(--ui-color-primary-900)');
+			})
+			.removeColor('fuchsia')
+			// variants
+			.addVariant('tint', ({ vars }) => ({ bg: vars.color('100'), border: vars.color('300'), fg: vars.color('800') }))
+			.setVariant('outline', ({ vars }) => ({ bg: vars.color('white'), 'bg-opacity': '0', border: vars.color('500'), fg: vars.color('700') }))
+			.updateVariant('solid', (solid, { vars }) => {
+				solid.bg = vars.color('500');
+			})
+			.overrideVariant('solid', 'yellow', { bg: '700' })
+			.removeVariant('light')
+			// sizes
+			.addSize('2xl', ({ theme }) => ({
+				spacing: { '1': theme.spacing('3'), '1.5': theme.spacing('4'), '2': theme.spacing('5'), '3': theme.spacing('6'), '4': theme.spacing('8') },
+				text: theme.fontSize('2xl'),
+			}))
+			.setSize('xs', ({ theme }) => ({
+				spacing: { '1': '0', '1.5': theme.spacing('px'), '2': theme.spacing('0.5'), '3': theme.spacing('1'), '4': theme.spacing('1.5') },
+				text: theme.fontSize('xs'),
+			}))
+			.updateSize('sm', (size) => ({ ...size, height: '2rem' }))
+			.removeSize('xl')
+			// components
+			.addComponent('chip', () => ({ name: 'chip', applyVariant: true, style: { borderRadius: '9999px' } }))
+			.setComponent('badge', () => ({ name: 'badge', applyVariant: ['bg-soft', 'text'], style: { fontSize: '0.75em' } }))
+			.updateComponent('btn', (btn) => {
+				btn.style.borderRadius = '9999px';
+			})
+			.removeComponent('chip');
+
+		// The names at this point: ['default', 'solid', 'outline', 'tint']
+		const variants = builder.variantsNames();
+	}
+});
+```
+
+`colorsNames()`, `sizesNames()` and `componentsNames()` work the same way.
+
 Signatures:
 
 ```ts

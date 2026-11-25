@@ -7,6 +7,24 @@ outline: [2, 3]
 What you can observe when upgrading from 0.7. Class names, options and the builder API are unchanged; every
 entry is a bug fix with the same syntax, or something new.
 
+## Upgrading from 0.7
+
+Everything new in 0.8 is off until you use or configure it. Three changes can be seen in an existing project:
+
+| Change | Who sees it | To keep the 0.7 behaviour |
+| --- | --- | --- |
+| [The default variant no longer needs a `*` rule](#the-default-variant-no-longer-needs-a-rule) | CSS of your own that reads `var(--wui-v-*)` on an element without a variant, and rules that get a variant from `@apply v-*` | `variantScope: 'universal'`, or `@apply v-default v-scope` in the rule |
+| [Dark mode follows the app's dark variant on Tailwind v4](#dark-mode-follows-the-app-s-dark-variant-on-tailwind-v4) | Tailwind v4.1.17 or higher with a `@custom-variant dark` and no `darkMode` in a JavaScript config | `darkSelector: 'media'` |
+| [Hover keeps the dark values of a variant](#hover-keeps-the-dark-values-of-a-variant) | A variant of your own whose `dark` block has no `pseudos`, and CSS that sets a base variable such as `--wui-v-fg` | None; the 0.7 hover color in dark mode was the bug |
+
+`btn`, `badge`, `bg-v`, `text-v` and `border-v` paint what they painted in 0.7, with the built-in variants, in light
+and dark mode.
+
+A few messages and side effects are new as well: a call without `build` looks for a
+[config file](#tailwind-v4-loads-windiui-with-plugin), an unknown option name logs a warning, and `build` runs twice
+per compilation ([Colors from the builder](#colors-from-the-builder-and-rootselector)). Each section below ends
+with its migration notes.
+
 ## Arbitrary values are no longer hijacked
 
 `bg-v`, `text-v` and `border-v` used to answer every arbitrary `bg-[...]`, `text-[...]` and `border-[...]`

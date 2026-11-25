@@ -7,6 +7,7 @@ import { forms } from './forms';
 import { tailwind4 } from './helpers';
 import { overrides } from './overrides';
 import { presets, presetsCss } from './presets';
+import { readmeSamples } from './readme';
 import { safelistSourceCss } from './safelist';
 
 const compile = tailwind4('tw4');
@@ -26,4 +27,5 @@ colorsOnlyCss(compile);
 safelistSourceCss(compile);
 forms(compile);
 darkSelector(compile);
+readmeSamples(compile);
 autoDark(compile);

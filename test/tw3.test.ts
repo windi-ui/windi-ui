@@ -7,6 +7,7 @@ import { baseline, candidates } from './baseline';
 import { tailwind3 } from './helpers';
 import { overrides } from './overrides';
 import { presets } from './presets';
+import { readmeSamples } from './readme';
 import { safelist, source } from './safelist';
 
 const compile = tailwind3();
@@ -23,6 +24,7 @@ source();
 safelist(compile);
 darkSelector(compile);
 darkClass(compile);
+readmeSamples(compile);
 
 // #33
 it('builds the same from the `/v3` entry', async () => {
