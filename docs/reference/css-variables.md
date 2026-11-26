@@ -5,7 +5,7 @@ Everything WindiUI does at runtime goes through CSS variables. They all start wi
 
 | Group | Prefix | Set by |
 | --- | --- | --- |
-| Color | `--wui-c-` | `:root`, `c-<name>`, `c-accent-<name>` |
+| Color | `--wui-c-` | `:root`, `c-<name>`, `c-accent-<name>`, [`c-[--name]`](/guide/colors#a-palette-at-the-call-site) |
 | Variant | `--wui-v-` | `v-<name>` (and `*` with [`variantScope: 'universal'`](/reference/options#variantscope)) |
 | Size | `--wui-s-` | `:root` (default size), `s-<name>` |
 | Override | `--wui-cv-` | `:root`, `c-<name>`, `c-accent-<name>`, only when there are [per-color overrides](/guide/customizing#override-a-variant-for-some-colors) |

@@ -203,4 +203,5 @@ answer `v`, `v-soft`, `v-muted` and `v-accent`:
 <div class="bg-[#123456] text-[14px] border-[3px]">Tailwind's output, nothing from WindiUI</div>
 ```
 
-Likewise `c-[...]`, `v-[...]` and `s-[...]` with a value WindiUI does not know emit nothing.
+Likewise `c-[...]`, `v-[...]` and `s-[...]` with a value WindiUI does not know emit nothing. The exception is
+`c-[--name]` (and `c-accent-[--name]`), a [palette of the `--name-{shade}` variables](/guide/colors#a-palette-at-the-call-site).

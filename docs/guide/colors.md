@@ -230,6 +230,36 @@ builder.addColor('primary', { vars: '--ui-color-primary' }, { utilities: true })
 <div class="bg-primary-500 text-primary-50 border-primary-600/50">...</div>
 ```
 
+## A palette at the call site
+
+For a one-off palette, such as a chart series, a color a user picked or a token set of another library, declaring
+it in the config is more than it needs. `c-[--name]` makes a palette of the variables `--name-50` to `--name-950`
+where it is used:
+
+```html
+<span class="c-[--brand] v-solid bg-v text-v">...</span>
+```
+
+```css
+.c-\[--brand\] {
+	--wui-c-50: var(--brand-50);
+	/* ... */
+	--wui-c-950: var(--brand-950);
+}
+```
+
+- You define all 11 variables, `--brand-50`, `--brand-100`, ... `--brand-950`, on the element or an ancestor.
+  WindiUI only writes the references, so a shade that is not defined is invalid wherever a variant reads it.
+- `c-accent-[--name]` does the same for the [accent palette](#changing-the-accent), `--wui-c-accent-*`.
+- It is an ordinary utility: `md:c-[--brand]`, `hover:c-[--brand]` and `@apply c-[--brand]` work. On Tailwind v4,
+  `c-(--brand)` is the same class.
+- Like every color class, it resets the [override variables](/guide/customizing#override-a-variant-for-some-colors),
+  so a color around it does not override its variants. It has no overrides of its own: for those, declare the
+  palette with [`{ vars }`](#palettes-from-the-builder) and [`overrideVars`](#variant-overrides-at-runtime).
+- On Tailwind v3 the variables hold RGB channels (`59 130 246`), as for a [palette given by
+  variables](#palettes-that-change-at-runtime). On v4 they hold any color.
+- Any other arbitrary value, such as `c-[#fff]` or `c-[foo]`, emits nothing.
+
 ## Limiting the color classes
 
 Every palette of the theme is a `c-*` class: more than 50 names with Tailwind v4's default theme, counting the
