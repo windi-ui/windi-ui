@@ -42,6 +42,19 @@ describe.each([['Tailwind 3', tailwind3], ['Tailwind 4', tailwind4]])('with the 
 	it('calibrates hover in both modes, with a dark value where the variant has its own', () => {
 		expect(result.overrides.light.yellow).toEqual({ fg: '700', pseudos: { ':hover': { bg: '700' } }, dark: { pseudos: { ':hover': { bg: '700' } } } });
 	});
+
+	// #52: the matrix of `windiui audit`
+	it('audits every cell, a translucent background over the backdrop, with the fix calibration gives each that fails', () => {
+		const { cells, skipped, overrides } = engine.audit({ text: 4.5 });
+		expect(cells).toHaveLength(engine.variants().length * engine.colors().length * 4);
+		expect(skipped).toEqual([]);
+		expect(overrides).toEqual(result.overrides);
+
+		const failing = cells.filter(c => c.failing.length);
+		expect(failing.map(c => `${c.variant} ${c.color} ${c.mode} ${c.state}`)).toEqual(below(nuxtUi, palettes, {}));
+		expect(failing.filter(c => !c.fix)).toEqual([]);
+		expect(cells.find(c => c.variant === 'solid' && c.color === 'yellow' && c.state === 'hover')?.fix).toEqual({ bg: '800' });
+	});
 });
 
 describe('calibrate', () => {
@@ -124,11 +137,14 @@ describe('calibrate', () => {
 		expect(() => engine.calibrate(['nope'], { text: 4.5 })).toThrow('WindiUI: unknown color "nope".');
 		const vars = createEngine({ build: b => b.addColor('brand', { vars: '--brand' }) }, { palettes: tailwind4 });
 		expect(() => vars.calibrate(['brand'], { text: 4.5 })).toThrow('WindiUI: cannot calibrate "brand": its shades are not literal colors.');
+		expect(vars.audit({ text: 4.5 }).skipped).toEqual(['brand']);
 		expect(() => engine.calibrate(['red'], { text: 4.5, backdrops: { dark: ['var(--page)'] } })).toThrow('WindiUI: cannot read the dark backdrop "var(--page)"');
 
 		// The default dark backdrop, `default-950`, is then a variable: only the checks that need no backdrop are made
 		const neutral = createEngine({ colors: { default: { vars: '--neutral' } } }, { palettes: tailwind4 }).calibrate(['yellow'], { text: 4.5 });
 		expect(neutral.overrides.solid.yellow).toEqual({ bg: '700', pseudos: { ':hover': { bg: '800' } } });
 		expect(neutral.overrides.outline.yellow).toEqual({ fg: '700' });
+		// An audit would count the cells it leaves out as passing
+		expect(() => createEngine({ colors: { default: { vars: '--neutral' } } }, { palettes: tailwind4 }).audit({ text: 4.5 })).toThrow('WindiUI: cannot read the default dark backdrop "default-950"');
 	});
 });

@@ -125,3 +125,23 @@ New:
 - `create(config).generator(theme)` returns a `manifest()` function next to the generators.
 
 **Migration:** none. Without the option nothing is written.
+
+## Contrast audit
+
+Which variant and color pairs of a config fail 4.5:1 could only be answered by a script or a test matrix written by
+hand ([#52](https://github.com/windi-ui/windi-ui/issues/52)). New:
+
+- The `windiui` command in `@windi-ui/core`, with `windiui audit`. It loads the config file the plugin loads,
+  `.ts` and `.js` included, or the one `--config` names, and prints the contrast of every variant on every color,
+  light and dark, at rest and on hover, with a translucent background painted over the backdrops. `--text`,
+  `--border`, `--backdrop-light` and `--backdrop-dark` set the policy, `--palettes` adds palettes of your own, and
+  `--format` prints a `table`, `markdown` or `json`. It exits with 1 when a pair fails, so it can gate CI, and with
+  2 on an error.
+- `--fix`, which prints the `overrideVariant` calls calibration would add, ready to paste into `build`.
+- `engine.audit(policy)` in `@windi-ui/core/theme`, the same matrix for a test of your own, with the `AuditCell` and
+  `AuditResult` types.
+
+WindiUI's CI audits the default config and the `nuxt-ui` preset, and a test pins their failures and the calls that
+fix them. See [Contrast audit](/guide/contrast-audit) and [Audit](/reference/theme-engine#audit).
+
+**Migration:** none. The command only runs when you call it.
