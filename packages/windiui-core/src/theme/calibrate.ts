@@ -69,6 +69,29 @@ export interface CalibrationResult {
 	report: CalibrationReportEntry[];
 }
 
+/** A (variant, color, mode, state) of the contrast matrix, as the build paints it. */
+export interface AuditCell {
+	variant: string;
+	color: string;
+	mode: 'light' | 'dark';
+	state: 'rest' | 'hover';
+	/** The lowest contrast of each check of the policy, over the backdrops. */
+	contrast: Partial<Record<CalibrationCheck, number>>;
+	/** The checks below the policy; empty when the cell passes. */
+	failing: CalibrationCheck[];
+	/** The shades calibration gives the cell, when it changes any and the cell then passes. */
+	fix?: CalibrationFix;
+}
+
+export interface AuditResult {
+	/** Every variant on every checked color, light and dark, at rest and on hover. */
+	cells: AuditCell[];
+	/** The colors that are not checked, because their shades are not literal colors, such as those given by CSS variables. */
+	skipped: string[];
+	/** What calibration with the default strategy would add, as `calibrate` returns it. */
+	overrides: CalibrationResult['overrides'];
+}
+
 /** A color to calibrate: its name, its shades as literal colors and, for a seed, its anchor. */
 export interface CalibrationTarget {
 	name: string;
@@ -203,8 +226,9 @@ const painted = (resolved: ResolvedVariant, mode: Mode, state: State) => {
 /**
  * Checks `fg` on `bg` and the `border` of every variant on every target, light and dark, at rest and on hover, and
  * repairs a pair that fails the policy with the strategies of `options`. It only ever chooses shades.
+ * @param audit collects every cell, as the build paints it, with the fix calibration gives it
  */
-export function calibrate(ctx: CalibrationContext, targets: CalibrationTarget[], policy: CalibrationPolicy, { strategy = 'shift-bg' }: CalibrateOptions = {}): CalibrationResult {
+export function calibrate(ctx: CalibrationContext, targets: CalibrationTarget[], policy: CalibrationPolicy, { strategy = 'shift-bg' }: CalibrateOptions = {}, audit?: AuditCell[]): CalibrationResult {
 	const metric = policy.metric ?? ctx.metric;
 	const strategies = [strategy].flat();
 	// A default backdrop that is not literal, such as `default-950` given by CSS variables, leaves out the checks it takes
@@ -326,6 +350,15 @@ export function calibrate(ctx: CalibrationContext, targets: CalibrationTarget[],
 		}
 
 		if (Object.keys(override).length) (overrides[variant] ??= {})[name] = override;
+
+		if (audit) for (const [mode, state] of CELLS) {
+			const { cell: before, contrast } = cell(original, mode, state);
+			const after = current[mode][state];
+			const fix: CalibrationFix = Object.fromEntries((['bg', 'fg', 'border'] as const)
+				.filter(p => after[p].shade !== before.values[p].shade).map(p => [p, after[p].shade]));
+			const fixed = Object.keys(fix).length > 0 && !cell(current, mode, state).cell.failing().length;
+			audit.push({ variant, color: name, mode, state, contrast: contrast(), failing: before.failing(), ...(fixed ? { fix } : {}) });
+		}
 	}
 
 	return { overrides, report };

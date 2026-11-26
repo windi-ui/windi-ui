@@ -63,5 +63,8 @@
 	},
 	"devDependencies": {
 		"tailwindcss": "^3.4.19"
+	},
+	"bin": {
+		"windiui": "./dist/cli.mjs"
 	}
 }

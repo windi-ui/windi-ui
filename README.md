@@ -191,6 +191,28 @@ The declaration file exports `WindiUIColor`, `WindiUIVariant` and `WindiUISize`,
 build, `engine.manifest()` returns the same object, and `safelistSource(manifest)` the `@source inline()` line. See
 [`manifest`](https://windi-ui.github.io/windi-ui/reference/options#manifest).
 
+#### Contrast audit
+
+`windiui audit` checks the contrast of every variant on every color of your config, light and dark, at rest and on
+hover, with translucent backgrounds painted over the backdrop. It loads the config file the plugin loads, and exits
+with 1 when a pair fails, so it can gate CI:
+
+```bash
+npx windiui audit --config ./windiui.config.ts --text 4.5 --border 3
+npx windiui audit --palettes ./palettes.json --format json   # or table (default), markdown
+npx windiui audit --fix   # prints the overrideVariant calls that calibration would add
+```
+
+```text
+variant  color    mode   state  pair    ratio  result
+solid    yellow   light  rest   fg/bg   2.93   FAIL (needs bg 700)
+solid    blue     light  rest   fg/bg   5.25   ok
+```
+
+`--fix` prints calls such as `b.overrideVariant('solid', ['amber', 'yellow'], { bg: '700', pseudos: { ':hover': { bg: '800' } } });`,
+ready to paste into `build`. `engine.audit(policy)` gives the same matrix to a test of your own. See
+[Contrast audit](https://windi-ui.github.io/windi-ui/guide/contrast-audit).
+
 ## Upgrading from 0.7
 
 See [Changes in 0.8](https://windi-ui.github.io/windi-ui/changes-0.8#upgrading-from-0-7). The one thing to check: 0.8

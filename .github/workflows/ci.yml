@@ -67,3 +67,13 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      # The contrast matrix of the default config and the `nuxt-ui` preset, in the job summary. The defaults are not
+      # calibrated, which is each project's own choice, so the audit exits with 1 and that is let through; an error
+      # (exit 2) fails the job. `test/audit.test.ts` pins the failures and the calls that fix them.
+      - name: Contrast audit
+        run: |
+          for config in "" "--config test/config/nuxt-ui.ts"; do
+            printf '\n### windiui audit %s\n\n' "$config" >> "$GITHUB_STEP_SUMMARY"
+            node packages/windiui-tailwind/dist/cli.mjs audit $config --text 4.5 --border 3 --format markdown >> "$GITHUB_STEP_SUMMARY" || [ $? -eq 1 ]
+          done

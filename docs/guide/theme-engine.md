@@ -378,6 +378,13 @@ option, wherever it is called, over every color with a class and literal shades.
 is left out: its colors are only known at runtime, where the engine calibrates it. Explicit overrides win, as above,
 and a pair it cannot repair is logged.
 
+### Audit
+
+`engine.audit(policy)` gives the matrix itself: every variant on every color with literal shades, light and dark,
+at rest and on hover, with its contrast as the build paints it, the checks it fails and the shades calibration would
+give it. It is what the [`windiui audit`](/guide/contrast-audit) command prints, and what a test of your own can
+check. See [Audit](/reference/theme-engine#audit).
+
 ## Theme documents
 
 Runtime theming needs one description of a theme that a server, a theme editor and an email renderer all read. A

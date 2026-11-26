@@ -50,6 +50,7 @@ export default defineConfig({
 					{ text: 'Presets', link: '/guide/presets' },
 					{ text: 'Runtime theming', link: '/guide/theming' },
 					{ text: 'Theme engine', link: '/guide/theme-engine' },
+					{ text: 'Contrast audit', link: '/guide/contrast-audit' },
 				],
 			},
 			{

@@ -3,7 +3,7 @@ import { createThemeProvider, type Palette, type ThemeProviderOptions } from './
 import { parseColor, wcag2, type ContrastMetric } from './contrast';
 import { adjustCurves, fitPalette, generatePalette, isPaletteSpec, parsePalette, resolvePalette, samplePalette, seedAnchor, type PaletteSpec, type ResolvePaletteOptions } from './palette';
 import { createResolver, type ResolvedVariant } from './resolve';
-import { calibrate, literalPalette, type CalibrateOptions, type CalibrationPolicy, type CalibrationResult } from './calibrate';
+import { calibrate, literalPalette, type AuditCell, type AuditResult, type CalibrateOptions, type CalibrationPolicy, type CalibrationResult, type CalibrationTarget } from './calibrate';
 import { createDocuments, type StaticTheme, type ThemeDocument, type ToCssOptions, type ToStaticOptions } from './document';
 
 export interface EngineOptions extends ThemeProviderOptions {
@@ -37,6 +37,12 @@ export interface Engine {
 	 * of the engine's config win over the result, which holds only the differences.
 	 */
 	calibrate(colors: string[] | Record<string, CalibrationColor>, policy: CalibrationPolicy, options?: CalibrateOptions): CalibrationResult;
+	/**
+	 * The contrast matrix of `policy`: every variant on every color with literal shades, light and dark, at rest and
+	 * on hover, as the build paints it, with the shades calibration would give each cell that fails. The colors that
+	 * are not literal, such as those given by CSS variables, are listed as skipped.
+	 */
+	audit(policy: CalibrationPolicy): AuditResult;
 	/**
 	 * Validates a theme document, such as one read from JSON, and returns a copy: its `version`, each color's palette
 	 * spec, and overrides of known variants, with known props and shades as values. Throws with the path of the first
@@ -87,6 +93,7 @@ export function createEngine(config: Config = {}, { metric = wcag2, ...options }
 	const { colors, variants, manifest } = windiui.generator(createThemeProvider({ ...options, palettes }));
 	const { resolve, root } = createResolver(windiui.vars, colors, variants);
 	const isColor = (color: string) => colors.names(true).includes(color) && !color.startsWith('accent-');
+	const ctx = { variants: variants.names(), resolve, root, metric };
 	const documents = createDocuments({ prefix: windiui.config.prefix, vars: windiui.vars, colors, variants, palettes, resolve, root, metric });
 
 	const colorNames = () => {
@@ -127,7 +134,21 @@ export function createEngine(config: Config = {}, { metric = wcag2, ...options }
 				return { name, palette, anchor };
 			});
 
-			return calibrate({ variants: variants.names(), resolve, root, metric }, targets, policy, opts);
+			return calibrate(ctx, targets, policy, opts);
+		},
+
+		audit(policy) {
+			const targets: CalibrationTarget[] = [];
+			const skipped: string[] = [];
+			for (const name of colorNames()) {
+				const palette = literalPalette(Object.fromEntries(colors.resolve(name)!));
+				if (palette) targets.push({ name, palette, anchor: colors.anchors.get(name) });
+				else skipped.push(name);
+			}
+
+			const cells: AuditCell[] = [];
+			const { overrides } = calibrate(ctx, targets, policy, {}, cells);
+			return { cells, skipped, overrides };
 		},
 
 		parseTheme: documents.parseTheme,
@@ -146,7 +167,7 @@ export function createEngine(config: Config = {}, { metric = wcag2, ...options }
 export { createThemeProvider, type Palette, type Palettes, type ThemeProviderOptions } from './provider';
 export type { ColorProperty, ResolvedColor, ResolvedMode, ResolvedState, ResolvedVariant } from './resolve';
 export type {
-	CalibrateOptions, CalibrationCell, CalibrationCheck, CalibrationFix, CalibrationPolicy, CalibrationReportEntry, CalibrationResult,
+	AuditCell, AuditResult, CalibrateOptions, CalibrationCell, CalibrationCheck, CalibrationFix, CalibrationPolicy, CalibrationReportEntry, CalibrationResult,
 	CalibrationStrategy, CalibrationStrategyFunction
 } from './calibrate';
 export type { StaticMode, StaticState, StaticTheme, StaticVariant, ThemeCalibration, ThemeDocument, ToCssOptions, ToStaticOptions } from './document';
