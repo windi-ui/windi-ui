@@ -11,6 +11,8 @@ const config: Config = {
 			presets: [nuxtUi({ prefix: 'nui' })],
 			// The demo of guide/utilities.md
 			variantUtilities: { bg: 'solid', text: 'outline', border: 'outline' },
+			// The demo of the states in guide/customizing.md
+			states: { open: '[data-state=open]' },
 			// The examples of guide/customizing.md, live. Keep the two in sync.
 			build(builder) {
 				builder
@@ -30,6 +32,9 @@ const config: Config = {
 							'fg': vars.color('300'),
 						}
 					}))
+					.updateVariant('ghost', (variant) => {
+						variant.pseudos!['[data-state=open]'] = { 'bg-opacity': '1', 'border-opacity': '1' };
+					})
 					.overrideVariant('solid', 'yellow', { bg: '700', pseudos: { ':hover': { bg: '800' } } })
 					// The demo of guide/theming.md
 					.setColor('brand', {

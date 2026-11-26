@@ -97,6 +97,25 @@ describe('toCss', () => {
 	});
 });
 
+describe('states', () => {
+	// #51 with #48: a state given by a selector, named by `states`, in a document and in what the engine writes
+	const opened = createEngine({
+		states: { open: '[data-state=open]' },
+		build: b => b
+			.addColor('primary', { vars: '--ui-color-primary', overrideVars: { props: 'all' } })
+			.updateVariant('outline', (v, { vars }) => ({ ...v, pseudos: { ...v.pseudos, '[data-state=open]': { bg: vars.color('100'), 'bg-opacity': '1' } } })),
+	}, { palettes: tailwind4 });
+	const doc = { version: 1, colors: { primary: { seed: '#2563eb' } }, overrides: { outline: { primary: { pseudos: { '[data-state=open]': { bg: '200' } } } } } } as const;
+
+	it('takes a state that a variant has, resolves it by its name and writes its override variable', () => {
+		expect(opened.resolve('outline', 'red').light.open!.bg.shade).toBe('100');
+		expect(opened.toCss(doc)).toContain('--ui-color-primary-outline-bg-open: var(--ui-color-primary-200);');
+		expect(opened.toStatic(doc).primary.outline.light.open!.bg).toBe(opened.resolvePalette(doc.colors.primary)[200]);
+		expect(() => opened.parseTheme({ version: 1, overrides: { outline: { primary: { pseudos: { '[data-x]': {} } } } } }))
+			.toThrow('invalid theme at `overrides.outline.primary.pseudos.[data-x]`');
+	});
+});
+
 describe('toStatic', () => {
 	const result = engine.toStatic(theme);
 

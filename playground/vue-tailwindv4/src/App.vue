@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+
+const open = ref(false);
+const invalid = ref(false);
 </script>
 
 <template>
@@ -122,6 +126,21 @@
 			<div class="space-x-4">
 				<a href="#" class="apply-v c-violet v-light border px-3 py-1 rounded">v-light</a>
 				<a href="#" class="apply-v-[bg,text,focus-visible] c-violet v-solid px-3 py-1 rounded">v-solid</a>
+			</div>
+			<h3 class="text-lg my-4">States of a headless select trigger</h3>
+			<div class="flex items-center gap-4">
+				<button
+					type="button"
+					class="apply-v-[hover,focus-visible,open,invalid] v-outline c-blue c-accent-red border px-3 py-1 rounded"
+					aria-haspopup="listbox"
+					:aria-expanded="open"
+					:data-state="open ? 'open' : 'closed'"
+					:aria-invalid="invalid"
+					@click="open = !open"
+				>
+					Choose a color
+				</button>
+				<label><input v-model="invalid" type="checkbox"> Invalid</label>
 			</div>
 			<h3 class="text-lg my-4">Controls that sit together</h3>
 			<div class="s-lg flex gap-2">

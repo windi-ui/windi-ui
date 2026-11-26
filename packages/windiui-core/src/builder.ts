@@ -43,8 +43,8 @@ export interface Builder {
 
 	/**
 	 * Fills overrides so that every variant on every palette with literal shades meets `policy`, light and dark, at
-	 * rest and on hover. It runs once the build is done, after `build` and the `overrides` option, and an explicit
-	 * override wins over what it computes.
+	 * rest and in every state the variant declares, such as `:hover`. It runs once the build is done, after `build`
+	 * and the `overrides` option, and an explicit override wins over what it computes.
 	 */
 	calibrate: (policy: CalibrationPolicy, options?: CalibrateOptions) => Builder;
 }

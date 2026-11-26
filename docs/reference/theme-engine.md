@@ -43,7 +43,8 @@ interface ResolvedVariant {
 	dark: ResolvedMode;
 }
 
-// `rest` and `hover`, and the other states of the variant's `pseudos`, by name without the colon
+// `rest` and `hover`, and the other states of the variant's `pseudos`, by their name in variable names without the
+// colon: `focus-visible`, or `open` for `[data-state=open]` named by the `states` option
 type ResolvedMode = Record<'rest' | 'hover', ResolvedState> & Partial<Record<string, ResolvedState>>;
 
 // bg, bg-soft, bg-muted, bg-accent, border, ..., fg-accent
@@ -105,7 +106,7 @@ interface CalibrationReportEntry {
 	variant: string;
 	color: string;
 	mode: 'light' | 'dark';
-	state: 'rest' | 'hover';
+	state: string; // 'rest', 'hover' or another state of the variant, by its name in `resolve`, such as 'open'
 	strategy?: string; // left out when no strategy made the cell pass
 	contrast: { text?: number; border?: number }; // after calibration, the lowest over the backdrops
 }
@@ -118,8 +119,11 @@ in `backdrops` that is neither a literal color nor a shade of the root variables
 
 ### Checks
 
-A cell is a (variant, color, mode, state), for every variant of the engine, light and dark, `rest` and `hover`. The
-colors are those [`resolve`](#resolvedvariant) gives, with the overrides of the config.
+A cell is a (variant, color, mode, state), for every variant of the engine, light and dark, at `rest` and in every
+state [`resolve`](#resolvedvariant) gives: `hover`, and each other state the variant declares in `pseudos`, such as
+`active` for `:active` or `open` for `[data-state=open]` named by `states`, but a disabled one, such as `:disabled`,
+`[data-disabled]` or `[aria-disabled=true]`, which WCAG exempts. The colors are those `resolve` gives, with the
+overrides of the config.
 
 | Check | Pair | Passes when |
 | --- | --- | --- |
@@ -133,9 +137,10 @@ option is given by CSS variables: an opaque `fg` on an opaque `bg` is still chec
 
 ### Strategies
 
-The cells are calibrated in order: light at rest, light on hover, dark at rest, dark on hover. A cell that fails
-gets each strategy in turn, from its state before any of them; the first fix after which the cell passes, applied as
-an override, is kept.
+The cells are calibrated in order: light at rest, light on hover, light in each other state, then the same in dark.
+A cell that fails gets each strategy in turn, from its state before any of them; the first fix after which the cell
+passes, applied as an override, is kept. A fix in a state is set under the state's selector in `pseudos`, such as
+`':hover'` or `'[data-state=open]'`, where the generator and `toCss` read it.
 
 | Strategy | Fix |
 | --- | --- |
@@ -151,7 +156,7 @@ interface CalibrationCell {
 	variant: string;
 	color: string;
 	mode: 'light' | 'dark';
-	state: 'rest' | 'hover';
+	state: string; // 'rest', 'hover' or another state of the variant, by its name in `resolve`, such as 'open'
 	values: ResolvedState; // the colors of the cell
 	palette: Palette;      // the 11 shades of the color
 	anchor?: ColorShade;   // for a color from a seed spec
@@ -159,9 +164,9 @@ interface CalibrationCell {
 }
 ```
 
-After a fix at rest, the hover value of each property it moves follows by as many shades, clamped to the ramp, when
-it is a shade of its own and it is darker, or lighter, than what it is checked against in both states. The report
-names a function by its `name`, or `custom`.
+After a fix at rest, the value in each other state of each property it moves follows by as many shades, clamped to
+the ramp, when it is a shade of its own and it is darker, or lighter, than what it is checked against in both states.
+The report names a function by its `name`, or `custom`.
 
 ### Result
 
@@ -180,7 +185,7 @@ names a function by its `name`, or `custom`.
 engine.audit(policy: CalibrationPolicy): AuditResult;
 
 interface AuditResult {
-	cells: AuditCell[];  // by variant, then color, then light rest, light hover, dark rest, dark hover
+	cells: AuditCell[];  // by variant, then color, then light rest, light hover, light's other states, the same in dark
 	skipped: string[];   // the colors whose shades are not literal, which are not checked
 	overrides: Record<string, Record<string, VariantOverride>>; // what calibrate would add
 }
@@ -189,7 +194,7 @@ interface AuditCell {
 	variant: string;
 	color: string;
 	mode: 'light' | 'dark';
-	state: 'rest' | 'hover';
+	state: string; // 'rest', 'hover' or another state of the variant, by its name in `resolve`, such as 'open'
 	contrast: { text?: number; border?: number }; // as the build paints the cell, the lowest over the backdrops
 	failing: ('text' | 'border')[]; // the checks below the policy; empty when the cell passes
 	fix?: CalibrationFix; // the shades calibration gives the cell, when it changes any and the cell then passes
@@ -258,7 +263,7 @@ first of these it finds. `toCss` and `toStatic` run it on the document they get.
 | `colors` | Color names (a letter, then letters, digits, `_` or `-`), each with a palette spec that [`parsePalette`](#validation) accepts and whose `palette`, if any, is one of the engine's; its path follows the color's, as in `colors.primary.adjust.hue`. |
 | `radius` | `0`, or a number with `px`, `rem` or `em`. |
 | `overrides` | Variants of the engine; under each, color names or comma lists of them, each color under one key only; under each, an override. |
-| An override | The color properties of a variant (`bg`, `bg-soft`, ..., `fg-accent`) with a shade of `ExColorShade` as value, the opacities (`bg-opacity`, `border-opacity`, `fg-opacity`) with `'0'`, `'1'` or `'0.<digits>'`, `pseudos` with states such as `':hover'` (a colon, then letters and `-`) of properties, and `dark`, which takes the same but `dark`. |
+| An override | The color properties of a variant (`bg`, `bg-soft`, ..., `fg-accent`) with a shade of `ExColorShade` as value, the opacities (`bg-opacity`, `border-opacity`, `fg-opacity`) with `'0'`, `'1'` or `'0.<digits>'`, `pseudos` with states of properties: a pseudo-class such as `':hover'` (a colon, then letters and `-`), or a state that a variant of the engine has in `pseudos`, such as `'[data-state=open]'`, and `dark`, which takes the same but `dark`. |
 
 ### `toCss`
 
