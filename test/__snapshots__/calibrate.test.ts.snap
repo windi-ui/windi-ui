@@ -1,0 +1,860 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`calibrate > is deterministic 1`] = `
+{
+  "overrides": {
+    "default": {
+      "accent": {
+        "dark": {
+          "border": "600",
+        },
+      },
+      "amber": {
+        "border": "600",
+      },
+      "blue": {
+        "dark": {
+          "border": "600",
+        },
+      },
+      "cyan": {
+        "border": "600",
+      },
+      "default": {
+        "dark": {
+          "border": "500",
+        },
+      },
+      "emerald": {
+        "border": "600",
+      },
+      "gray": {
+        "dark": {
+          "border": "500",
+        },
+      },
+      "green": {
+        "border": "600",
+      },
+      "indigo": {
+        "dark": {
+          "border": "600",
+        },
+      },
+      "lime": {
+        "border": "600",
+      },
+      "mauve": {
+        "dark": {
+          "border": "500",
+        },
+      },
+      "mist": {
+        "dark": {
+          "border": "500",
+        },
+      },
+      "neutral": {
+        "dark": {
+          "border": "500",
+        },
+      },
+      "olive": {
+        "dark": {
+          "border": "500",
+        },
+      },
+      "orange": {
+        "border": "600",
+      },
+      "purple": {
+        "dark": {
+          "border": "600",
+        },
+      },
+      "sky": {
+        "border": "600",
+      },
+      "slate": {
+        "dark": {
+          "border": "500",
+        },
+      },
+      "stone": {
+        "dark": {
+          "border": "500",
+        },
+      },
+      "taupe": {
+        "dark": {
+          "border": "500",
+        },
+      },
+      "teal": {
+        "border": "600",
+      },
+      "violet": {
+        "dark": {
+          "border": "600",
+        },
+      },
+      "yellow": {
+        "border": "700",
+      },
+      "zinc": {
+        "dark": {
+          "border": "500",
+        },
+      },
+    },
+    "light": {
+      "accent": {
+        "fg": "700",
+      },
+      "amber": {
+        "dark": {
+          "pseudos": {
+            ":hover": {
+              "bg": "700",
+            },
+          },
+        },
+        "fg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "700",
+          },
+        },
+      },
+      "blue": {
+        "fg": "700",
+      },
+      "cyan": {
+        "dark": {
+          "pseudos": {
+            ":hover": {
+              "bg": "700",
+            },
+          },
+        },
+        "fg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "700",
+          },
+        },
+      },
+      "emerald": {
+        "dark": {
+          "pseudos": {
+            ":hover": {
+              "bg": "700",
+            },
+          },
+        },
+        "fg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "700",
+          },
+        },
+      },
+      "fuchsia": {
+        "dark": {
+          "pseudos": {
+            ":hover": {
+              "bg": "700",
+            },
+          },
+        },
+        "fg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "700",
+          },
+        },
+      },
+      "green": {
+        "dark": {
+          "pseudos": {
+            ":hover": {
+              "bg": "700",
+            },
+          },
+        },
+        "fg": "800",
+        "pseudos": {
+          ":hover": {
+            "bg": "700",
+          },
+        },
+      },
+      "lime": {
+        "dark": {
+          "pseudos": {
+            ":hover": {
+              "bg": "700",
+            },
+          },
+        },
+        "fg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "700",
+          },
+        },
+      },
+      "orange": {
+        "dark": {
+          "pseudos": {
+            ":hover": {
+              "bg": "700",
+            },
+          },
+        },
+        "fg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "700",
+          },
+        },
+      },
+      "pink": {
+        "dark": {
+          "pseudos": {
+            ":hover": {
+              "bg": "700",
+            },
+          },
+        },
+        "fg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "700",
+          },
+        },
+      },
+      "red": {
+        "dark": {
+          "pseudos": {
+            ":hover": {
+              "bg": "700",
+            },
+          },
+        },
+        "fg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "700",
+          },
+        },
+      },
+      "rose": {
+        "dark": {
+          "pseudos": {
+            ":hover": {
+              "bg": "700",
+            },
+          },
+        },
+        "fg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "700",
+          },
+        },
+      },
+      "sky": {
+        "dark": {
+          "pseudos": {
+            ":hover": {
+              "bg": "700",
+            },
+          },
+        },
+        "fg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "700",
+          },
+        },
+      },
+      "teal": {
+        "dark": {
+          "pseudos": {
+            ":hover": {
+              "bg": "700",
+            },
+          },
+        },
+        "fg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "700",
+          },
+        },
+      },
+      "yellow": {
+        "dark": {
+          "pseudos": {
+            ":hover": {
+              "bg": "700",
+            },
+          },
+        },
+        "fg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "700",
+          },
+        },
+      },
+    },
+    "outline": {
+      "amber": {
+        "fg": "700",
+      },
+      "cyan": {
+        "fg": "700",
+      },
+      "emerald": {
+        "fg": "700",
+      },
+      "fuchsia": {
+        "pseudos": {
+          ":hover": {
+            "fg": "700",
+          },
+        },
+      },
+      "green": {
+        "fg": "700",
+      },
+      "lime": {
+        "fg": "700",
+      },
+      "orange": {
+        "fg": "700",
+      },
+      "pink": {
+        "pseudos": {
+          ":hover": {
+            "fg": "700",
+          },
+        },
+      },
+      "red": {
+        "pseudos": {
+          ":hover": {
+            "fg": "700",
+          },
+        },
+      },
+      "rose": {
+        "pseudos": {
+          ":hover": {
+            "fg": "700",
+          },
+        },
+      },
+      "sky": {
+        "fg": "700",
+      },
+      "teal": {
+        "fg": "700",
+      },
+      "yellow": {
+        "border": "700",
+        "fg": "700",
+      },
+    },
+    "solid": {
+      "amber": {
+        "bg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "800",
+          },
+        },
+      },
+      "cyan": {
+        "bg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "800",
+          },
+        },
+      },
+      "emerald": {
+        "bg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "800",
+          },
+        },
+      },
+      "green": {
+        "bg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "800",
+          },
+        },
+      },
+      "lime": {
+        "bg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "800",
+          },
+        },
+      },
+      "orange": {
+        "bg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "800",
+          },
+        },
+      },
+      "sky": {
+        "bg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "800",
+          },
+        },
+      },
+      "teal": {
+        "bg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "800",
+          },
+        },
+      },
+      "yellow": {
+        "bg": "700",
+        "pseudos": {
+          ":hover": {
+            "bg": "800",
+          },
+        },
+      },
+    },
+    "subtle": {
+      "accent": {
+        "border": "500",
+        "dark": {
+          "border": "600",
+        },
+      },
+      "amber": {
+        "border": "600",
+        "dark": {
+          "border": "700",
+        },
+      },
+      "blue": {
+        "border": "500",
+        "dark": {
+          "border": "600",
+        },
+      },
+      "cyan": {
+        "border": "600",
+        "dark": {
+          "border": "700",
+        },
+      },
+      "default": {
+        "border": "500",
+        "dark": {
+          "border": "500",
+        },
+      },
+      "emerald": {
+        "border": "600",
+        "dark": {
+          "border": "700",
+        },
+      },
+      "fuchsia": {
+        "border": "500",
+        "dark": {
+          "border": "700",
+        },
+      },
+      "gray": {
+        "border": "500",
+        "dark": {
+          "border": "500",
+        },
+      },
+      "green": {
+        "border": "600",
+        "dark": {
+          "border": "700",
+        },
+      },
+      "indigo": {
+        "border": "400",
+        "dark": {
+          "border": "600",
+        },
+      },
+      "lime": {
+        "border": "600",
+        "dark": {
+          "border": "700",
+        },
+      },
+      "mauve": {
+        "border": "500",
+        "dark": {
+          "border": "500",
+        },
+      },
+      "mist": {
+        "border": "500",
+        "dark": {
+          "border": "500",
+        },
+      },
+      "neutral": {
+        "border": "500",
+        "dark": {
+          "border": "500",
+        },
+      },
+      "olive": {
+        "border": "500",
+        "dark": {
+          "border": "500",
+        },
+      },
+      "orange": {
+        "border": "600",
+        "dark": {
+          "border": "700",
+        },
+      },
+      "pink": {
+        "border": "500",
+        "dark": {
+          "border": "700",
+        },
+      },
+      "purple": {
+        "border": "500",
+        "dark": {
+          "border": "600",
+        },
+      },
+      "red": {
+        "border": "500",
+        "dark": {
+          "border": "700",
+        },
+      },
+      "rose": {
+        "border": "500",
+        "dark": {
+          "border": "700",
+        },
+      },
+      "sky": {
+        "border": "600",
+        "dark": {
+          "border": "700",
+        },
+      },
+      "slate": {
+        "border": "500",
+        "dark": {
+          "border": "500",
+        },
+      },
+      "stone": {
+        "border": "500",
+        "dark": {
+          "border": "500",
+        },
+      },
+      "taupe": {
+        "border": "500",
+        "dark": {
+          "border": "500",
+        },
+      },
+      "teal": {
+        "border": "600",
+        "dark": {
+          "border": "700",
+        },
+      },
+      "violet": {
+        "border": "500",
+        "dark": {
+          "border": "600",
+        },
+      },
+      "yellow": {
+        "border": "700",
+        "dark": {
+          "border": "700",
+        },
+      },
+      "zinc": {
+        "border": "500",
+        "dark": {
+          "border": "500",
+        },
+      },
+    },
+  },
+  "report": [
+    "default orange light rest shift-bg text 7.35 border 3.59",
+    "default orange light hover shift-bg text 6.41 border 3.59",
+    "default amber light rest shift-bg text 7.13 border 3.19",
+    "default amber light hover shift-bg text 6.41 border 3.19",
+    "default yellow light rest shift-bg text 6.87 border 4.92",
+    "default yellow light hover shift-bg text 6.40 border 4.92",
+    "default lime light rest shift-bg text 7.05 border 3.06",
+    "default lime light hover shift-bg text 6.50 border 3.06",
+    "default green light rest shift-bg text 7.09 border 3.22",
+    "default green light hover shift-bg text 6.45 border 3.22",
+    "default emerald light rest shift-bg text 7.58 border 3.67",
+    "default emerald light hover shift-bg text 6.68 border 3.67",
+    "default teal light rest shift-bg text 7.53 border 3.66",
+    "default teal light hover shift-bg text 6.69 border 3.66",
+    "default cyan light rest shift-bg text 7.25 border 3.60",
+    "default cyan light hover shift-bg text 6.47 border 3.60",
+    "default sky light rest shift-bg text 7.52 border 4.02",
+    "default sky light hover shift-bg text 6.54 border 4.02",
+    "default blue dark rest shift-bg text 10.35 border 3.83",
+    "default blue dark hover shift-bg text 7.31 border 3.83",
+    "default indigo dark rest shift-bg text 10.74 border 3.12",
+    "default indigo dark hover shift-bg text 7.68 border 3.12",
+    "default violet dark rest shift-bg text 10.99 border 3.42",
+    "default violet dark hover shift-bg text 7.93 border 3.42",
+    "default purple dark rest shift-bg text 11.01 border 3.64",
+    "default purple dark hover shift-bg text 8.02 border 3.64",
+    "default slate dark rest shift-bg text 16.37 border 4.22",
+    "default slate dark hover shift-bg text 14.49 border 4.22",
+    "default gray dark rest shift-bg text 16.28 border 4.16",
+    "default gray dark hover shift-bg text 14.35 border 4.16",
+    "default zinc dark rest shift-bg text 15.69 border 4.17",
+    "default zinc dark hover shift-bg text 13.98 border 4.17",
+    "default neutral dark rest shift-bg text 15.72 border 4.25",
+    "default neutral dark hover shift-bg text 14.22 border 4.25",
+    "default stone dark rest shift-bg text 15.72 border 4.19",
+    "default stone dark hover shift-bg text 13.92 border 4.19",
+    "default mauve dark rest shift-bg text 15.71 border 3.95",
+    "default mauve dark hover shift-bg text 14.05 border 3.95",
+    "default olive dark rest shift-bg text 15.96 border 4.73",
+    "default olive dark hover shift-bg text 13.81 border 4.73",
+    "default mist dark rest shift-bg text 15.82 border 4.36",
+    "default mist dark hover shift-bg text 13.94 border 4.36",
+    "default taupe dark rest shift-bg text 15.66 border 4.06",
+    "default taupe dark hover shift-bg text 13.95 border 4.06",
+    "default default dark rest shift-bg text 16.28 border 4.16",
+    "default default dark hover shift-bg text 14.35 border 4.16",
+    "default accent dark rest shift-bg text 10.35 border 3.83",
+    "default accent dark hover shift-bg text 7.31 border 3.83",
+    "solid orange light rest shift-bg text 5.23",
+    "solid orange dark rest shift-bg text 5.23",
+    "solid amber light rest shift-bg text 5.05",
+    "solid amber dark rest shift-bg text 5.05",
+    "solid yellow light rest shift-bg text 4.92",
+    "solid yellow dark rest shift-bg text 4.92",
+    "solid lime light rest shift-bg text 4.96",
+    "solid lime dark rest shift-bg text 4.96",
+    "solid green light rest shift-bg text 4.94",
+    "solid green dark rest shift-bg text 4.94",
+    "solid emerald light rest shift-bg text 5.37",
+    "solid emerald dark rest shift-bg text 5.37",
+    "solid teal light rest shift-bg text 5.39",
+    "solid teal dark rest shift-bg text 5.39",
+    "solid cyan light rest shift-bg text 5.28",
+    "solid cyan dark rest shift-bg text 5.28",
+    "solid sky light rest shift-bg text 5.85",
+    "solid sky dark rest shift-bg text 5.85",
+    "outline red light hover shift-bg text 5.53 border 4.76",
+    "outline orange light rest shift-bg text 5.23 border 3.59",
+    "outline orange light hover shift-bg text 4.72 border 3.59",
+    "outline amber light rest shift-bg text 5.05 border 3.19",
+    "outline amber light hover shift-bg text 4.66 border 3.19",
+    "outline yellow light rest shift-bg text 4.92 border 4.92",
+    "outline yellow light hover shift-bg text 4.66 border 4.92",
+    "outline lime light rest shift-bg text 4.96 border 3.06",
+    "outline lime light hover shift-bg text 4.67 border 3.06",
+    "outline green light rest shift-bg text 4.94 border 3.22",
+    "outline green light hover shift-bg text 4.60 border 3.22",
+    "outline emerald light rest shift-bg text 5.37 border 3.67",
+    "outline emerald light hover shift-bg text 4.88 border 3.67",
+    "outline teal light rest shift-bg text 5.39 border 3.66",
+    "outline teal light hover shift-bg text 4.93 border 3.66",
+    "outline cyan light rest shift-bg text 5.28 border 3.60",
+    "outline cyan light hover shift-bg text 4.84 border 3.60",
+    "outline sky light rest shift-bg text 5.85 border 4.02",
+    "outline sky light hover shift-bg text 5.28 border 4.02",
+    "outline fuchsia light hover shift-bg text 5.60 border 4.66",
+    "outline pink light hover shift-bg text 5.22 border 4.54",
+    "outline rose light hover shift-bg text 5.28 border 4.51",
+    "light red light rest shift-bg text 5.26",
+    "light red light hover shift-bg text 5.88",
+    "light red dark hover shift-bg text 5.88",
+    "light orange light rest shift-bg text 4.56",
+    "light orange light hover shift-bg text 4.93",
+    "light orange dark hover shift-bg text 4.93",
+    "light amber light rest shift-bg text 4.54",
+    "light amber light hover shift-bg text 4.87",
+    "light amber dark hover shift-bg text 4.87",
+    "light yellow light rest shift-bg text 4.59",
+    "light yellow light hover shift-bg text 4.76",
+    "light yellow dark hover shift-bg text 4.76",
+    "light lime light rest shift-bg text 4.58",
+    "light lime light hover shift-bg text 4.80",
+    "light lime dark hover shift-bg text 4.80",
+    "light green light rest shift-bg text 6.45",
+    "light green light hover shift-bg text 4.72",
+    "light green dark hover shift-bg text 4.72",
+    "light emerald light rest shift-bg text 4.73",
+    "light emerald light hover shift-bg text 5.09",
+    "light emerald dark hover shift-bg text 5.09",
+    "light teal light rest shift-bg text 4.79",
+    "light teal light hover shift-bg text 5.17",
+    "light teal dark hover shift-bg text 5.17",
+    "light cyan light rest shift-bg text 4.71",
+    "light cyan light hover shift-bg text 5.07",
+    "light cyan dark hover shift-bg text 5.07",
+    "light sky light rest shift-bg text 5.10",
+    "light sky light hover shift-bg text 5.49",
+    "light sky dark hover shift-bg text 5.49",
+    "light blue light rest shift-bg text 5.59",
+    "light fuchsia light rest shift-bg text 5.39",
+    "light fuchsia light hover shift-bg text 5.84",
+    "light fuchsia dark hover shift-bg text 5.84",
+    "light pink light rest shift-bg text 5.01",
+    "light pink light hover shift-bg text 5.39",
+    "light pink dark hover shift-bg text 5.39",
+    "light rose light rest shift-bg text 5.04",
+    "light rose light hover shift-bg text 5.51",
+    "light rose dark hover shift-bg text 5.51",
+    "light accent light rest shift-bg text 5.59",
+    "subtle red light rest shift-bg text 7.67 border 3.82",
+    "subtle red light hover shift-bg text 6.86 border 3.82",
+    "subtle red dark rest shift-bg text 9.80 border 3.14",
+    "subtle red dark hover shift-bg text 8.31 border 3.14",
+    "subtle orange light rest shift-bg text 6.93 border 3.59",
+    "subtle orange light hover shift-bg text 6.41 border 3.59",
+    "subtle orange dark rest shift-bg text 10.85 border 3.85",
+    "subtle orange dark hover shift-bg text 9.03 border 3.85",
+    "subtle amber light rest shift-bg text 6.88 border 3.19",
+    "subtle amber light hover shift-bg text 6.41 border 3.19",
+    "subtle amber dark rest shift-bg text 12.57 border 3.99",
+    "subtle amber dark hover shift-bg text 10.44 border 3.99",
+    "subtle yellow light rest shift-bg text 6.64 border 4.92",
+    "subtle yellow light hover shift-bg text 6.40 border 4.92",
+    "subtle yellow dark rest shift-bg text 13.55 border 4.09",
+    "subtle yellow dark hover shift-bg text 11.14 border 4.09",
+    "subtle lime light rest shift-bg text 6.82 border 3.06",
+    "subtle lime light hover shift-bg text 6.50 border 3.06",
+    "subtle lime dark rest shift-bg text 13.69 border 4.06",
+    "subtle lime dark hover shift-bg text 11.23 border 4.06",
+    "subtle green light rest shift-bg text 6.78 border 3.22",
+    "subtle green light hover shift-bg text 6.45 border 3.22",
+    "subtle green dark rest shift-bg text 12.87 border 4.07",
+    "subtle green dark hover shift-bg text 10.64 border 4.07",
+    "subtle emerald light rest shift-bg text 7.19 border 3.67",
+    "subtle emerald light hover shift-bg text 6.68 border 3.67",
+    "subtle emerald dark rest shift-bg text 11.91 border 3.75",
+    "subtle emerald dark hover shift-bg text 10.08 border 3.75",
+    "subtle teal light rest shift-bg text 7.23 border 3.66",
+    "subtle teal light hover shift-bg text 6.69 border 3.66",
+    "subtle teal dark rest shift-bg text 12.08 border 3.73",
+    "subtle teal dark hover shift-bg text 10.26 border 3.73",
+    "subtle cyan light rest shift-bg text 6.97 border 3.60",
+    "subtle cyan light hover shift-bg text 6.47 border 3.60",
+    "subtle cyan dark rest shift-bg text 11.94 border 3.81",
+    "subtle cyan dark hover shift-bg text 10.26 border 3.81",
+    "subtle sky light rest shift-bg text 7.05 border 4.02",
+    "subtle sky light hover shift-bg text 6.54 border 4.02",
+    "subtle sky dark rest shift-bg text 10.49 border 3.44",
+    "subtle sky dark hover shift-bg text 9.06 border 3.44",
+    "subtle blue light rest shift-bg text 8.11 border 3.76",
+    "subtle blue light hover shift-bg text 7.25 border 3.76",
+    "subtle blue dark rest shift-bg text 9.83 border 3.83",
+    "subtle blue dark hover shift-bg text 8.64 border 3.83",
+    "subtle indigo light rest shift-bg text 9.02 border 3.12",
+    "subtle indigo light hover shift-bg text 8.18 border 3.12",
+    "subtle indigo dark rest shift-bg text 9.15 border 3.12",
+    "subtle indigo dark hover shift-bg text 8.10 border 3.12",
+    "subtle violet light rest shift-bg text 8.35 border 4.40",
+    "subtle violet light hover shift-bg text 7.71 border 4.40",
+    "subtle violet dark rest shift-bg text 9.80 border 3.42",
+    "subtle violet dark hover shift-bg text 8.73 border 3.42",
+    "subtle purple light rest shift-bg text 8.27 border 4.12",
+    "subtle purple light hover shift-bg text 7.51 border 4.12",
+    "subtle purple dark rest shift-bg text 10.27 border 3.64",
+    "subtle purple dark hover shift-bg text 9.10 border 3.64",
+    "subtle fuchsia light rest shift-bg text 7.77 border 3.53",
+    "subtle fuchsia light hover shift-bg text 7.17 border 3.53",
+    "subtle fuchsia dark rest shift-bg text 10.34 border 3.21",
+    "subtle fuchsia dark hover shift-bg text 8.92 border 3.21",
+    "subtle pink light rest shift-bg text 7.23 border 3.58",
+    "subtle pink light hover shift-bg text 6.71 border 3.58",
+    "subtle pink dark rest shift-bg text 10.13 border 3.41",
+    "subtle pink dark hover shift-bg text 8.65 border 3.41",
+    "subtle rose light rest shift-bg text 7.20 border 3.76",
+    "subtle rose light hover shift-bg text 6.59 border 3.76",
+    "subtle rose dark rest shift-bg text 9.74 border 3.32",
+    "subtle rose dark hover shift-bg text 8.25 border 3.32",
+    "subtle slate light rest shift-bg text 14.00 border 4.77",
+    "subtle slate light hover shift-bg text 13.37 border 4.77",
+    "subtle slate dark rest shift-bg text 13.58 border 4.22",
+    "subtle slate dark hover shift-bg text 12.87 border 4.22",
+    "subtle gray light rest shift-bg text 14.07 border 4.84",
+    "subtle gray light hover shift-bg text 13.35 border 4.84",
+    "subtle gray dark rest shift-bg text 13.67 border 4.16",
+    "subtle gray dark hover shift-bg text 12.95 border 4.16",
+    "subtle zinc light rest shift-bg text 14.26 border 4.83",
+    "subtle zinc light hover shift-bg text 13.53 border 4.83",
+    "subtle zinc dark rest shift-bg text 13.53 border 4.17",
+    "subtle zinc dark hover shift-bg text 12.90 border 4.17",
+    "subtle neutral light rest shift-bg text 14.48 border 4.73",
+    "subtle neutral light hover shift-bg text 13.86 border 4.73",
+    "subtle neutral dark rest shift-bg text 13.47 border 4.25",
+    "subtle neutral dark hover shift-bg text 12.92 border 4.25",
+    "subtle stone light rest shift-bg text 14.56 border 4.81",
+    "subtle stone light hover shift-bg text 13.93 border 4.81",
+    "subtle stone dark rest shift-bg text 13.40 border 4.19",
+    "subtle stone dark hover shift-bg text 12.76 border 4.19",
+    "subtle mauve light rest shift-bg text 14.87 border 5.10",
+    "subtle mauve light hover shift-bg text 13.80 border 5.10",
+    "subtle mauve dark rest shift-bg text 13.21 border 3.95",
+    "subtle mauve dark hover shift-bg text 12.61 border 3.95",
+    "subtle olive light rest shift-bg text 13.79 border 4.26",
+    "subtle olive light hover shift-bg text 12.94 border 4.26",
+    "subtle olive dark rest shift-bg text 13.86 border 4.73",
+    "subtle olive dark hover shift-bg text 13.10 border 4.73",
+    "subtle mist light rest shift-bg text 14.25 border 4.61",
+    "subtle mist light hover shift-bg text 13.29 border 4.61",
+    "subtle mist dark rest shift-bg text 13.56 border 4.36",
+    "subtle mist dark hover shift-bg text 12.88 border 4.36",
+    "subtle taupe light rest shift-bg text 14.61 border 4.95",
+    "subtle taupe light hover shift-bg text 13.53 border 4.95",
+    "subtle taupe dark rest shift-bg text 13.35 border 4.06",
+    "subtle taupe dark hover shift-bg text 12.74 border 4.06",
+    "subtle default light rest shift-bg text 14.07 border 4.84",
+    "subtle default light hover shift-bg text 13.35 border 4.84",
+    "subtle default dark rest shift-bg text 13.67 border 4.16",
+    "subtle default dark hover shift-bg text 12.95 border 4.16",
+    "subtle accent light rest shift-bg text 8.11 border 3.76",
+    "subtle accent light hover shift-bg text 7.25 border 3.76",
+    "subtle accent dark rest shift-bg text 9.83 border 3.83",
+    "subtle accent dark hover shift-bg text 8.64 border 3.83",
+  ],
+}
+`;

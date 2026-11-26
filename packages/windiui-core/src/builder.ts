@@ -4,6 +4,7 @@ import type { VariantOverride, VariantsGenerator } from "./variants";
 import type { BuilderContext } from "./base";
 import type { SizesGenerator } from "./size";
 import type { ComponentsGenerator } from './components/generator';
+import type { CalibrateOptions, CalibrationPolicy } from './theme/calibrate';
 
 type BuilderFunc<TFunc extends (...args: any) => void> = (...args: Parameters<TFunc>) => Builder;
 
@@ -39,9 +40,20 @@ export interface Builder {
 
 	/** Sets values of a variant for one or more colors, over the overrides they have. */
 	overrideVariant: (variant: string, colors: string | string[], override: VariantOverride | ((ctx: BuilderContext) => VariantOverride)) => Builder;
+
+	/**
+	 * Fills overrides so that every variant on every palette with literal shades meets `policy`, light and dark, at
+	 * rest and on hover. It runs once the build is done, after `build` and the `overrides` option, and an explicit
+	 * override wins over what it computes.
+	 */
+	calibrate: (policy: CalibrationPolicy, options?: CalibrateOptions) => Builder;
 }
 
-export function createBuilder(colors: ColorsGenerator, variants: VariantsGenerator, sizes: SizesGenerator, components: ComponentsGenerator): Builder {
+/** @param calibrations collects the calls of `calibrate`, which run when the build is done */
+export function createBuilder(
+	colors: ColorsGenerator, variants: VariantsGenerator, sizes: SizesGenerator, components: ComponentsGenerator,
+	calibrations: [CalibrationPolicy, CalibrateOptions?][] = []
+): Builder {
 	return {
 		colorsNames: all => colors.names(all),
 		variantsNames: () => variants.names(),
@@ -118,6 +130,11 @@ export function createBuilder(colors: ColorsGenerator, variants: VariantsGenerat
 
 		overrideVariant(variant, colors, override) {
 			variants.override(variant, colors, override);
+			return this;
+		},
+
+		calibrate(policy, options) {
+			calibrations.push([policy, options]);
 			return this;
 		},
 	};

@@ -498,19 +498,31 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 	/**
 	 * The values of a variant, and its overrides by color: `statics` as configured, `entries` with what a palette given
 	 * by variables forwards. `keys` get an override variable, which the colors of `varEntries` set.
+	 * @param extra an override of one color, as if it were set under the ones it has
 	 */
-	private resolved(name: string) {
+	private resolved(name: string, extra?: { color: string, override: VariantOverride }) {
 		const values = this.values(name);
+		const def = this.values('default');
 
 		const statics = new Map<string, Flat>();
-		for (const [key, { dark = {}, ...light }] of Object.entries(this.items.get(name)!.colors ?? {})) {
-			for (const color of key.split(',').map(c => c.trim()).filter(this.hasColor)) {
-				const flat = statics.get(color) ?? { light: {}, dark: {} };
-				for (const [k, v] of Object.entries(flatten(this.vars, light as Partial<Variant>, false))) flat.light[k] = shade(this.vars, k, v);
-				for (const [k, v] of Object.entries(flatten(this.vars, dark as Partial<Variant>, false))) flat.dark[k] = shade(this.vars, k, v);
-				statics.set(color, flat);
+		const add = (color: string, { dark = {}, ...light }: VariantOverride, under = false) => {
+			const flat = statics.get(color) ?? { light: {}, dark: {} };
+			// Under, a value set before wins, and so does a light one where the variant has no dark value to give way to,
+			// of its own or, for a value it leaves out, of the default variant
+			const before = { light: { ...flat.light }, dark: { ...flat.dark } };
+			const ownDark = (k: string) => k in values.dark || (!(k in values.light) && k in def.dark);
+			const set = { light: (k: string) => k in before.light, dark: (k: string) => k in before.dark || (k in before.light && !ownDark(k)) };
+			for (const [mode, props] of [['light', light], ['dark', dark]] as const) {
+				for (const [k, v] of Object.entries(flatten(this.vars, props as Partial<Variant>, false))) {
+					if (!under || !set[mode](k)) flat[mode][k] = shade(this.vars, k, v);
+				}
 			}
+			statics.set(color, flat);
+		};
+		for (const [key, own] of Object.entries(this.items.get(name)!.colors ?? {})) {
+			for (const color of key.split(',').map(c => c.trim()).filter(this.hasColor)) add(color, own);
 		}
+		if (extra) add(extra.color, extra.override, true);
 
 		const forwarded = new Map<string, string[]>();
 		for (const [color, { variants, props = 'calibrated' }] of this.aliases) {
@@ -522,7 +534,6 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 		const forwardedKeys = [...forwarded.values()].flat();
 
 		// A value the variant leaves out is the default variant's, which the variant now sets itself
-		const def = this.values('default');
 		for (const k of [...staticKeys, ...forwardedKeys]) {
 			if (k in values.light) continue;
 			values.light[k] = def.light[k] ?? this.vars.variant(k.replace(/-:.*$/, '') as VariantProperty);
@@ -591,14 +602,15 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 	/**
 	 * The values of a variant on an element of `color`, its overrides applied as the `c-*` and `v-*` classes would
 	 * resolve them. `dark` holds the values that change in dark mode.
+	 * @param extra values for this color under its overrides, as a calibration would add them
 	 */
-	colorValues(name: string, color: string): Flat | undefined {
+	colorValues(name: string, color: string, extra?: VariantOverride): Flat | undefined {
 		if (!this.items.has(name)) {
 			console.error(`Variant "${name}" not found.`);
 			return;
 		}
 
-		const { values, entries } = this.resolved(name);
+		const { values, entries } = this.resolved(name, extra && { color, override: extra });
 		const entry = entries.get(color);
 		// An override that reads a variable which is not set leaves the variant's value, as the `var()` of the `v-*` class does
 		const or = (value: string, base: string) => {

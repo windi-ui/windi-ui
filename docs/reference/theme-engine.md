@@ -29,6 +29,7 @@ is the object a [config file](/reference/config-file#config-file) exports. Optio
 | `colors()` | The names of the colors, as the plugin's `c-*` classes. Each also has a `c-accent-*` class, which is not listed. With [`colors.only`](/reference/options#colors), the listed palettes and the colors of the builder. |
 | `resolve(variant, color)` | A [`ResolvedVariant`](#resolvedvariant). Throws for a variant or color that does not exist. |
 | `contrast(fg, bg)` | The contrast of two literal colors by the engine's metric: from 1 to 21 with WCAG 2. Throws for a value [`parseColor`](#parsecolor) does not read. |
+| `calibrate(colors, policy, options?)` | The overrides that make every variant on `colors` meet `policy`, and a report. See [Calibration](#calibration). |
 | `resolvePalette`, `generatePalette`, `fitPalette`, `adjustCurves`, `samplePalette`, `parsePalette` | See [Palette specs](#palette-specs). |
 
 ### `ResolvedVariant`
@@ -64,6 +65,109 @@ How a value is found, as the browser finds it from the CSS:
   applies as `c-accent-accent`, since a color's own `-accent` overrides apply under its `c-accent-*` class.
 - A variable that is only set at runtime, such as one of [`overrideVars`](/guide/colors#variant-overrides-at-runtime),
   is taken as unset.
+
+## Calibration
+
+`engine.calibrate` and the builder's [`calibrate`](/reference/builder#calibrate). For a walkthrough see
+[Calibrate contrast](/guide/theme-engine#calibrate-contrast).
+
+```ts
+engine.calibrate(
+	colors: string[] | Record<string, CalibrationColor>,
+	policy: CalibrationPolicy,
+	options?: CalibrateOptions
+): CalibrationResult;
+
+type CalibrationColor = string | Palette | PaletteSpec; // a color of the engine, 11 shades, or a spec
+
+interface CalibrationPolicy {
+	text?: number;   // the lowest contrast of fg on bg; left out, not checked
+	border?: number; // the lowest contrast of a visible border against the backdrop; left out, not checked
+	backdrops?: { light?: string[]; dark?: string[] }; // default ['white'] and ['default-950']
+	metric?: ContrastMetric; // default the engine's metric, WCAG 2 unless given
+}
+
+interface CalibrateOptions {
+	strategy?: CalibrationStrategy | CalibrationStrategy[]; // default 'shift-bg'
+}
+
+type CalibrationStrategy = 'shift-bg' | 'flip-fg' | 'anchor-seed' | CalibrationStrategyFunction;
+
+interface CalibrationResult {
+	overrides: Record<string, Record<string, VariantOverride>>; // by variant, then color
+	report: CalibrationReportEntry[];
+}
+
+interface CalibrationReportEntry {
+	variant: string;
+	color: string;
+	mode: 'light' | 'dark';
+	state: 'rest' | 'hover';
+	strategy?: string; // left out when no strategy made the cell pass
+	contrast: { text?: number; border?: number }; // after calibration, the lowest over the backdrops
+}
+```
+
+An array of `colors` is the same as an object that maps each name to itself. A string names a color of the engine,
+the colors of the builder included; a palette or a spec is resolved with the engine's palettes. Throws for an
+unknown color, for a color whose shades are not literal (such as one given by CSS variables), and for a backdrop
+in `backdrops` that is neither a literal color nor a shade of the root variables with a literal value.
+
+### Checks
+
+A cell is a (variant, color, mode, state), for every variant of the engine, light and dark, `rest` and `hover`. The
+colors are those [`resolve`](#resolvedvariant) gives, with the overrides of the config.
+
+| Check | Pair | Passes when |
+| --- | --- | --- |
+| `text` | `fg` with its opacity over `bg` with its opacity over the backdrop | `metric(fg, bg) >= text` over every backdrop |
+| `border` | `border` with its opacity over the backdrop, when its opacity is not 0 | `metric(border, backdrop) >= border` over every backdrop |
+
+Colors are blended in sRGB, as a browser composites them. A backdrop is a literal color or a shade of the root
+variables: `'white'`, `'black'`, `'default-950'`, `'accent-100'`. A cell with a color that is not literal is not
+checked. Nor is a check that needs a default backdrop that is not literal, such as `default-950` when the `default`
+option is given by CSS variables: an opaque `fg` on an opaque `bg` is still checked.
+
+### Strategies
+
+The cells are calibrated in order: light at rest, light on hover, dark at rest, dark on hover. A cell that fails
+gets each strategy in turn, from its state before any of them; the first fix after which the cell passes, applied as
+an override, is kept.
+
+| Strategy | Fix |
+| --- | --- |
+| `shift-bg` | For `text`, the offending shade, of `fg` and a visible `bg` the shade of the color nearer to 500 (`bg` on a tie), moves one shade at a time away from the other color, until the check passes; if it reaches the end of the ramp first, the other shade moves instead. For `border`, the border moves away from the backdrop. None when the end of the ramp is reached first. |
+| `flip-fg` | `fg` for `text`, `border` for `border`, becomes the first that passes of 950, black, 50 and white, or of 50, white, 950 and black, by whether black or white reads better by WCAG 2. |
+| `anchor-seed` | For a color from a `seed` spec, and a `text` failure whose offending shade is `bg`: at rest, `bg` becomes the seed's anchor shade; then `fg` stays if it passes, or flips as with `flip-fg`. None otherwise. |
+
+```ts
+type CalibrationStrategyFunction = (cell: CalibrationCell) => CalibrationFix | undefined;
+type CalibrationFix = Partial<Record<'bg' | 'fg' | 'border', ExColorShade>>;
+
+interface CalibrationCell {
+	variant: string;
+	color: string;
+	mode: 'light' | 'dark';
+	state: 'rest' | 'hover';
+	values: ResolvedState; // the colors of the cell
+	palette: Palette;      // the 11 shades of the color
+	anchor?: ColorShade;   // for a color from a seed spec
+	failing(fix?: CalibrationFix): ('text' | 'border')[]; // the checks that fail with fix applied
+}
+```
+
+After a fix at rest, the hover value of each property it moves follows by as many shades, clamped to the ramp, when
+it is a shade of its own and it is darker, or lighter, than what it is checked against in both states. The report
+names a function by its `name`, or `custom`.
+
+### Result
+
+- `overrides` holds only values that change what `resolve` gives: a value under an explicit override, or one equal
+  to what is there, is left out.
+- A value of the config's overrides is never replaced. In dark mode a light value of theirs also holds where the
+  variant has no dark value, of its own or, for a property it leaves out, of the `default` variant.
+- The result is deterministic: the same engine, colors, policy and options give the same overrides and report.
+- `report` has an entry for each cell that failed before calibration, or on its turn after a fix to another cell.
 
 ## `createThemeProvider`
 

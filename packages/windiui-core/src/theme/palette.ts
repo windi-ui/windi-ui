@@ -220,6 +220,8 @@ function toGamut(lch: Lch): Lch {
 
 const toHex = (rgb: Rgb) => `#${rgb.map(v => Math.round(v * 255).toString(16).padStart(2, '0')).join('')}`;
 const toOklch = ([l, c, h]: Lch) => `oklch(${round(l * 100, 1)}% ${round(c, 3)} ${round((h % 360 + 360) % 360, 3)})`;
+/** Tailwind 3's theme gives a color as its channels, `r g b`; anything else is returned as it is. */
+export const literal = (color: string) => /^[\d.]+ [\d.]+ [\d.]+$/.test(color) ? `rgb(${color})` : color;
 
 /**
  * The 11 shades of the curves, with the pins applied: each pinned shade is its pin exactly, and the shades around
@@ -270,6 +272,9 @@ function seedCurves([l, c, h]: Lch, anchor?: ColorShade) {
 		},
 	};
 }
+
+/** The shade a seed palette spec holds its seed at: its `anchor`, or the shade of the nearest default lightness. */
+export const seedAnchor = ({ seed, anchor }: { seed: string, anchor?: ColorShade }) => seedCurves(toLch(seed), anchor).anchor;
 
 /** Whether a color value is a palette spec, by its base. */
 export const isPaletteSpec = (value: object): value is PaletteSpec => BASES.some(k => k in value);
