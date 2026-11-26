@@ -70,8 +70,9 @@ Notes:
 
 - Levels you leave out (`bg-soft`, `fg-muted`, ...) keep the value of the `default` variant. Define the levels
   you use.
-- `pseudos` keys are CSS pseudo-classes written with the colon, such as `':hover'`. A component only uses the
-  states it applies; `btn` applies `:hover`.
+- `pseudos` keys are CSS pseudo-classes written with the colon, such as `':hover'`, or other selectors of the
+  element, such as `'[data-state=open]'` (see [States](#states)). A component only uses the states it applies;
+  `btn` applies `:hover`.
 - `dark` takes the same shape (without a nested `dark`) and only needs the values that differ.
 - A state value that `pseudos` leaves out follows the base value, also the dark one: on hover, `v-ghost` keeps
   its dark `bg` and `fg` without a `pseudos` inside `dark`.
@@ -90,6 +91,47 @@ builder.updateVariant('solid', (variant, { vars }) => {
 	variant.pseudos![':hover']!.bg = vars.color('600');
 });
 ```
+
+### States
+
+`pseudos` takes any selector the element itself can match, not only pseudo-classes. Headless component libraries
+mark state with attributes such as `data-state="open"`, `data-highlighted` or `aria-invalid="true"`, and a
+variant can give those states values of their own:
+
+```ts
+windiui({
+	states: { open: '[data-state=open]' },
+	build(builder) {
+		builder.updateVariant('ghost', (variant) => {
+			variant.pseudos!['[data-state=open]'] = { 'bg-opacity': '1', 'border-opacity': '1' };
+		});
+	}
+});
+```
+
+<Demo>
+<button class="apply-v-[hover,open] v-ghost c-blue border px-3 py-1 rounded" data-state="closed">Closed</button>
+<button class="apply-v-[hover,open] v-ghost c-blue border px-3 py-1 rounded" data-state="open">Open</button>
+</Demo>
+
+```html
+<button class="apply-v-[hover,open] v-ghost c-blue border px-3 py-1 rounded" data-state="open">Open</button>
+```
+
+- The variables of a pseudo-class keep their names, such as `--wui-v-bg-\:hover`. Another selector is named so
+  that no bracket needs escaping: by its name in the [`states`](/reference/options#states) option, here
+  `--wui-v-bg-open`, or else by its words joined with `-`, so `[data-highlighted]` gives
+  `--wui-v-bg-data-highlighted` and `[aria-invalid=true]` gives `--wui-v-bg-aria-invalid-true`.
+- A component applies the state with `applyVariantPseudos: [':hover', '[data-state=open]']`, and a stylesheet
+  with [`apply-v-[hover,open]`](/guide/utilities#apply-v), which takes the names of `states` and the names of the
+  variables.
+- `dark.pseudos`, `colors` and [overrides](#override-a-variant-for-some-colors) take the same keys:
+  `overrideVariant('ghost', 'yellow', { pseudos: { '[data-state=open]': { bg: '200' } } })`.
+- The selector is added to the element's own: `.btn[data-state=open]`. A compound one works the same, such as
+  `':hover:not([data-disabled])'`.
+- The type of a key, `VariantState`, offers the common states of headless libraries and takes any string.
+- [Calibration](/guide/theme-engine#calibrate-contrast) and [`windiui audit`](/guide/contrast-audit) check every
+  declared state, light and dark, as they check hover, and set a fix under the state's selector.
 
 ### Override a variant for some colors
 
@@ -247,7 +289,7 @@ and returns a component:
 | `style` | CSS properties in camelCase. Nested selectors such as `'&:focus-visible'` are allowed. |
 | `pseudos` | Extra styles per pseudo-class, for example `{ ':disabled': { opacity: '0.5' } }`. |
 | `applyVariant` | Which variant properties to paint. `true` means background, border and text. An array picks properties and levels, for example `['bg-soft', 'text']`. |
-| `applyVariantPseudos` | States that switch to the variant's pseudo values, for example `[':hover']`. |
+| `applyVariantPseudos` | States that switch to the variant's pseudo values, for example `[':hover']` or `[':hover', '[data-state=open]']`. |
 
 ```ts
 builder.addComponent('chip', ({ vars }) => ({

@@ -135,6 +135,10 @@ A list in brackets chooses the properties, the states, or both:
 - A state is one of `hover`, `focus`, `focus-visible`, `focus-within`, `active`, `visited`, `target`, `checked`,
   `indeterminate`, `disabled`, `enabled`, `invalid`, `valid`, `user-invalid`, `user-valid`, `required`,
   `optional`, `read-only`, `placeholder-shown`, `autofill` and `open`.
+- A [state given by another selector](/guide/customizing#states) is named by the
+  [`states`](/reference/options#states) option, such as `apply-v-[hover,open]` for
+  `states: { open: '[data-state=open]' }`, or by the name of its variables: `apply-v-[data-highlighted]` for a
+  variant with a `[data-highlighted]` state. A name of `states` comes before a pseudo-class of the same name.
 - A state that the variant has no value for keeps the value at rest. The built-in variants only have `:hover`
   values; a variant of your own can set others in its [`pseudos`](/guide/customizing#add-a-variant). With
   `variantScope: 'universal'`, an element inside one whose variant has a value for that state takes that value.

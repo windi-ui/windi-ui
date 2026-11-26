@@ -80,7 +80,8 @@ solid.dark.rest.fg;    // the same in dark mode, where `solid` has no values of 
 - `shade` is a shade of the color (`'700'`), of the accent or default palette (`'accent-600'`, `'default-200'`), or
   `'white'` or `'black'`. A variant value that is a color of its own, such as `'#fff'`, has no `shade`.
 - `opacity` is the opacity of the property, such as `0` for the border of `v-solid`.
-- `hover` is always there. A variant with other states in `pseudos` has them too, by name: `active`, `focus-visible`.
+- `hover` is always there. A variant with other states in `pseudos` has them too, by the name of their variables:
+  `active`, `focus-visible`, or `open` for `[data-state=open]` named by [`states`](/reference/options#states).
 - A palette given by CSS variables has no literal color at build time: `color` is the variable, such as
   `var(--ui-color-brand-700)`.
 
@@ -303,8 +304,10 @@ maps a name to a color of the engine, to 11 shades or to a [palette spec](#build
 shape of the [`overrides`](/reference/options#overrides) option, so it goes straight into a config, and it holds only
 the differences: a color that passes already gets no override.
 
-For each variant and color, in light and dark mode, at rest and on hover, it checks the pairs of the policy, and
-only those it gives:
+For each variant and color, in light and dark mode, at rest and in every state the variant declares, it checks the
+pairs of the policy, and only those it gives. The states are those [`resolve`](#resolve-a-variant) gives: `hover`,
+and any other of the variant's `pseudos`, such as `:active` or `[data-state=open]`. A fix in a state goes under its
+selector, as `pseudos: { '[data-state=open]': { bg: '700' } }`. The checks:
 
 - `text`: `fg` on `bg`. A translucent background is painted over a backdrop first, `white` in light mode and
   `default-950` in dark; `backdrops: { light: ['white', 'default-100'] }` checks over each color you list. A pair
@@ -334,9 +337,10 @@ engine.calibrate({ primary: { seed: '#f5b301' } }, { text: 4.5 }, { strategy: ['
 How the result is built:
 
 - It only ever chooses shades. It never changes a color of the ramp, so a pinned shade stays pinned.
-- A hover shade of its own moves with its shade at rest, so the state keeps its offset: `bg` 600 to 700 takes the
-  hover 700 to 800. A hover value that refers to the value at rest follows it anyway, and one that plays another
-  part, such as `fg` 50 on hover where `fg` is 600 at rest, stays.
+- A shade of its own in a state moves with its shade at rest, so the state keeps its offset: `bg` 600 to 700 takes
+  the hover 700 to 800, and an `:active` 800 to 900. A value in a state that refers to the value at rest follows it
+  anyway, and one that plays another part, such as `fg` 50 on hover where `fg` is 600 at rest, stays. The state is
+  then checked on its own, after hover.
 - Dark mode is calibrated on its own, after light: a light override that also applies in dark is checked there, and
   a dark value is only added where dark still fails.
 - An override of the config wins. A value it sets is never changed, in dark mode too where the variant has no dark
@@ -381,9 +385,9 @@ and a pair it cannot repair is logged.
 ### Audit
 
 `engine.audit(policy)` gives the matrix itself: every variant on every color with literal shades, light and dark,
-at rest and on hover, with its contrast as the build paints it, the checks it fails and the shades calibration would
-give it. It is what the [`windiui audit`](/guide/contrast-audit) command prints, and what a test of your own can
-check. See [Audit](/reference/theme-engine#audit).
+at rest and in every state the variant declares, with its contrast as the build paints it, the checks it fails and
+the shades calibration would give it. It is what the [`windiui audit`](/guide/contrast-audit) command prints, and
+what a test of your own can check. See [Audit](/reference/theme-engine#audit).
 
 ## Theme documents
 

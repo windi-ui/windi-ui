@@ -37,7 +37,7 @@ export function create(config: Config) {
 		config: rConfig,
 		generator(theme: ThemeProvider): Generator {
 			const ctx = { vars, theme };
-			const variants = new VariantsGenerator(ctx, rConfig.variantScope, rConfig.overrideMode);
+			const variants = new VariantsGenerator(ctx, rConfig.variantScope, rConfig.overrideMode, rConfig.states);
 			const colors = new ColorsGenerator(ctx, rConfig, variants);
 			const sizes = new SizesGenerator(ctx);
 			const components = new ComponentsGenerator({ ...ctx, colors, variants });
@@ -63,7 +63,7 @@ export function create(config: Config) {
 						return palette ? [{ name, palette, anchor: colors.anchors.get(name) }] : [];
 					});
 
-					const { overrides, report } = calibrate({ variants: variants.names(), resolve, root, metric: wcag2 }, targets, policy, options);
+					const { overrides, report } = calibrate({ variants: variants.names(), resolve, root, metric: wcag2, selector: s => variants.stateSelector(s) }, targets, policy, options);
 					for (const [variant, byColor] of Object.entries(overrides)) {
 						for (const [color, override] of Object.entries(byColor)) variants.override(variant, color, override, true);
 					}
@@ -95,4 +95,4 @@ export type { ColorShade, ExColorShade } from './colors';
 export type { PaletteSpec } from './theme/palette';
 export type { CalibrateOptions, CalibrationCell, CalibrationCheck, CalibrationFix, CalibrationPolicy, CalibrationStrategy, CalibrationStrategyFunction } from './theme/calibrate';
 export type { Size, SizeProperty } from './size';
-export type { Variant, VariantOverride, VariantProperties as VariantProps, ApplyVariant, ApplyVariantMainProp, ApplyVariantSubProp, ApplyVariantProp } from './variants';
+export type { Variant, VariantOverride, VariantProperties as VariantProps, VariantState, ApplyVariant, ApplyVariantMainProp, ApplyVariantSubProp, ApplyVariantProp } from './variants';

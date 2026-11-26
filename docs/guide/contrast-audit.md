@@ -31,8 +31,10 @@ outline  yellow   light  rest   fg/bg   2.93   FAIL (needs fg 700, border 700)
 outline  yellow   light  rest   border  2.93   FAIL (needs fg 700, border 700)
 ```
 
-There is a row for every variant on every color, light and dark, at rest and on hover, and for each check of the
-policy:
+There is a row for every variant on every color, light and dark, at rest and in every state the variant declares,
+and for each check of the policy. The `state` column is `rest`, `hover`, or the name of another state of the
+variant's `pseudos`, such as `active` for `:active` or `open` for `[data-state=open]` named by
+[`states`](/reference/options#states); `--fix` sets a fix in a state under its selector. The checks:
 
 - `fg/bg`: `fg` on `bg`. A translucent background, such as the one of `v-light` in dark mode, is painted over each
   backdrop first, and the ratio is the lowest over them.

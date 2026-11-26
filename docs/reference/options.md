@@ -63,6 +63,7 @@ All options are optional. The type is exported from `@windi-ui/core` as `Config`
 | [`variantScope`](#variantscope) | `'element'` | `variant-scope: inherit;` | Where the `default` variant comes from, and whether a variant reaches the children |
 | [`overrides`](#overrides) | none | no | Values of a variant for some colors |
 | [`overrideMode`](#overridemode) | `'vars'` | `override-mode: compound;` | How an override reaches the variant |
+| [`states`](#states) | none | no | Names of variant states given by a selector, such as `[data-state=open]` |
 | [`variantUtilities`](#variantutilities) | none | no | `bg-{color}`, `text-{color}`, `border-{color}` painted from a variant |
 | [`darkSelector`](#darkselector) | follows Tailwind | `dark-selector: .dark;` | What the dark values apply under |
 | [`presets`](#presets) | `[]` | `presets: nuxt-ui;` | Presets, run before `build` |
@@ -323,6 +324,33 @@ In an `@plugin` block it is written `override-mode: compound;`.
 
 The compound rule names the color class without a Tailwind v4 `prefix(...)`, which a plugin cannot read, so it
 never matches `tw:c-yellow`. With a v4 prefix use `'vars'`. Tailwind v3 adds its `prefix` to the rule itself.
+
+## `states`
+
+- Type: `Record<string, string>`
+- Default: none
+
+Names of [states](/guide/customizing#states) given by a selector, by name:
+
+```ts
+windiui({
+	states: { open: '[data-state=open]', invalid: '[aria-invalid=true]' },
+});
+```
+
+- The variables of the state take the name: `--wui-v-bg-open`, and `--wui-cv-solid-bg-open` for an override.
+- `apply-v-[open]` applies the state. A name comes before a pseudo-class of the same name: above,
+  `apply-v-[invalid]` is `[aria-invalid=true]`, not `:invalid`.
+- A selector without a name is named by its words: `[data-highlighted]` gives `--wui-v-bg-data-highlighted` and
+  `apply-v-[data-highlighted]`.
+- A pseudo-class keeps the variable names it has, such as `--wui-v-bg-\:hover`; a name for it only adds an
+  `apply-v` name.
+- A name is made of letters, digits, `-` and `_`. A name that starts with a level (`soft`, `muted`, `accent` or
+  `opacity`) or is a property of `apply-v` (`bg`, `text-muted`, ...) would read as another variable; it is
+  reported and left out.
+
+The option is an object, so on Tailwind v4 it needs a [config file or a plugin module](/reference/config-file),
+not an `@plugin` block.
 
 ## `variantUtilities`
 

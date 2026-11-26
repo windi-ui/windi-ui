@@ -205,7 +205,7 @@ builder.calibrate({ text: 4.5, border: 3 }, { strategy: ['shift-bg', 'flip-fg'] 
 
 Computes per-color overrides with the theme engine's
 [`calibrate`](/reference/theme-engine#calibration), so that every variant on every color meets `policy`, light and
-dark, at rest and on hover, and adds them.
+dark, at rest and in every state the variant declares, and adds them.
 
 - It runs once the build is done, wherever it is called: after `build`, the presets and the
   [`overrides`](/reference/options#overrides) option. Several calls run in order.
@@ -317,8 +317,8 @@ interface Variant {
 	'fg-accent'?: string;
 	'fg-opacity'?: '1' | '0' | `0.${number}`;
 
-	// values per state, keyed by pseudo-class (':hover', ':active', ...)
-	pseudos?: Record<string, Partial<VariantProperties>>;
+	// values per state, keyed by pseudo-class (':hover', ':active', ...) or another selector ('[data-state=open]')
+	pseudos?: Record<VariantState, Partial<VariantProperties>>;
 
 	// values for dark mode; same shape, without `dark` and `colors`
 	dark?: Partial<Omit<Variant, 'dark' | 'colors'>>;
@@ -330,6 +330,8 @@ interface Variant {
 
 Color values are typed as references produced by `vars.color(...)` or `vars.variant(...)`, or, since 0.9, any color
 such as `'#fff'`, which is written as given. See [Variant values](/reference/theme-engine#variant-values).
+`VariantState`, the type of a state key, offers the pseudo-classes and the common states of headless libraries and
+takes any string; it is exported from `@windi-ui/core`. See [States](/guide/customizing#states).
 
 ## Size
 
@@ -372,7 +374,7 @@ type ApplyVariantProp =
 ```
 
 - `applyVariant: true` paints `bg`, `border` and `text`. An array paints the listed properties only, at most one level per property.
-- `applyVariantPseudos: [':hover']` repeats that for the state, using the variant's pseudo values. The record form chooses the properties per state. A state that the `default` variant has no value for, such as `:focus-visible`, falls back to the value at rest where the variant has none either.
+- `applyVariantPseudos: [':hover']` repeats that for the state, using the variant's pseudo values. A state can be any selector of the element, such as `'[data-state=open]'`. The record form chooses the properties per state. A state that the `default` variant has no value for, such as `:focus-visible`, falls back to the value at rest where the variant has none either.
 - The [`apply-v`](/guide/utilities#apply-v) utility gives the same CSS without a component: `apply-v` is `applyVariant: true, applyVariantPseudos: [':hover']`.
 
 `@windi-ui/core/components` exports `defineComponent`, a typed identity helper for writing a component in its own

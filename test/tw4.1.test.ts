@@ -9,6 +9,7 @@ import { overrides } from './overrides';
 import { presets, presetsCss } from './presets';
 import { readmeSamples } from './readme';
 import { safelistSourceCss } from './safelist';
+import { states } from './states';
 
 const compile = tailwind4('tw4.1');
 
@@ -16,6 +17,7 @@ baseline('tw4.1', compile);
 cases(compile);
 overrides(compile);
 applyV(compile);
+states(compile);
 presets(compile);
 presetsCss(compile);
 palettes(compile);

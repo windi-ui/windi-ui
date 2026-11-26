@@ -41,7 +41,10 @@ export type ColorValue = string | { vars: string, overrideVars?: OverrideVars } 
 export interface OverrideVars {
 	/** Left out, every registered variant. */
 	variants?: string[];
-	/** `'calibrated'`, the default, is `bg`, `fg`, `border` and their `:hover` values; `'all'` is every value of the variant. */
+	/**
+	 * `'calibrated'`, the default, is `bg`, `fg`, `border` and their values on `:hover` and in every other state the
+	 * variant declares, which calibration sets; `'all'` is every value of the variant.
+	 */
 	props?: 'calibrated' | 'all' | VariantProperty[];
 }
 
@@ -91,6 +94,11 @@ export interface ResolvedConfig {
 	overrides?: Record<string, Record<string, VariantOverride>>;
 	overrideMode: OverrideMode;
 	/**
+	 * Names of states of variants: `{ open: '[data-state=open]' }` names the variables of that state `--wui-v-bg-open`,
+	 * and `apply-v-[open]` applies it. A pseudo-class keeps its own variable names.
+	 */
+	states?: Record<string, string>;
+	/**
 	 * Color utilities from a variant: `{ bg: 'solid' }` gives `bg-{color}` the `solid` background of that color, its
 	 * overrides and dark value included. Left out, there are none.
 	 */
@@ -134,6 +142,7 @@ export function resolveConfig(config: Config): ResolvedConfig {
 		variantScope,
 		overrides: config.overrides,
 		overrideMode,
+		states: config.states,
 		variantUtilities: config.variantUtilities,
 		darkSelector,
 		presets: presets.map(p => typeof p !== 'string' ? p : Object.hasOwn(PRESETS, p) ? PRESETS[p]() : unknownPreset(p)),

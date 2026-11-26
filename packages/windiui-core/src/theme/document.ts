@@ -1,5 +1,5 @@
 import { COLOR_SHADES, COLOR_SHADE_EX_REGEX, type ColorShade, type ColorsGenerator } from '../colors';
-import { merge, type VariantOverride, type VariantsGenerator } from '../variants';
+import { merge, splitKey, type VariantOverride, type VariantsGenerator } from '../variants';
 import type { VarsProvider } from '../vars';
 import { calibrate, literalPalette, over, type CalibrateOptions, type CalibrationPolicy } from './calibrate';
 import { parseColor, parseOklch, type ContrastMetric, type Rgb } from './contrast';
@@ -88,8 +88,9 @@ const own = <T>(record: Record<string, T> | undefined, key: string) => record &&
 /**
  * Validates a theme document, such as one read from JSON, against the variants of an engine, and returns a copy.
  * Throws with the path of the first field that is wrong.
+ * @param states the states the variants declare, which an override takes besides a pseudo-class
  */
-export function parseTheme(json: unknown, variants: string[]): ThemeDocument {
+export function parseTheme(json: unknown, variants: string[], states: string[] = []): ThemeDocument {
 	const fail = (path: string, problem: string): never => {
 		throw new Error(`WindiUI: invalid theme at \`${path || '(root)'}\`: ${problem}.`);
 	};
@@ -107,7 +108,7 @@ export function parseTheme(json: unknown, variants: string[]): ThemeDocument {
 		if (k === 'dark') return [k, override(v, at, [...PROPS, 'pseudos'])];
 		if (k === 'pseudos') {
 			return [k, Object.fromEntries(Object.entries(object(v, at)).map(([state, props]) => {
-				if (!STATE.test(state)) fail(join(at, state), 'must be a state, such as `:hover`');
+				if (!STATE.test(state) && !states.includes(state)) fail(join(at, state), 'must be a pseudo-class, such as `:hover`, or a state that a variant has');
 				return [state, override(props, join(at, state), PROPS)];
 			}))];
 		}
@@ -159,7 +160,7 @@ export function createDocuments(ctx: DocumentContext) {
 		return prefix && COLOR_SHADES.every(s => shades.get(s) === `var(${prefix}-${s})`) ? prefix : undefined;
 	};
 
-	const parse = (json: unknown) => parseTheme(json, variants.names());
+	const parse = (json: unknown) => parseTheme(json, variants.names(), variants.declaredStates());
 
 	/** The document validated, its palettes, and each variant resolved on a color with the document applied. */
 	function prepare(json: unknown, policy?: ThemeCalibration) {
@@ -190,7 +191,7 @@ export function createDocuments(ctx: DocumentContext) {
 				if (!palette) throw new Error(`WindiUI: cannot calibrate "${name}": its shades are not literal colors.`);
 				return { name, palette, anchor: 'seed' in spec ? seedAnchor(spec) : undefined };
 			});
-			calibrated = calibrate({ variants: variants.names(), resolve: (v, c, p, extra) => ctx.resolve(v, c, p, extra, overrides(v, c)), root, metric: ctx.metric }, targets, rest, { strategy }).overrides;
+			calibrated = calibrate({ variants: variants.names(), resolve: (v, c, p, extra) => ctx.resolve(v, c, p, extra, overrides(v, c)), root, metric: ctx.metric, selector: s => variants.stateSelector(s) }, targets, rest, { strategy }).overrides;
 		}
 
 		// Calibration under the overrides of the config, and the document's over them, as the CSS of `toCss` gives them
@@ -201,12 +202,12 @@ export function createDocuments(ctx: DocumentContext) {
 	}
 
 	/**
-	 * The CSS value of `key` of a variant, such as `bg-:hover`, in one mode: a shade of the color is a variable of the
+	 * The CSS value of `key` of a variant, such as `bg-:hover` or `bg-open`, in one mode: a shade of the color is a variable of the
 	 * palette, any other shade a root variable of WindiUI. `undefined` when there is nothing to write.
 	 */
 	const valueOf = (mode: ResolvedMode, key: string, prefix: string, format: (color: string) => string) => {
-		const [, prop, state] = /^(.+?)(?:-:(.+))?$/.exec(key)!;
-		const values = mode[state ?? 'rest'];
+		const [prop, state] = splitKey(key);
+		const values = mode[state?.replace(/^:+/, '') ?? 'rest'];
 		if (!values) return;
 		if (prop.endsWith('-opacity')) return String(values[prop.slice(0, -8) as ColorProperty].opacity);
 

@@ -11,6 +11,7 @@ import { overrides } from './overrides';
 import { presets } from './presets';
 import { readmeSamples } from './readme';
 import { safelist, source } from './safelist';
+import { states } from './states';
 
 const compile = tailwind3();
 
@@ -18,6 +19,7 @@ baseline('tw3', compile);
 cases(compile);
 overrides(compile);
 applyV(compile);
+states(compile);
 presets(compile);
 palettes(compile);
 builderColors(compile);

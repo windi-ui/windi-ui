@@ -32,15 +32,16 @@ export interface Engine {
 	/** The contrast of two literal colors, by the metric of the engine: the ratio of WCAG 2 unless one is given. */
 	contrast(fg: string, bg: string): number;
 	/**
-	 * The overrides that make every variant on `colors` meet `policy`, light and dark, at rest and on hover, and a
-	 * report of each cell that needed one. `colors` names colors of the engine, or maps a name to a color. Overrides
-	 * of the engine's config win over the result, which holds only the differences.
+	 * The overrides that make every variant on `colors` meet `policy`, light and dark, at rest and in every state the
+	 * variant declares, such as `:hover` or `[data-state=open]`, and a report of each cell that needed one. `colors`
+	 * names colors of the engine, or maps a name to a color. Overrides of the engine's config win over the result,
+	 * which holds only the differences.
 	 */
 	calibrate(colors: string[] | Record<string, CalibrationColor>, policy: CalibrationPolicy, options?: CalibrateOptions): CalibrationResult;
 	/**
 	 * The contrast matrix of `policy`: every variant on every color with literal shades, light and dark, at rest and
-	 * on hover, as the build paints it, with the shades calibration would give each cell that fails. The colors that
-	 * are not literal, such as those given by CSS variables, are listed as skipped.
+	 * in every state the variant declares, as the build paints it, with the shades calibration would give each cell that
+	 * fails. The colors that are not literal, such as those given by CSS variables, are listed as skipped.
 	 */
 	audit(policy: CalibrationPolicy): AuditResult;
 	/**
@@ -93,7 +94,7 @@ export function createEngine(config: Config = {}, { metric = wcag2, ...options }
 	const { colors, variants, manifest } = windiui.generator(createThemeProvider({ ...options, palettes }));
 	const { resolve, root } = createResolver(windiui.vars, colors, variants);
 	const isColor = (color: string) => colors.names(true).includes(color) && !color.startsWith('accent-');
-	const ctx = { variants: variants.names(), resolve, root, metric };
+	const ctx = { variants: variants.names(), resolve, root, metric, selector: (state: string) => variants.stateSelector(state) };
 	const documents = createDocuments({ prefix: windiui.config.prefix, vars: windiui.vars, colors, variants, palettes, resolve, root, metric });
 
 	const colorNames = () => {

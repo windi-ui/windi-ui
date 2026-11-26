@@ -349,8 +349,9 @@ builder.setColor('primary', {
   `overrideVariant('solid', 'primary', { bg: '800' })` the class sets
   `--wui-cv-solid-bg: var(--ui-color-primary-solid-bg, var(--wui-c-800))`.
 - `variants` defaults to every registered variant. `props` is `'calibrated'` by default (`bg`, `fg`, `border`
-  and their `:hover` values), `'all'` (every value of the variant), or a list such as
-  `['bg', 'bg-:hover', 'fg-soft']`.
+  and their values on `:hover` and in every other state the variant declares, which
+  [calibration](/guide/theme-engine#calibrate-contrast) sets), `'all'` (every value of the variant), or a list such
+  as `['bg', 'bg-:hover', 'fg-soft']`.
 - The variables are named `{vars}-{variant}-{prop}`, without the colon of a state: `bg-:hover` of `solid` is
   `--ui-color-primary-solid-bg-hover`. An `-accent` value is set by `c-accent-primary`.
 - Where the variant has a dark value, the dark block of the class reads the variable without the static

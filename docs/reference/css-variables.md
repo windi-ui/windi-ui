@@ -57,6 +57,14 @@ a suffix:
 The colon is part of the name and is escaped in CSS. Components that apply a state read these variables inside
 the matching pseudo-class; the opacity falls back to the non-state opacity when the state does not set one.
 
+A [state given by another selector](/guide/customizing#states) is named by the
+[`states`](/reference/options#states) option, or else by its words, so that no bracket needs escaping:
+
+```css
+--wui-v-bg-open               /* '[data-state=open]' with states: { open: '[data-state=open]' } */
+--wui-v-bg-aria-invalid-true  /* '[aria-invalid=true]' without a name */
+```
+
 A property that the state does not set refers to its base variable:
 
 ```css
