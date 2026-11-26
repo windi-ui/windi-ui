@@ -4,7 +4,7 @@ WindiUI is a Tailwind CSS plugin for building components that can be recolored, 
 three short classes, without writing a class list per combination.
 
 ::: warning Under development
-WindiUI is pre-1.0. This site documents `0.8`; what differs from `0.7.x` is in [Changes in 0.8](/changes-0.8).
+WindiUI is pre-1.0. This site documents `0.9`; what differs from `0.8.x` is in [Changes in 0.9](/changes-0.9).
 See the [roadmap](/roadmap) for what is coming.
 :::
 

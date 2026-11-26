@@ -1,7 +1,7 @@
 # Roadmap
 
-WindiUI is under active development. This site documents the `0.8` development branch; what differs from
-`0.7.x` is listed in [Changes in 0.8](/changes-0.8).
+WindiUI is under active development. This site documents the `0.9` development branch; what differs from
+`0.8.x` is listed in [Changes in 0.9](/changes-0.9), and what differs from `0.7.x` in [Changes in 0.8](/changes-0.8).
 
 The path from 0.7 to 1.0 is tracked in one GitHub issue:
 
@@ -17,7 +17,7 @@ In short:
 | --- | --- |
 | 0.8.0-beta.1 | Safe to load: bug fixes, Tailwind v4 `@plugin` loading, configurable `default` and `accent`, var-backed colors |
 | 0.8.0 | Build-time API: per-color variant overrides, presets, size extensions |
-| 0.9.0 | Theme engine: palettes from a seed color, automatic contrast calibration |
+| 0.9.0 | Theme engine: palettes from a seed color, contrast calibration, theme documents, a manifest and a contrast audit; palettes and states given where they are used |
 | 1.0.0 | API freeze, more presets, framework integrations |
 
 Pages on this site link to the relevant issue wherever today's behaviour is known to change.
