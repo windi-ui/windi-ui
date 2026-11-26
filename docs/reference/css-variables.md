@@ -5,17 +5,17 @@ Everything WindiUI does at runtime goes through CSS variables. They all start wi
 
 | Group | Prefix | Set by |
 | --- | --- | --- |
-| Color | `--wui-c-` | `:root`, `c-<name>`, `c-accent-<name>` |
+| Color | `--wui-c-` | `:root`, `c-<name>`, `c-accent-<name>`, [`c-[--name]`](/guide/colors#a-palette-at-the-call-site), [`c-accent-[--name]`](/guide/colors#a-palette-at-the-call-site) |
 | Variant | `--wui-v-` | `v-<name>` (and `*` with [`variantScope: 'universal'`](/reference/options#variantscope)) |
 | Size | `--wui-s-` | `:root` (default size), `s-<name>` |
-| Override | `--wui-cv-` | `:root`, `c-<name>`, `c-accent-<name>`, only when there are [per-color overrides](/guide/customizing#override-a-variant-for-some-colors) |
+| Override | `--wui-cv-` | `:root`, `c-<name>`, `c-accent-<name>`, [`c-[--name]`](/guide/colors#a-palette-at-the-call-site), [`c-accent-[--name]`](/guide/colors#a-palette-at-the-call-site), only when there are [per-color overrides](/guide/customizing#override-a-variant-for-some-colors) |
 
 ## Color variables
 
 | Variable | Meaning | Set by |
 | --- | --- | --- |
-| `--wui-c-50` ... `--wui-c-950` | The current palette | `:root` (the `default` palette), `c-<name>` |
-| `--wui-c-accent-50` ... `--wui-c-accent-950` | The accent palette | `:root` (the `accent` palette), `c-accent-<name>` |
+| `--wui-c-50` ... `--wui-c-950` | The current palette | `:root` (the `default` palette), `c-<name>`, [`c-[--name]`](/guide/colors#a-palette-at-the-call-site) |
+| `--wui-c-accent-50` ... `--wui-c-accent-950` | The accent palette | `:root` (the `accent` palette), `c-accent-<name>`, [`c-accent-[--name]`](/guide/colors#a-palette-at-the-call-site) |
 | `--wui-c-default-50` ... `--wui-c-default-950` | The `default` palette, regardless of the current color | `:root` |
 | `--wui-c-white`, `--wui-c-black` | The theme's `white` and `black`, or `#fff` and `#000` | `:root` |
 

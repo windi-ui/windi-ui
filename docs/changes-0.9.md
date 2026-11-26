@@ -145,3 +145,27 @@ WindiUI's CI audits the default config and the `nuxt-ui` preset, and a test pins
 fix them. See [Contrast audit](/guide/contrast-audit) and [Audit](/reference/theme-engine#audit).
 
 **Migration:** none. The command only runs when you call it.
+
+## A palette at the call site
+
+A palette given by CSS variables had to be declared in the config
+([#50](https://github.com/windi-ui/windi-ui/issues/50)). `c-[--name]` now makes one where it is used, from the
+variables `--name-50` to `--name-950`, and `c-accent-[--name]` does the same for the accent palette:
+
+```html
+<span class="c-[--brand] v-solid bg-v text-v">...</span>
+```
+
+```css
+.c-\[--brand\] {
+	--wui-c-50: var(--brand-50);
+	/* ... */
+	--wui-c-950: var(--brand-950);
+}
+```
+
+All 11 variables must exist. The class resets the override variables like every color class, and works with
+variants such as `md:c-[--brand]` and in `@apply`. Any other arbitrary value, such as `c-[#fff]`, still emits
+nothing. See [A palette at the call site](/guide/colors#a-palette-at-the-call-site).
+
+**Migration:** none. `c-[--name]` emitted nothing in 0.8.

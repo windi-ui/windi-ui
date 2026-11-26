@@ -227,6 +227,17 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 		return { ...cssVars(cObj, n => this.vars.c(accentVars ? `accent-${n}` : n)), ...this.variants.colorVars(name, accentVars) };
 	}
 
+	/**
+	 * The variables of `c-[--name]`, or of `c-accent-[--name]` with `accent`: the shades `var(--name-50)` to
+	 * `var(--name-950)`, which the app defines, and every override variable reset, as by a color without overrides.
+	 * @param vars the prefix of the variables, such as `--brand`
+	 */
+	varsCssVars(vars: string, accent = false) {
+		const shades = Object.fromEntries(COLOR_SHADES.map(s => [s, `var(${vars}-${s})`]));
+		// A name no palette or override can have
+		return { ...cssVars(shades, n => this.vars.c(accent ? `accent-${n}` : n)), ...this.variants.colorVars(`[${vars}]`, accent) };
+	}
+
 	rootVars() {
 		const cRoot: ColorCssVars = {};
 		for (const mn in FLAT_COLORS) {
