@@ -31,7 +31,8 @@ const PROPS = (['bg', 'border', 'fg'] as const).flatMap(p => [p, `${p}-soft`, `$
 
 /**
  * Resolves variants as an element of a color reads them, over the generators of one build: `variant` on `color`,
- * whose shades are `palette`, with `extra` added under the color's overrides. `root` gives the literal of a shade of
+ * whose shades are `palette`, with `extra` added under the color's overrides and `over` over them, and with `accent`
+ * the color's own `-accent` values, as its `c-accent-*` class sets them. `root` gives the literal of a shade of
  * the root variables, such as `white` or `default-950`.
  */
 export function createResolver(vars: VarsProvider, colors: ColorsGenerator, variants: VariantsGenerator) {
@@ -44,14 +45,16 @@ export function createResolver(vars: VarsProvider, colors: ColorsGenerator, vari
 	const shadeRef = new RegExp(`^var\\(${vars.c('')}([^,()\\s]+)\\)$`);
 	const variantRef = vars.v('');
 
-	const resolve = (variant: string, color: string, palette: Partial<Palette>, extra?: VariantOverride): ResolvedVariant => {
+	const resolve = (variant: string, color: string, palette: Partial<Palette>, extra?: VariantOverride, over?: VariantOverride, accent = false): ResolvedVariant => {
 		// A value the variant leaves out is the default variant's, as the `*` rule or the `var()` fallback gives it
-		// The `-accent` overrides are set by `c-accent-*`, so on the element they are those `:root` sets as `c-accent-accent`
+		// The `-accent` overrides are set by `c-accent-*`: on the element, without `accent`, they are those `:root` sets as `c-accent-accent`
 		const layers = [...new Set(['default', variant])].map(v => {
-			const [own, accent] = [variants.colorValues(v, color, v === variant ? extra : undefined)!, variants.colorValues(v, 'accent')!];
+			const own = v === variant ? variants.colorValues(v, color, extra, over)! : variants.colorValues(v, color)!;
+			if (accent) return own;
+			const root = variants.colorValues(v, 'accent')!;
 			const pick = (mode: 'light' | 'dark') => Object.fromEntries([
 				...Object.entries(own[mode]).filter(([k]) => !ACCENT_KEY.test(k)),
-				...Object.entries(accent[mode]).filter(([k]) => ACCENT_KEY.test(k)),
+				...Object.entries(root[mode]).filter(([k]) => ACCENT_KEY.test(k)),
 			]);
 			return { light: pick('light'), dark: pick('dark') };
 		});

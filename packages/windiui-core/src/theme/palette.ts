@@ -218,8 +218,8 @@ function toGamut(lch: Lch): Lch {
 	return [lch[0], lo, lch[2]];
 }
 
-const toHex = (rgb: Rgb) => `#${rgb.map(v => Math.round(v * 255).toString(16).padStart(2, '0')).join('')}`;
-const toOklch = ([l, c, h]: Lch) => `oklch(${round(l * 100, 1)}% ${round(c, 3)} ${round((h % 360 + 360) % 360, 3)})`;
+export const toHex = (rgb: Rgb) => `#${rgb.map(v => Math.round(v * 255).toString(16).padStart(2, '0')).join('')}`;
+export const toOklch = ([l, c, h]: Lch) => `oklch(${round(l * 100, 1)}% ${round(c, 3)} ${round((h % 360 + 360) % 360, 3)})`;
 /** Tailwind 3's theme gives a color as its channels, `r g b`; anything else is returned as it is. */
 export const literal = (color: string) => /^[\d.]+ [\d.]+ [\d.]+$/.test(color) ? `rgb(${color})` : color;
 
@@ -321,9 +321,13 @@ export function generatePalette(seed: string, options: { anchor?: ColorShade; ke
  * value out of its range, or a key it does not know.
  */
 export function parsePalette(json: unknown): PaletteSpec {
-	const fail = (path: string, problem: string): never => {
+	return parseSpec(json, (path, problem) => {
 		throw new Error(`WindiUI: invalid palette spec at \`${path || '(root)'}\`: ${problem}.`);
-	};
+	});
+}
+
+/** `parsePalette` that reports the first field out of bounds to `fail`, with its path, `''` for the spec itself. */
+export function parseSpec(json: unknown, fail: (path: string, problem: string) => never): PaletteSpec {
 	const join = (path: string, key: string) => path ? `${path}.${key}` : key;
 
 	const object = (value: unknown, path: string, keys: readonly string[], required = false) => {
@@ -344,7 +348,7 @@ export function parsePalette(json: unknown): PaletteSpec {
 		if (typeof value !== 'number' || !Number.isFinite(value) || (integer && !Number.isInteger(value)) || value < min || value > max) {
 			fail(path, `must be ${integer ? 'an integer' : 'a number'} from ${min} to ${max}`);
 		}
-		return value as number;
+		return value;
 	};
 	const map = <K extends string, V>(keys: readonly K[], f: (key: K) => V) => Object.fromEntries(keys.map(k => [k, f(k)]));
 

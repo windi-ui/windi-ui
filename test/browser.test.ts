@@ -1,7 +1,8 @@
 import { chromium, type Page } from 'playwright-core';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import type { Builder, VariantOverride } from '../packages/windiui-core/dist/index.mjs';
 import { createEngine } from '../packages/windiui-core/dist/theme.mjs';
-import { tailwind4 } from '../packages/windiui-tailwind/dist/palettes.mjs';
+import { tailwind3 as palettes3, tailwind4 } from '../packages/windiui-tailwind/dist/palettes.mjs';
 import { bundleEngine, tailwind3, tailwind4 as compileTailwind4 } from './helpers';
 
 // What a snapshot cannot prove: how the emitted CSS cascades and inherits in a real browser.
@@ -520,6 +521,97 @@ describe.skipIf(!browser)('in a browser', () => {
 		});
 	});
 
+	// #48: `toCss` of a theme document, next to a build that gives its colors by `vars`, paints as a static build of it.
+	describe.each([
+		['4', compile, tailwind4, false],
+		['3', tailwind3(), palettes3, true],
+	] as const)('with a theme document on Tailwind %s', (_, compileWith, palettes, channels) => {
+		const vars = {
+			build: (b: Builder) => b
+				.addColor('primary', { vars: '--ui-color-primary', overrideVars: {} })
+				.addColor('secondary', { vars: '--ui-color-secondary', overrideVars: { props: 'all' } }),
+		};
+		const colors = { primary: { seed: '#0f766e' }, secondary: { palette: 'violet', adjust: { saturation: -20, hue: 8 } } };
+		const theme = {
+			version: 1 as const,
+			colors,
+			overrides: {
+				solid: { primary: { bg: '700', pseudos: { ':hover': { bg: '800' } }, dark: { bg: '500' } } },
+				outline: { primary: { dark: { fg: '300' } } },
+				light: { secondary: { 'fg': '800', 'bg-opacity': '0.5' } },
+			} as Record<string, Record<string, VariantOverride>>,
+		};
+		const engine = createEngine(vars, { palettes });
+		const toCss = (doc: Parameters<typeof engine.toCss>[0], options: Parameters<typeof engine.toCss>[1]) => engine.toCss(doc, { channels, ...options });
+
+		const buttons = (prefix: string) => ['primary', 'secondary'].flatMap(c => ['default', 'solid', 'outline', 'light']
+			.map(v => `<button id="${prefix}${c}-${v}" class="btn c-${c} v-${v}">x</button>`)).join('');
+		const html = `${buttons('')}<div data-preview>${buttons('p-')}</div>`;
+		const candidates = [...html.match(/[^\s"<>=]+/g)!, 'c-primary', 'v-solid', 'bg-v', 'text-v'];
+		const [outside, inside] = [false, true].map(scoped => [...html.matchAll(/id="([^"]+)"/g)].map(m => m[1]).filter(id => id.startsWith('p-') === scoped));
+
+		// As painted pixels; `''` is the root element
+		const paint = (page: Page, ids: string[]) => page.evaluate<string[][]>(`${JSON.stringify(ids)}.map(id => {
+			const s = getComputedStyle(id ? document.getElementById(id) : document.documentElement);
+			return [s.backgroundColor, s.color, s.borderTopColor].map(c => {
+				const x = document.createElement('canvas').getContext('2d');
+				x.fillStyle = c;
+				x.fillRect(0, 0, 1, 1);
+				return x.getImageData(0, 0, 1, 1).data.join();
+			});
+		})`);
+		// In each mode, at rest and with each button hovered in turn; the root element is `c-primary v-solid` too
+		const paintAll = async (page: Page, ids: string[], root = true) => {
+			const result: string[][][] = [];
+			for (const mode of ['light', 'dark']) {
+				await page.evaluate(`document.documentElement.className = '${mode} c-primary v-solid bg-v text-v'`);
+				result.push(await paint(page, root ? ['', ...ids] : ids));
+				for (const id of ids) {
+					await page.hover(`#${id}`);
+					result.push(await paint(page, [id]));
+				}
+				await page.mouse.move(0, 0);
+			}
+			return result;
+		};
+		const open = async (css: string) => {
+			const page = await browser!.newPage();
+			await page.setContent(`<style>${css}</style>${html}`);
+			return page;
+		};
+
+		let built: string;
+		beforeAll(async () => {
+			built = await compileWith(candidates, { darkMode: ['selector', '.dark'] }, vars);
+		});
+
+		it('paints as a static build of the same palettes and overrides, also on `<html class="dark">`', async () => {
+			const fromDocument = await open(built + toCss(theme, { darkSelector: '.dark' }));
+			const fixed = await open(await compileWith(candidates, { darkMode: ['selector', '.dark'] }, {
+				overrides: theme.overrides,
+				build: b => b.addColor('primary', colors.primary).addColor('secondary', colors.secondary),
+			}));
+
+			expect(await paintAll(fromDocument, outside)).toEqual(await paintAll(fixed, outside));
+			await Promise.all([fromDocument.close(), fixed.close()]);
+		});
+
+		it('keeps a scope with `reset: true` from the page theme', async () => {
+			const page = { version: 1 as const, colors: { primary: { seed: '#be123c' } }, overrides: { solid: { primary: { bg: '800' } }, light: { secondary: { fg: '900' } } } };
+			const preview = { version: 1 as const, colors };
+			const scoped = (reset: boolean) => open(built + toCss(page, { darkSelector: '.dark' })
+				+ toCss(preview, { selector: '[data-preview]', darkSelector: '.dark', reset }));
+
+			const alone = await open(built + toCss(preview, { darkSelector: '.dark' }));
+			const expected = await paintAll(alone, outside, false);
+			const [withReset, withoutReset] = await Promise.all([scoped(true), scoped(false)]);
+			expect(await paintAll(withReset, inside, false)).toEqual(expected);
+			// Without it, the page's override variables reach into the scope
+			expect(await paintAll(withoutReset, inside, false)).not.toEqual(expected);
+			await Promise.all([alone.close(), withReset.close(), withoutReset.close()]);
+		});
+	});
+
 	// #45: the browser bundle of the theme engine gives what it gives in Node
 	it('runs the theme engine', async () => {
 		const page = await browser!.newPage();
@@ -530,6 +622,12 @@ describe.skipIf(!browser)('in a browser', () => {
 		expect(await page.evaluate(`WindiUITheme.createEngine(${JSON.stringify(config)}, ${JSON.stringify(options)}).resolve('solid', 'yellow')`))
 			.toEqual(createEngine(config, options).resolve('solid', 'yellow'));
 		expect(await page.evaluate(`WindiUITheme.createEngine().contrast('#fff', 'oklch(55.4% 0.135 66.442)')`)).toBeCloseTo(4.92, 2);
+
+		// #48: and the same CSS for a theme document
+		const vars = { colors: { default: { vars: '--ui-color-default', overrideVars: {} } } };
+		const theme = { version: 1 as const, colors: { default: { seed: '#2563eb' } }, overrides: { solid: { default: { bg: '700' } } } };
+		expect(await page.evaluate(`WindiUITheme.createEngine(${JSON.stringify(vars)}, ${JSON.stringify(options)}).toCss(${JSON.stringify(theme)})`))
+			.toBe(createEngine(vars, options).toCss(theme));
 		await page.close();
 	});
 });

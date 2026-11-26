@@ -80,3 +80,30 @@ calibration, and `v-solid` changes for the nine palettes where white on 600 fail
 
 **Migration:** none. Nothing is calibrated unless you call `calibrate`. The theme entry is about 14 kB gzipped for a
 browser now, from 12 kB.
+
+## Theme documents
+
+Runtime theming had no single description of a theme, and no function that turned one into CSS variables: for a
+`<style>` tag rendered per brand or tenant, a live preview in a theme editor, or literal colors for an email
+([#48](https://github.com/windi-ui/windi-ui/issues/48)). New, in `@windi-ui/core/theme`:
+
+- `ThemeDocument`, a theme as versioned JSON: `version`, a palette spec per color in `colors`, a `radius`, and
+  `overrides` in the shape of the `overrides` option.
+- `engine.parseTheme(json)`, which validates a document against the engine, unknown keys included, and throws with
+  the path of the first field that is wrong.
+- `engine.toCss(theme, options)`, the CSS variables of a document for the colors the config gives by `vars`: their
+  11 shades, and the override variables they forward with `overrideVars` where the document changes them, light and
+  dark, on any `selector`. The dark block always compounds the selector with `darkSelector`, so it also applies to
+  `<html class="dark">`. `reset` isolates a scope from the page theme, `always` writes chosen variables even when
+  they are unchanged, `calibrate` runs a calibration under the document's overrides first, and `channels` writes RGB
+  channels for Tailwind 3. The CSS holds only values the engine writes, never a string of the document.
+- `engine.toStatic(theme, options)`, the literal colors of a theme as hex, for every color, variant, mode, state and
+  color property, with an opacity painted over a backdrop.
+- The types of the document, the options and the result are exported from `@windi-ui/core/theme`.
+
+A browser test checks that `toCss` next to a build of `vars` colors paints as a static build of the same palettes
+and overrides, on Tailwind 4 and 3 and also on `<html class="dark">`, and that `reset` keeps a scope from the page
+theme. See
+[Theme documents](/guide/theme-engine#theme-documents) and [the reference](/reference/theme-engine#theme-documents).
+
+**Migration:** none. The theme entry is about 16 kB gzipped for a browser now, from 14 kB.
