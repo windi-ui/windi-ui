@@ -49,6 +49,7 @@ export default defineConfig({
 					{ text: 'Customizing', link: '/guide/customizing' },
 					{ text: 'Presets', link: '/guide/presets' },
 					{ text: 'Runtime theming', link: '/guide/theming' },
+					{ text: 'Theme engine', link: '/guide/theme-engine' },
 				],
 			},
 			{
@@ -58,8 +59,10 @@ export default defineConfig({
 					{ text: 'Config files', link: '/reference/config-file' },
 					{ text: 'Builder API', link: '/reference/builder' },
 					{ text: 'CSS variables', link: '/reference/css-variables' },
+					{ text: 'Theme engine API', link: '/reference/theme-engine' },
 				],
 			},
+			{ text: 'Changes in 0.9', link: '/changes-0.9' },
 			{ text: 'Changes in 0.8', link: '/changes-0.8' },
 			{ text: 'Roadmap', link: '/roadmap' },
 		],

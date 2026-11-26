@@ -6,7 +6,8 @@ import { APPLY, COLOR_SHADE_EX_REGEX, VAR_PROP, type ColorCssVars, type ColorSha
 import { cssEsc } from "./utils";
 
 export type VariantVars = Record<CSSVarName<'v'>, string>;
-export type VariantPropValue = CSSVarValue<'c'> | CSSVarValue<'v'>;
+/** A shade of the color or another variable, such as `var(--wui-c-600)`, or any color, such as `#fff`. */
+export type VariantPropValue = CSSVarValue<'c'> | CSSVarValue<'v'> | (string & {});
 export type OpacityValue = '1' | '0' | `0.${number}`;
 
 export interface VariantProperties {

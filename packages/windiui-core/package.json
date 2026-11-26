@@ -36,6 +36,14 @@
 			"import": "./dist/presets.mjs",
 			"require": "./dist/presets.cjs"
 		},
+		"./theme": {
+			"import": "./dist/theme.mjs",
+			"require": "./dist/theme.cjs"
+		},
+		"./theme/palettes": {
+			"import": "./dist/theme/palettes.mjs",
+			"require": "./dist/theme/palettes.cjs"
+		},
 		"./package.json": "./package.json"
 	},
 	"files": [
