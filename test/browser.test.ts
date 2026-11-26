@@ -427,9 +427,10 @@ describe.skipIf(!browser)('in a browser', () => {
 			await page.close();
 		});
 
-		// `&:not(.light *)` alone always matches the root element itself.
+		// `&:not(.light *)` alone always matches the root element itself, and every element inherits the mode from it (#73).
 		it('leaves out the dark overrides of the root on a page set to light with a `:not()` dark mode', async () => {
-			const html = `<button id="root-solid" class="btn v-solid">root</button>${ref('gray-700', 'btn v-solid c-gray', 'var(--wui-c-700)')}`;
+			const html = `<button id="root-solid" class="btn v-solid">root</button>${ref('gray-700', 'btn v-solid c-gray', 'var(--wui-c-700)')}
+				<button id="plain" class="btn">plain</button>${ref('white', 'btn', 'var(--wui-c-white)')}`;
 			const built = await compileWith(html.match(/[^\s"<>=]+/g)!, {}, {
 				darkSelector: ['variant', ['@media (prefers-color-scheme: dark) { &:not(.light *) }', '&:is(.dark *)']],
 				overrides: { solid: { default: { bg: '700', dark: { bg: '400' } } } },
@@ -439,6 +440,7 @@ describe.skipIf(!browser)('in a browser', () => {
 			await page.setContent(`<style>${built}</style>${html}`);
 			await setMode(page, 'light');
 			expect(await bg(page, 'root-solid')).toBe(await bg(page, 'gray-700'));
+			expect(await bg(page, 'plain')).toBe(await bg(page, 'white'));
 			await page.close();
 		});
 	});

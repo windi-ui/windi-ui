@@ -23,6 +23,21 @@ export function darkSelector(compile: Compile) {
 	});
 }
 
+/** #73: `&:not(.light *)` matches the `.light` element itself, and in the element scope its descendants inherit what it gets. */
+export function darkOptOut(compile: Compile) {
+	it.each(['element', 'universal'] as const)('leaves the `.light` element itself out of the dark rule of the base layer in the %s scope', async (variantScope) => {
+		const css = await compile(['btn'], {}, {
+			variantScope,
+			darkSelector: ['variant', ['@media (prefers-color-scheme: dark) { &:not(.light *) }', '&:is(.dark *)']],
+		});
+
+		expect(css).toContain(':not(.light, .light *)');
+		expect(css).not.toContain(':not(.light *)');
+		// `&:is(.dark *)` never matches the `.dark` element, so it stays as Tailwind's `dark:` has it
+		expect(css).toMatch(/:is\(\.dark \*\) \{/);
+	});
+}
+
 /** Tailwind 3 drops a rule whose selector has a class that the content does not use, and `dark:` is not a use. */
 export function darkClass(compile: Compile) {
 	it.each(['class', ['selector', '.night']] as const)('keeps the dark default variant with `darkMode: %j` and no such class in the content', async (darkMode) => {

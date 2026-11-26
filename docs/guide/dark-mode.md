@@ -127,6 +127,10 @@ there, and `&:not(.light *)` becomes `&:not(.light, .light *)`. WindiUI cannot d
 itself, so with dark overrides of `default` or `accent` write it `&:where(.dark, .dark *)`, as above, or set
 `darkSelector: 'class'`.
 
+The dark rule for every element leaves out the `.light` element itself too, so that `<html class="light">` keeps
+the page light: `&:not(.light *)` becomes `&:not(.light, .light *)` there. For the same reason this does not happen
+for a Tailwind v4 `@custom-variant dark`, so write it `&:not(.light, .light *)` there yourself, or set `darkSelector`.
+
 ## What is not automatic
 
 Classes that name a shade, such as `bg-c-100` or `text-accent-600`, are fixed. Use Tailwind's `dark:` variant

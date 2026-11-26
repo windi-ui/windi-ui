@@ -2,7 +2,7 @@ import { applyV } from './apply';
 import { expect, it } from 'vitest';
 import { cases } from './cases';
 import { builderColors, colorsOnly, palettes } from './colors';
-import { darkClass, darkSelector } from './dark';
+import { darkClass, darkOptOut, darkSelector } from './dark';
 import { baseline, candidates } from './baseline';
 import { tailwind3 } from './helpers';
 import { overrides } from './overrides';
@@ -23,6 +23,7 @@ colorsOnly(compile);
 source();
 safelist(compile);
 darkSelector(compile);
+darkOptOut(compile);
 darkClass(compile);
 readmeSamples(compile);
 
