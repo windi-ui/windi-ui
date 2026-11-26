@@ -357,3 +357,18 @@ with [overrides](#per-color-variant-overrides) each class carries reset declarat
 Without the option the CSS is unchanged.
 
 **Migration:** none.
+
+## Changes in 0.8.1
+
+### A `:not()` dark mode leaves the `.light` element itself light
+
+With a dark mode that opts out with `:not()`, such as
+`@media (prefers-color-scheme: dark) { &:not(.light *) }`, the rule that sets the dark values on every element
+still matched the `.light` element itself, so `<html class="light">` on a dark OS got the dark colors
+([#73](https://github.com/windi-ui/windi-ui/issues/73)). That rule now uses `&:not(.light, .light *)`, on
+Tailwind v3 and v4, with `darkMode` or `darkSelector`.
+
+A Tailwind v4 `@custom-variant dark` with no `darkMode` or `darkSelector` is expanded by Tailwind itself, so write
+it as `&:not(.light, .light *)` to get the same result ([Dark mode](/guide/dark-mode)).
+
+**Migration:** none.
