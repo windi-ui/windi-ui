@@ -34,3 +34,25 @@ See the [Theme engine API](/reference/theme-engine).
 
 **Migration:** none. To use the engine, add `@windi-ui/core` to the package that imports it, and
 `@windi-ui/tailwind` for Tailwind's palettes.
+
+## Palette specs
+
+A palette could only be its 11 shades, a palette name or CSS variables
+([#46](https://github.com/windi-ui/windi-ui/issues/46)). New, in `@windi-ui/core/theme`:
+
+- `PaletteSpec`, a palette as a recipe: a base (`palette`, `seed`, `shades` or `curves`), an `adjust` (lightness,
+  contrast, saturation, hue and `amount`) and `pins`, exact colors at given shades. It is plain JSON, so a theme can
+  be stored and opened again with its sliders, curves and pins.
+- `resolvePalette(spec, { palettes, format })` gives the 11 shades, as hex or `oklch()`. An unadjusted `palette` or
+  `shades` comes back byte for byte. `generatePalette(seed)` is a palette from one color, which holds the seed at
+  its anchor shade.
+- `fitPalette`, `adjustCurves` and `samplePalette`, the steps of `resolvePalette`, for a theme editor; `parsePalette`
+  validates a spec from outside and throws with the path of the field that is wrong.
+- The same functions on the engine, where `resolvePalette` takes the engine's palettes.
+- The builder's `addColor` and `setColor`, and the `colors.default` and `colors.accent` options, take a palette spec, resolved at
+  build time to literal shades. `ColorValue` includes `PaletteSpec`, which `@windi-ui/core` exports as a type.
+
+The shades a spec gives are fixed by a test, and a change to them is a breaking release. See
+[Build palettes](/guide/theme-engine#build-palettes) and [Palette specs](/reference/theme-engine#palette-specs).
+
+**Migration:** none. The theme entry is about 12 kB gzipped for a browser now, from 9 kB.
