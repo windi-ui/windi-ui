@@ -299,7 +299,8 @@ interface Variant {
 }
 ```
 
-Color values are typed as references produced by `vars.color(...)` or `vars.variant(...)`.
+Color values are typed as references produced by `vars.color(...)` or `vars.variant(...)`, or, since 0.9, any color
+such as `'#fff'`, which is written as given. See [Variant values](/reference/theme-engine#variant-values).
 
 ## Size
 

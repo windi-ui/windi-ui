@@ -33,6 +33,10 @@
 			"import": "./dist/config.mjs",
 			"require": "./dist/config.cjs"
 		},
+		"./palettes": {
+			"import": "./dist/palettes.mjs",
+			"require": "./dist/palettes.cjs"
+		},
 		"./presets": {
 			"import": "./dist/presets.mjs",
 			"require": "./dist/presets.cjs"
@@ -60,6 +64,11 @@
 	},
 	"peerDependencies": {
 		"tailwindcss": ">=3.3.0"
+	},
+	"peerDependenciesMeta": {
+		"tailwindcss": {
+			"optional": true
+		}
 	},
 	"devDependencies": {
 		"tailwindcss": "^3.4.19"

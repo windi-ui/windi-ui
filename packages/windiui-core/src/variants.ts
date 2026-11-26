@@ -6,7 +6,8 @@ import { APPLY, COLOR_SHADE_EX_REGEX, VAR_PROP, type ColorCssVars, type ColorSha
 import { cssEsc } from "./utils";
 
 export type VariantVars = Record<CSSVarName<'v'>, string>;
-export type VariantPropValue = CSSVarValue<'c'> | CSSVarValue<'v'>;
+/** A shade of the color or another variable, such as `var(--wui-c-600)`, or any color, such as `#fff`. */
+export type VariantPropValue = CSSVarValue<'c'> | CSSVarValue<'v'> | (string & {});
 export type OpacityValue = '1' | '0' | `0.${number}`;
 
 export interface VariantProperties {
@@ -64,7 +65,7 @@ type Values = Record<string, string>;
 interface Flat { light: Values, dark: Values }
 
 const CALIBRATED = ['bg', 'fg', 'border', 'bg-:hover', 'fg-:hover', 'border-:hover'];
-const ACCENT_KEY = /^(bg|border|fg)-accent(-:|$)/;
+export const ACCENT_KEY = /^(bg|border|fg)-accent(-:|$)/;
 
 const APPLY_PROPS = (['bg', 'border', 'text'] as const).flatMap(p => [p, `${p}-soft`, `${p}-muted`, `${p}-accent`] as const);
 /** The states `apply-v-[...]` takes, by name without the colon. */

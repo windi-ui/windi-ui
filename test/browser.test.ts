@@ -1,6 +1,8 @@
 import { chromium, type Page } from 'playwright-core';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { tailwind3, tailwind4 } from './helpers';
+import { createEngine } from '../packages/windiui-core/dist/theme.mjs';
+import { tailwind4 } from '../packages/windiui-tailwind/dist/palettes.mjs';
+import { bundleEngine, tailwind3, tailwind4 as compileTailwind4 } from './helpers';
 
 // What a snapshot cannot prove: how the emitted CSS cascades and inherits in a real browser.
 // It drives an installed Chrome or Edge, so there is no browser download.
@@ -38,7 +40,7 @@ async function launch() {
 	if (process.env.CI) throw new Error('No Chrome or Edge to run the browser tests in');
 }
 
-const compile = tailwind4('tw4');
+const compile = compileTailwind4('tw4');
 const browser = await launch();
 
 describe.skipIf(!browser)('in a browser', () => {
@@ -516,5 +518,18 @@ describe.skipIf(!browser)('in a browser', () => {
 			await expectPairs();
 			await page.evaluate(`document.documentElement.removeAttribute('style')`);
 		});
+	});
+
+	// #45: the browser bundle of the theme engine gives what it gives in Node
+	it('runs the theme engine', async () => {
+		const page = await browser!.newPage();
+		await page.addScriptTag({ content: (await bundleEngine()).code });
+		const options = { palettes: tailwind4 };
+		const config = { overrides: { solid: { yellow: { bg: '700' } } } };
+
+		expect(await page.evaluate(`WindiUITheme.createEngine(${JSON.stringify(config)}, ${JSON.stringify(options)}).resolve('solid', 'yellow')`))
+			.toEqual(createEngine(config, options).resolve('solid', 'yellow'));
+		expect(await page.evaluate(`WindiUITheme.createEngine().contrast('#fff', 'oklch(55.4% 0.135 66.442)')`)).toBeCloseTo(4.92, 2);
+		await page.close();
 	});
 });
