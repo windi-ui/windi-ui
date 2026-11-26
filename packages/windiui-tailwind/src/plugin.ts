@@ -7,7 +7,7 @@ import { CONFIG, isLoadingConfig } from './utils/configState';
 import { classSource } from './safelist';
 import type { RecursiveRecord } from './types';
 import { createTailwindTheme, flattenColorPalette } from './theme';
-import { getDarkSelector, applyDark, rootDarkSelector, toDarkMode, VARIANT_DARK } from './utils/darkMode';
+import { getDarkSelector, applyDark, rootDarkSelector, toDarkMode, universalDarkSelector, VARIANT_DARK } from './utils/darkMode';
 import { calledByTailwind, tailwindAtLeast } from './utils/version';
 
 // Tailwind 3 has no `exports` map, so Node's ESM resolver cannot find `tailwindcss/plugin` (no extension); `require` can,
@@ -182,12 +182,12 @@ function WindiUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof crea
 
 		const scope = wiu.config.variantScope;
 		if (scope === 'universal') {
-			tw.addBase({ '*': applyDark(darkSelector, gt.variants.rootVars()) });
+			tw.addBase({ '*': applyDark(universalDarkSelector(darkSelector), gt.variants.rootVars()) });
 		} else {
 			const mode = gt.variants.modeVars();
 			// Without specificity, so that the dark rule below also wins on the root element itself.
 			tw.addBase({ ':where(:root)': mode.light });
-			tw.addBase({ '*': applyDark(darkSelector, { '@dark': mode.dark }) });
+			tw.addBase({ '*': applyDark(universalDarkSelector(darkSelector), { '@dark': mode.dark }) });
 
 			const reset = gt.variants.resetVars();
 			if (scope === 'element') {

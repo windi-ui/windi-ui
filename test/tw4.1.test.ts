@@ -1,7 +1,7 @@
 import { applyV } from './apply';
 import { cases } from './cases';
 import { builderColors, colorsOnly, colorsOnlyCss, palettes, palettesCss, rootSelectorCss } from './colors';
-import { autoDark, darkSelector } from './dark';
+import { autoDark, darkOptOut, darkSelector } from './dark';
 import { baseline } from './baseline';
 import { forms } from './forms';
 import { tailwind4 } from './helpers';
@@ -33,6 +33,7 @@ safelistSourceCss(compile, {
 });
 forms(compile);
 darkSelector(compile);
+darkOptOut(compile);
 readmeSamples(compile);
 // The fixture is below 4.1.17.
 autoDark(compile, false);

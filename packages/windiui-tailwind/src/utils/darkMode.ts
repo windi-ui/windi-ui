@@ -62,6 +62,11 @@ export function rootDarkSelector(selector: DarkSelector): DarkSelector {
 	return selector.map(chain => chain.map(s => s.replace(/^&:(is|not)\((.+) \*\)$/, '&:$1($2, $2 *)')));
 }
 
+/** The dark selector for the rule on every element: `&:not(.light *)` matches the `.light` element itself, whose descendants inherit what it sets. */
+export function universalDarkSelector(selector: DarkSelector): DarkSelector {
+	return selector.map(chain => chain.map(s => s.replace(/^&:not\((.+) \*\)$/, '&:not($1, $1 *)')));
+}
+
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 function setNestedValue<T extends object, V>(obj: T, keys: string[], value: V) {
 	if (keys.length === 0) {
