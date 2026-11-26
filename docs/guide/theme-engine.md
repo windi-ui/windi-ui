@@ -9,8 +9,8 @@ It is `@windi-ui/core/theme`: plain TypeScript with no Tailwind, no DOM and no N
 edge runtimes and browsers. It runs your presets and `build` on the generators the plugin uses, so the two agree.
 
 ::: info New in 0.9
-This is the first part of the theme engine: variants, contrast and palettes. Automatic contrast calibration and theme
-documents build on it; see the [roadmap](https://github.com/windi-ui/windi-ui/issues/26).
+The theme engine so far: variants, contrast, palettes and contrast calibration. Theme documents build on it; see the
+[roadmap](https://github.com/windi-ui/windi-ui/issues/26).
 :::
 
 ## Install
@@ -284,10 +284,104 @@ Left out on purpose. Each would be a new base key or option, with no change to t
   per-color overrides choose.
 - Ramps of more than 11 shades.
 
+## Calibrate contrast
+
+A [per-color override](/guide/customizing#override-a-variant-for-some-colors) fixes a color that needs other shades,
+but someone has to know which colors those are. For Tailwind's palettes the list is short; for a palette an end user
+picks, or one generated from a brand color, nobody can write it by hand. `calibrate` computes it:
+
+```ts
+const { overrides, report } = engine.calibrate({ primary: 'yellow' }, { text: 4.5 });
+
+overrides.solid;   // { primary: { bg: '700', pseudos: { ':hover': { bg: '800' } } } }
+overrides.outline; // { primary: { fg: '700' } }
+report[0];         // { variant: 'solid', color: 'primary', mode: 'light', state: 'rest', strategy: 'shift-bg', contrast: { text: 4.92 } }
+```
+
+The first argument names the colors: an array of colors of the engine, such as `engine.colors()`, or an object that
+maps a name to a color of the engine, to 11 shades or to a [palette spec](#build-palettes). The result is in the
+shape of the [`overrides`](/reference/options#overrides) option, so it goes straight into a config, and it holds only
+the differences: a color that passes already gets no override.
+
+For each variant and color, in light and dark mode, at rest and on hover, it checks the pairs of the policy, and
+only those it gives:
+
+- `text`: `fg` on `bg`. A translucent background is painted over a backdrop first, `white` in light mode and
+  `default-950` in dark; `backdrops: { light: ['white', 'default-100'] }` checks over each color you list. A pair
+  that needs a backdrop that is not a literal color, such as `default-950` of a `default` given by CSS variables, is
+  not checked unless you list one.
+- `border`: a visible `border` against the backdrop. A border with opacity 0, such as the one of `v-solid`, is not
+  checked.
+- `metric`: the contrast function. It is WCAG 2 unless the policy or the engine gives another, such as APCA, with
+  thresholds of its own.
+
+A pair that fails is repaired with a strategy:
+
+| Strategy | Repairs a failing pair by |
+| --- | --- |
+| `'shift-bg'` (default) | Walking its offending shade, the one of `fg` and a visible `bg` nearer to 500, away from the other color: darker under light text or on a light backdrop, lighter otherwise, until it passes, or the other one when it cannot, such as a faint background. A border walks away from the backdrop. |
+| `'flip-fg'` | Keeping the background and switching `fg` (or the border) to 950 or black, or to 50 or white, whichever passes first. With WCAG 2 it passes for any ramp. |
+| `'anchor-seed'` | For a `seed` spec, keeping the seed's own shade as the background and fitting `fg` around it. It only repairs a pair whose offending shade is the background, and lets the next strategy try the others. |
+| A function | What it returns. See [Strategies of your own](#strategies-of-your-own). |
+| A list | Each in order, until one passes: `['shift-bg', 'flip-fg']` rejects nothing. |
+
+```ts
+engine.calibrate(engine.colors(), { text: 4.5, border: 3 }, { strategy: ['shift-bg', 'flip-fg'] });
+engine.calibrate({ primary: { seed: '#f5b301' } }, { text: 4.5 }, { strategy: ['anchor-seed', 'shift-bg'] });
+// solid: { primary: { bg: '300', fg: '950', pseudos: { ':hover': { bg: '400', fg: '950' } } } }
+```
+
+How the result is built:
+
+- It only ever chooses shades. It never changes a color of the ramp, so a pinned shade stays pinned.
+- A hover shade of its own moves with its shade at rest, so the state keeps its offset: `bg` 600 to 700 takes the
+  hover 700 to 800. A hover value that refers to the value at rest follows it anyway, and one that plays another
+  part, such as `fg` 50 on hover where `fg` is 600 at rest, stays.
+- Dark mode is calibrated on its own, after light: a light override that also applies in dark is checked there, and
+  a dark value is only added where dark still fails.
+- An override of the config wins. A value it sets is never changed, in dark mode too where the variant has no dark
+  value of its own, so a pair it keeps below the policy is reported, not repaired.
+- `report` lists each cell that failed, before calibration or after a fix to another cell, with the `strategy` that
+  made it pass, by name, and its contrast after. A cell no strategy could repair has no `strategy`.
+
+With Tailwind's palettes and `{ text: 4.5 }`, the default strategy makes every pair of the built-in and the
+`nuxt-ui` variants pass, light and dark, at rest and on hover. `v-solid` changes for the nine palettes where white
+on 600 fails, to 700 and 800 on hover, and for no other.
+
+### Strategies of your own
+
+A function gets the failing cell and returns the shades for its `bg`, `fg` or `border`, or nothing when it cannot
+repair it. `failing(fix)` gives the checks the cell still fails with a fix applied:
+
+```ts
+import type { CalibrationStrategyFunction } from '@windi-ui/core/theme';
+
+const black: CalibrationStrategyFunction = cell => cell.failing({ fg: 'black' }).length ? undefined : { fg: 'black' };
+engine.calibrate(engine.colors(), { text: 4.5 }, { strategy: ['shift-bg', black] });
+```
+
+The cell also has its `variant`, `color`, `mode`, `state`, its resolved `values`, the `palette` and, for a seed,
+its `anchor`. The report names the function by its name.
+
+### In the build
+
+`calibrate(policy, options?)` on the builder fills the overrides of the build's own palettes at build time:
+
+```ts
+build(b) {
+	b.calibrate({ text: 4.5 });
+}
+```
+
+It runs once the build is done, after `build`, the presets and the [`overrides`](/reference/options#overrides)
+option, wherever it is called, over every color with a class and literal shades. A palette given by CSS variables
+is left out: its colors are only known at runtime, where the engine calibrates it. Explicit overrides win, as above,
+and a pair it cannot repair is logged.
+
 ## Where it runs
 
 The entry has an ES module and a CommonJS build, and imports nothing from Tailwind or `node:*`. Bundled for a browser,
-it is about 34 kB minified and 12 kB gzipped; the two palette tables add 16 kB, 4 kB gzipped, when imported. Node runs
+it is about 40 kB minified and 14 kB gzipped; the two palette tables add 16 kB, 4 kB gzipped, when imported. Node runs
 it without flags.
 
 See the [theme engine reference](/reference/theme-engine) for every function and type.

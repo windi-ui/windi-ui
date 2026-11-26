@@ -18,6 +18,7 @@ Every `add*`, `set*`, `update*` and `remove*` method returns the builder.
 | `updateVariant(name, updater)` | Change an existing variant. |
 | `removeVariant(name)` | Remove a variant. |
 | `overrideVariant(variant, colors, override)` | Change values of a variant for some colors. See [Overrides](#overrides). |
+| `calibrate(policy, options?)` | Fill overrides so that every variant meets a contrast policy. See [Calibrate](#calibrate). |
 | `addSize(name, factory)` | Register a size and its `s-<name>` class. |
 | `setSize(name, factory)` | The same, replacing a size of that name. |
 | `updateSize(name, updater)` | Change an existing size. |
@@ -190,6 +191,32 @@ type VariantOverride = Partial<Omit<Variant, 'colors'>>; // and each value may a
   [`overrideMode`](/reference/options#overridemode) chooses how they are emitted.
 
 See [Override a variant for some colors](/guide/customizing#override-a-variant-for-some-colors).
+
+## Calibrate
+
+```ts
+calibrate(policy: CalibrationPolicy, options?: CalibrateOptions): Builder;
+```
+
+```ts
+builder.calibrate({ text: 4.5 });
+builder.calibrate({ text: 4.5, border: 3 }, { strategy: ['shift-bg', 'flip-fg'] });
+```
+
+Computes per-color overrides with the theme engine's
+[`calibrate`](/reference/theme-engine#calibration), so that every variant on every color meets `policy`, light and
+dark, at rest and on hover, and adds them.
+
+- It runs once the build is done, wherever it is called: after `build`, the presets and the
+  [`overrides`](/reference/options#overrides) option. Several calls run in order.
+- It calibrates every color with a `c-*` class, `default` and `accent` included, whose shades are literal colors.
+  A palette given by CSS variables is left out.
+- The overrides are added under the explicit ones: a value that `overrideVariant` or `overrides` sets is never
+  replaced.
+- A pair it cannot repair is logged as a warning.
+- `CalibrationPolicy` and `CalibrateOptions` are exported as types from `@windi-ui/core`.
+
+See [Calibrate contrast](/guide/theme-engine#calibrate-contrast).
 
 ## Presets
 

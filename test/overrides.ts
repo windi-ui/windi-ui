@@ -148,4 +148,20 @@ export function overrides(compile: Compile) {
 		expect(light(css, ':root', '--wui-cv-solid-bg')).toBe('var(--ui-color-neutral-solid-bg)');
 		expect(light(css, '.c-yellow', '--wui-cv-solid-bg')).toBe('initial');
 	});
+
+	// #47
+	it('fills overrides from `calibrate` once the build is done, under the explicit ones', async () => {
+		const css = await run(b => b
+			.calibrate({ text: 4.5 })
+			.overrideVariant('solid', 'yellow', { pseudos: { ':hover': { bg: '900' } } })
+			.setColor('primary', { vars: '--ui-color-primary', overrideVars: { variants: ['solid'], props: ['bg'] } }));
+
+		expect(light(css, '.c-yellow', '--wui-cv-solid-bg')).toBe('var(--wui-c-700)');
+		expect(light(css, '.c-yellow', '--wui-cv-solid-bg-\\:hover')).toBe('var(--wui-c-900)');
+		expect(light(css, '.c-yellow', '--wui-cv-light-bg-\\:hover')).toBe('var(--wui-c-700)');
+		expect(dark(css, '.c-yellow', '--wui-cv-light-bg-\\:hover')).toBe('var(--wui-c-700)');
+		expect(light(css, '.c-blue', '--wui-cv-solid-bg')).toBe('initial');
+		// A palette given by CSS variables is left to runtime
+		expect(light(css, '.c-primary', '--wui-cv-solid-bg')).toBe('var(--ui-color-primary-solid-bg)');
+	});
 }

@@ -54,3 +54,27 @@ The shades a spec gives are fixed by a test, and a change to them is a breaking 
 [Build palettes](/guide/theme-engine#build-palettes) and [Palette specs](/reference/theme-engine#palette-specs).
 
 **Migration:** none. The theme entry is about 12 kB gzipped for a browser now, from 9 kB.
+
+## Contrast calibration
+
+A per-color override fixed a color that needs other shades, but someone had to know which colors those were
+([#47](https://github.com/windi-ui/windi-ui/issues/47)). New:
+
+- `engine.calibrate(colors, policy, { strategy })` in `@windi-ui/core/theme`. For every variant on each color, light
+  and dark, at rest and on hover, it checks `fg` on `bg` (`text`) and a visible `border` against the backdrop
+  (`border`), with a translucent background painted over `backdrops`. It repairs a failing pair by choosing other
+  shades, and returns only the differences, in the shape of the `overrides` option, with a report of the strategy
+  each cell used.
+- The strategies `'shift-bg'` (the default), `'flip-fg'` and `'anchor-seed'`, a function of your own, or a list
+  tried in order. The policy takes a `metric`, for a contrast function other than WCAG 2.
+- `calibrate(policy, options?)` on the builder, which fills the overrides of the build's palettes once the build is
+  done. Explicit overrides win over it.
+- The types of the policy, the options and a strategy function are exported from `@windi-ui/core` and
+  `@windi-ui/core/theme`, with those of the result and the report from `@windi-ui/core/theme`.
+
+With Tailwind's palettes and `{ text: 4.5 }`, every pair of the built-in and the `nuxt-ui` variants passes after
+calibration, and `v-solid` changes for the nine palettes where white on 600 fails, and for no other. See
+[Calibrate contrast](/guide/theme-engine#calibrate-contrast) and [Calibration](/reference/theme-engine#calibration).
+
+**Migration:** none. Nothing is calibrated unless you call `calibrate`. The theme entry is about 14 kB gzipped for a
+browser now, from 12 kB.

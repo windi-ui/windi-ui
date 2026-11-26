@@ -266,6 +266,9 @@ function seedCurves([l, c, h]: Lch, anchor?: ColorShade) {
 	};
 }
 
+/** The shade a seed palette spec holds its seed at: its `anchor`, or the shade of the nearest default lightness. */
+export const seedAnchor = ({ seed, anchor }: { seed: string, anchor?: ColorShade }) => seedCurves(toLch(seed), anchor).anchor;
+
 /** Whether a color value is a palette spec, by its base. */
 export const isPaletteSpec = (value: object): value is PaletteSpec => BASES.some(k => k in value);
 

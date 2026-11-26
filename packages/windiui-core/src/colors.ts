@@ -4,7 +4,7 @@ import type { ColorValue, Config } from "./config";
 import type { ApplyVariantMainProp, VariantsGenerator } from "./variants";
 import type { CSS } from "./types";
 import type { Palette } from "./theme/provider";
-import { isPaletteSpec, resolvePalette } from "./theme/palette";
+import { isPaletteSpec, resolvePalette, seedAnchor } from "./theme/palette";
 
 export type ColorShade = '50' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900' | '950';
 export type ExColorShade = ColorShade | `default-${ColorShade}` | `accent-${ColorShade}` | 'black' | 'white';
@@ -73,6 +73,8 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 	protected readonly items: Map<string, Map<ColorShade, string>>;
 	/** The colors with a `c-*` class: `colors.only` and those of the builder. Left out, all of them. */
 	private readonly only?: Set<string>;
+	/** The shade each palette given by a `seed` spec holds its seed at, for calibration. */
+	readonly anchors = new Map<string, ColorShade>();
 
 	/** @param variants gives the override variables of each `c-*` class */
 	constructor(ctx: BuilderContext, private readonly options: Pick<Config, 'default' | 'accent' | 'colors' | 'debug'>, private readonly variants: VariantsGenerator) {
@@ -157,11 +159,16 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 
 	remove(name: string) {
 		super.remove(name);
-		if (!this.items.has(name)) this.variants.alias(name);
+		if (!this.items.has(name)) {
+			this.variants.alias(name);
+			this.anchors.delete(name);
+		}
 	}
 
 	private alias(name: string, value: ColorValue) {
 		this.variants.alias(name, typeof value === 'object' && 'vars' in value && value.overrideVars ? { ...value.overrideVars, vars: value.vars } : undefined);
+		if (typeof value === 'object' && 'seed' in value) this.anchors.set(name, seedAnchor(value));
+		else this.anchors.delete(name);
 	}
 
 	/** @param all also the palettes that `colors.only` leaves without a class */
