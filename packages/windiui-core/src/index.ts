@@ -1,5 +1,5 @@
 import type { ThemeProvider } from './types';
-import { resolveConfig, defineConfig, type ColorOptions, type ColorsConfig, type ColorValue, type Config, type DarkSelectorOption, type OverrideMode, type OverrideVars, type PresetName, type VariantScope } from './config';
+import { resolveConfig, defineConfig, type ColorOptions, type ColorsConfig, type ColorValue, type Config, type DarkSelectorOption, type ManifestFiles, type OverrideMode, type OverrideVars, type PresetName, type VariantScope } from './config';
 import { varsProvider } from './vars';
 import { ColorsGenerator } from "./colors";
 import { VariantsGenerator } from "./variants";
@@ -9,12 +9,15 @@ import { createBuilder } from './builder';
 import { calibrate, literalPalette, type CalibrateOptions, type CalibrationPolicy } from './theme/calibrate';
 import { wcag2 } from './theme/contrast';
 import { createResolver } from './theme/resolve';
+import { createManifest, type Manifest } from './manifest';
 
 export interface Generator {
 	readonly colors: ColorsGenerator;
 	readonly variants: VariantsGenerator;
 	readonly sizes: SizesGenerator;
 	readonly components: ComponentsGenerator;
+	/** The names the build registers, as the `manifest` option writes them. */
+	readonly manifest: () => Manifest;
 }
 
 export function create(config: Config) {
@@ -75,7 +78,8 @@ export function create(config: Config) {
 			notPalettes('`colors.only`', colors.unknownOnly());
 			notPalettes('an override', variants.overrideColors().filter(c => !palettes.includes(c) && c !== 'default' && c !== 'accent'));
 
-			return { colors, variants, sizes, components };
+			const gt = { colors, variants, sizes, components };
+			return { ...gt, manifest: () => createManifest(rConfig.prefix, gt) };
 		}
 	};
 }
@@ -84,7 +88,8 @@ export { varsProvider, type VarsProvider } from './vars';
 export type { Builder } from './builder';
 export { defineConfig };
 export { definePreset, type Preset, type PresetOptions } from './preset';
-export type { ColorOptions, ColorsConfig, ColorValue, Config, DarkSelectorOption, OverrideMode, OverrideVars, PresetName, VariantScope };
+export { manifestTypes, type Manifest } from './manifest';
+export type { ColorOptions, ColorsConfig, ColorValue, Config, DarkSelectorOption, ManifestFiles, OverrideMode, OverrideVars, PresetName, VariantScope };
 export type * from './types';
 export type { ColorShade, ExColorShade } from './colors';
 export type { PaletteSpec } from './theme/palette';

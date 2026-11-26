@@ -105,3 +105,20 @@ theme. See
 [Theme documents](/guide/theme-engine#theme-documents) and [the reference](/reference/theme-engine#theme-documents).
 
 **Migration:** none. The theme entry is about 16 kB gzipped for a browser now, from 14 kB.
+
+## Manifest and generated types
+
+The names of the `c-*`, `v-*` and `s-*` classes were only known inside the build, so apps typed them again by hand
+for component props, a safelist, a gallery or a lint rule ([#49](https://github.com/windi-ui/windi-ui/issues/49)).
+New:
+
+- The `manifest` option, `{ json, dts }`, which writes the names the build registers to a JSON file and a
+  declaration file with `WindiUIColor`, `WindiUIVariant` and `WindiUISize`. It is off by default, writes a file only
+  when its content changes, and orders the names stably. It works on Tailwind 4 and 3, from JavaScript or a config
+  file. See [`manifest`](/reference/options#manifest).
+- `engine.manifest()`, the same object without a build, and `manifestTypes(manifest)`, the declaration file, in
+  `@windi-ui/core` and `@windi-ui/core/theme` with the `Manifest` type. See [Manifest](/reference/theme-engine#manifest).
+- `safelistSource()` takes a manifest in place of a config.
+- `create(config).generator(theme)` returns a `manifest()` function next to the generators.
+
+**Migration:** none. Without the option nothing is written.

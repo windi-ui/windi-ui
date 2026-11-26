@@ -455,9 +455,10 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 		this.items.set(name, { ...variant, colors: byColor });
 	}
 
-	/** The colors that overrides name. */
-	overrideColors() {
-		return [...new Set([...this.items.values()].flatMap(v => Object.keys(v.colors ?? {}).flatMap(k => k.split(',').map(c => c.trim()))))];
+	/** The colors that overrides name; with `name`, those of that variant only. */
+	overrideColors(name?: string) {
+		const items = name == null ? [...this.items.values()] : [this.items.get(name)].filter(v => v != null);
+		return [...new Set(items.flatMap(v => Object.keys(v.colors ?? {}).flatMap(k => k.split(',').map(c => c.trim()))))];
 	}
 
 	/** Makes the palette `color` take its overrides from `{vars}-{variant}-{prop}` variables, or with no `value` stops that. */

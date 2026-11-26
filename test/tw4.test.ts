@@ -4,7 +4,9 @@ import { builderColors, colorsOnly, colorsOnlyCss, palettes, palettesCss, rootSe
 import { autoDark, darkOptOut, darkSelector } from './dark';
 import { baseline } from './baseline';
 import { forms } from './forms';
+import { tailwind4 as palettes4 } from '../packages/windiui-core/dist/theme/palettes.mjs';
 import { tailwind4 } from './helpers';
+import { manifest } from './manifest';
 import { overrides } from './overrides';
 import { presets, presetsCss } from './presets';
 import { readmeSamples } from './readme';
@@ -25,6 +27,7 @@ rootSelectorCss(compile);
 colorsOnly(compile);
 colorsOnlyCss(compile);
 safelistSourceCss(compile);
+manifest(compile, palettes4);
 forms(compile);
 darkSelector(compile);
 darkOptOut(compile);
