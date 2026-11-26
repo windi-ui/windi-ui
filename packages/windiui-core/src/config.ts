@@ -61,6 +61,14 @@ export interface ColorOptions {
 	utilities?: boolean;
 }
 
+/** Where the host writes the manifest, as paths relative to the working directory. A file is only written when its content changes. */
+export interface ManifestFiles {
+	/** The manifest as JSON: the prefix and the names of the colors, variants, sizes, components and overrides. */
+	json?: string;
+	/** A declaration file with the types `WindiUIColor`, `WindiUIVariant` and `WindiUISize`. */
+	dts?: string;
+}
+
 export interface ColorsConfig {
 	/** The palette behind `default`. Left out, it is a complete `default` palette of the theme, or else gray. */
 	default?: ColorValue;
@@ -99,6 +107,8 @@ export interface ResolvedConfig {
 	build?: (builder: Builder) => void;
 	/** Asks the host to emit every `c-*`, `v-*` and `s-*` class, also those it does not find in use. */
 	safelist: boolean;
+	/** Asks the host to write the names the build registers to these files. Left out, it writes nothing. */
+	manifest?: ManifestFiles;
 	/** Logs what is otherwise skipped silently, such as a theme palette without all 11 shades. */
 	debug: boolean;
 }
@@ -143,6 +153,7 @@ export function resolveConfig(config: Config): ResolvedConfig {
 		presets: presets.map(p => typeof p !== 'string' ? p : Object.hasOwn(PRESETS, p) ? PRESETS[p]() : unknownPreset(p)),
 		build,
 		safelist,
+		manifest: config.manifest,
 		debug
 	};
 }

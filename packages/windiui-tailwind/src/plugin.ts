@@ -1,7 +1,9 @@
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { dirname, resolve } from 'node:path';
 import type createPluginType from 'tailwindcss/plugin';
 import type { CSSRuleObject, DarkModeConfig } from 'tailwindcss/types/config';
-import { create, FALLBACK_PALETTES as FALLBACK, type Builder, type Config, type ColorShade, type ColorValue, type ApplyVariantMainProp, type ApplyVariantSubProp } from "@windi-ui/core";
+import { create, FALLBACK_PALETTES as FALLBACK, manifestTypes, type Builder, type Config, type ColorShade, type ColorValue, type ApplyVariantMainProp, type ApplyVariantSubProp } from "@windi-ui/core";
 import { resolvePalette, type Palette, type Palettes } from '@windi-ui/core/theme';
 import { loadWindiUIConfig } from './config';
 import { CONFIG, isLoadingConfig } from './utils/configState';
@@ -55,7 +57,7 @@ export interface TailwindV4Plugin {
 	config?: any;
 }
 
-const OPTIONS = ['prefix', 'componentPrefix', 'rootSelector', 'default', 'accent', 'colors', 'variantScope', 'overrides', 'overrideMode', 'variantUtilities', 'darkSelector', 'presets', 'build', 'safelist', 'debug', 'config'];
+const OPTIONS = ['prefix', 'componentPrefix', 'rootSelector', 'default', 'accent', 'colors', 'variantScope', 'overrides', 'overrideMode', 'variantUtilities', 'darkSelector', 'presets', 'build', 'safelist', 'manifest', 'debug', 'config'];
 
 /**
  * Inline options over those of the config file. An `@plugin` block writes the names in kebab-case.
@@ -76,7 +78,7 @@ function resolveOptions(options: PluginOptions = {}, strict = false): Config {
 		if (key === 'build' && value != null && typeof value !== 'function') {
 			throw new Error('WindiUI: `build` is a function, which an `@plugin` block cannot hold. Put it in a config file or a plugin module.');
 		}
-		if ((key === 'overrides' || key === 'variantUtilities') && value != null && (typeof value !== 'object' || Array.isArray(value))) {
+		if ((key === 'overrides' || key === 'variantUtilities' || key === 'manifest') && value != null && (typeof value !== 'object' || Array.isArray(value))) {
 			throw new Error(`WindiUI: \`${key}\` is an object, which an \`@plugin\` block cannot hold. Put it in a config file or a plugin module.`);
 		}
 
@@ -131,6 +133,19 @@ function utilityColors({ presets, build }: ReturnType<typeof create>['config'], 
 	return found;
 }
 
+/** Writes `content` to `file`, relative to the working directory, unless it already holds it: a watcher sees no change. */
+function writeIfChanged(file: string, content: string) {
+	const path = resolve(file);
+	try {
+		if (readFileSync(path, 'utf8') === content) return;
+	} catch {
+		// Not there yet
+	}
+
+	mkdirSync(dirname(path), { recursive: true });
+	writeFileSync(path, content);
+}
+
 /** @param ver the Tailwind major to build for; left out, it is taken from the Tailwind that runs the plugin. */
 export function createWindiUIPlugin<P = ReturnType<typeof createPlugin>>(ver?: 3 | 4): WindiUIPlugin<P> {
 	return Object.assign((options?: PluginOptions) => WindiUITailwindCSS(resolveOptions(options, calledByTailwind(1)), ver) as P, {
@@ -154,6 +169,7 @@ function WindiUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof crea
 	const resolved = new Map<string, Palette>();
 	let utilitiesReported = false;
 	let safelistReported = false;
+	let manifestReported = false;
 
 	return Object.assign(createPlugin((tw) => {
 		const tp = createTailwindTheme(tw, ver, utilities && [...utilities.keys()]);
@@ -227,6 +243,19 @@ function WindiUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof crea
 		if (wiu.config.safelist && tp.ver === 4 && !safelistReported) {
 			safelistReported = true;
 			console.warn(`WindiUI: \`safelist\` only works on Tailwind 3. On Tailwind 4, add this line to the stylesheet (\`safelistSource()\` from "@windi-ui/tailwind" returns the string, to keep it current with a test):\n@source inline("${classSource({ c: colorNames, v: variantNames, s: sizeNames })}");`);
+		}
+
+		const files = wiu.config.manifest;
+		if (files) {
+			const manifest = gt.manifest();
+			try {
+				if (files.json != null) writeIfChanged(files.json, `${JSON.stringify(manifest, null, 2)}\n`);
+				if (files.dts != null) writeIfChanged(files.dts, manifestTypes(manifest));
+			} catch (e) {
+				// The manifest is a side output: the CSS is still built.
+				if (!manifestReported) console.error(`WindiUI: cannot write the manifest: ${(e as Error).message}`);
+				manifestReported = true;
+			}
 		}
 
 		tw.matchUtilities({

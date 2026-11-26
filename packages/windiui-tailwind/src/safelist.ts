@@ -1,4 +1,4 @@
-import { create, type Config, type ThemeProvider } from '@windi-ui/core';
+import { create, type Config, type Manifest, type ThemeProvider } from '@windi-ui/core';
 import { unwrap } from './utils/configState';
 
 export type SafelistAxis = 'c' | 'v' | 's';
@@ -32,9 +32,15 @@ export function classSource(names: Record<SafelistAxis, string[]>, axes = AXES) 
 /**
  * The `c-*`, `v-*` and `s-*` classes a config registers, for `@source inline("...")` in a Tailwind 4 stylesheet.
  * It runs without Tailwind, so it knows the palettes of the theme only by name: see `palettes`.
- * @param config the options, or the plugin `windiui()` made from them.
+ * @param config the options, or the plugin `windiui()` made from them, or a manifest, which holds the names already
+ * and takes no `palettes`.
  */
-export function safelistSource(config: Config | { handler: unknown } = {}, { axes, palettes = PALETTES }: SafelistOptions = {}) {
+export function safelistSource(config: Config | { handler: unknown } | Manifest = {}, { axes, palettes = PALETTES }: SafelistOptions = {}) {
+	if ('sizes' in config && Array.isArray(config.sizes)) {
+		const { colors, variants, sizes } = config;
+		return classSource({ c: [...colors, ...colors.map(c => `accent-${c}`)], v: variants, s: sizes }, axes);
+	}
+
 	const colors = Object.fromEntries([...palettes, 'default', 'accent'].flatMap(p => SHADES.map(s => [`${p}-${s}`, ''])));
 	// Names do not depend on what the theme holds, only on which palettes it has.
 	const theme: ThemeProvider = {
