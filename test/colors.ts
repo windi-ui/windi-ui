@@ -196,6 +196,29 @@ export function builderColors(compile: Compile) {
 		expect(value(css, '--wui-c-500', '\\.c-primary')).toBe('var(--ui-color-primary-500)');
 	});
 
+	it('adds a color from a palette spec, with its utilities, and takes one as `default` (#46)', async () => {
+		const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const css = await compile(['c-brand', 'bg-brand-700', 'c-muted', 'c-alias', 'c-blue', 'c-bad'], {}, {
+			default: { seed: '#16a34a' },
+			build: builder => builder
+				.addColor('brand', { seed: '#2563eb' }, { utilities: true })
+				.setColor('muted', { palette: 'blue', adjust: { saturation: -20 } })
+				.addColor('alias', { palette: 'blue' })
+				.addColor('bad', { palette: 'nope', adjust: { hue: 10 } }, { utilities: true }),
+		});
+
+		// Once each, though Tailwind resolves its theme many times
+		expect(error.mock.calls.map(c => c[0] as string).sort()).toEqual(['WindiUI: "bad" gets no color utilities: unknown palette "nope".', 'WindiUI: unknown palette "nope".']);
+		// The seed is kept at its anchor, as hex on Tailwind 4 and as channels on Tailwind 3
+		expect(value(css, '--wui-c-700', '\\.c-brand')).toMatch(/^(#2563eb|37 99 235)$/);
+		expect(css).toMatch(/\.bg-brand-700 \{[^}]*(#2563eb|37 99 235)/);
+		expect(value(css, '--wui-c-500', '\\.c-muted')).toMatch(/^(#[\da-f]{6}|\d+ \d+ \d+)$/);
+		expect(value(css, '--wui-c-500', '\\.c-muted')).not.toBe(value(css, '--wui-c-500', '\\.c-blue'));
+		expect(value(css, '--wui-c-500', '\\.c-alias')).toBe(value(css, '--wui-c-500', '\\.c-blue'));
+		expect(css).not.toContain('.c-bad');
+		expect(value(css, '--wui-c-default-600')).toMatch(/^(#16a34a|22 163 74)$/);
+	});
+
 	it('declares the root variables on `rootSelector`', async () => {
 		const css = await compile(['c-red'], {}, { rootSelector: ':root, [data-theme-scope]' });
 		const root = ':root, \\[data-theme-scope\\]';

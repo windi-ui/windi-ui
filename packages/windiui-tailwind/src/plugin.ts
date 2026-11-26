@@ -2,6 +2,7 @@ import { createRequire } from 'node:module';
 import type createPluginType from 'tailwindcss/plugin';
 import type { CSSRuleObject, DarkModeConfig } from 'tailwindcss/types/config';
 import { create, type Builder, type Config, type ColorShade, type ColorValue, type ApplyVariantMainProp, type ApplyVariantSubProp } from "@windi-ui/core";
+import { resolvePalette, type Palettes } from '@windi-ui/core/theme';
 import { loadWindiUIConfig } from './config';
 import { CONFIG, isLoadingConfig } from './utils/configState';
 import { classSource } from './safelist';
@@ -331,9 +332,17 @@ function WindiUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof crea
 					const own: Record<string, unknown> = {};
 					for (const [name, value] of utilities) {
 						if (typeof value !== 'string') {
-							own[name] = 'vars' in value
-								? keyValuePairs(Object.keys(colors.gray), s => isV3 ? `rgb(var(${value.vars}-${s}) / <alpha-value>)` : `var(${value.vars}-${s})`)
-								: value;
+							try {
+								own[name] = 'vars' in value
+									? keyValuePairs(Object.keys(colors.gray), s => isV3 ? `rgb(var(${value.vars}-${s}) / <alpha-value>)` : `var(${value.vars}-${s})`)
+									// A palette spec, resolved over Tailwind's own palettes
+									: '50' in value ? value : resolvePalette(value, { palettes: colors as unknown as Palettes });
+							} catch (e) {
+								if (!utilitiesReported) {
+									utilitiesReported = true;
+									console.error(`WindiUI: "${name}" gets no color utilities: ${(e as Error).message.replace(/^WindiUI: /, '')}`);
+								}
+							}
 						} else if (value in colors) {
 							own[name] = colors[value as keyof typeof colors];
 						} else if (!utilitiesReported) {

@@ -193,7 +193,8 @@ Rules:
 ## Palettes from the builder
 
 A palette does not have to be in the Tailwind theme. The [builder](/reference/builder#colors) adds one from
-CSS variables, from its 11 shades, or as another name for a palette that exists:
+CSS variables, from its 11 shades, as another name for a palette that exists, or from a
+[palette spec](/guide/theme-engine#build-palettes) such as one brand color:
 
 ```ts
 windiui({
@@ -201,7 +202,8 @@ windiui({
 		builder
 			.addColor('primary', { vars: '--ui-color-primary' })
 			.addColor('brand', { 50: '#f0f7ff', /* ... */ 950: '#0a1a33' })
-			.addColor('danger', 'red');
+			.addColor('danger', 'red')
+			.addColor('ocean', { seed: '#2563eb' }); // 11 hex shades, #2563eb at 700
 	}
 });
 ```

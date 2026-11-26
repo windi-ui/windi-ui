@@ -2,6 +2,7 @@ import { Builder } from "./builder";
 import type { ColorShade } from "./colors";
 import type { ApplyVariantMainProp, VariantOverride, VariantProperty } from "./variants";
 import type { Preset } from "./preset";
+import type { PaletteSpec } from "./theme/palette";
 import { nuxtUi } from "./presets/nuxt-ui";
 
 const PRESETS = { 'nuxt-ui': nuxtUi };
@@ -28,10 +29,10 @@ export type DarkSelectorOption =
 	| (string & {});
 
 /**
- * A palette of 11 shades: the name of a palette of the theme, CSS variables named `{vars}-{shade}`, or the shades
- * themselves.
+ * A palette of 11 shades: the name of a palette of the theme, CSS variables named `{vars}-{shade}`, the shades
+ * themselves, or a palette spec, such as `{ seed: '#2563eb' }`, which gives literal shades at build time.
  */
-export type ColorValue = string | { vars: string, overrideVars?: OverrideVars } | Record<ColorShade, string>;
+export type ColorValue = string | { vars: string, overrideVars?: OverrideVars } | Record<ColorShade, string> | PaletteSpec;
 
 /**
  * Which variant values a palette given by CSS variables also takes from variables, named

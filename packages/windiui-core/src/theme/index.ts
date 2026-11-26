@@ -3,6 +3,7 @@ import { COLOR_SHADES, COLOR_SHADE_EX_REGEX, type ColorShade, type ExColorShade 
 import type { VariantProperties } from '../variants';
 import { createThemeProvider, type ThemeProviderOptions } from './provider';
 import { parseColor, wcag2, type ContrastMetric } from './contrast';
+import { adjustCurves, fitPalette, generatePalette, parsePalette, resolvePalette, samplePalette, type ResolvePaletteOptions } from './palette';
 
 export interface EngineOptions extends ThemeProviderOptions {
 	/** The metric of `contrast`. Left out, the contrast ratio of WCAG 2. */
@@ -44,6 +45,18 @@ export interface Engine {
 	resolve(variant: string, color: string): ResolvedVariant;
 	/** The contrast of two literal colors, by the metric of the engine: the ratio of WCAG 2 unless one is given. */
 	contrast(fg: string, bg: string): number;
+	/** `resolvePalette`, where a `palette` base names a palette of the engine unless `options` give other palettes. */
+	resolvePalette: typeof resolvePalette;
+	/** `fitPalette`: the curves nearest to a ramp. */
+	fitPalette: typeof fitPalette;
+	/** `adjustCurves`: the curves with an adjustment applied. */
+	adjustCurves: typeof adjustCurves;
+	/** `samplePalette`: the 11 shades of the curves, with the pins applied. */
+	samplePalette: typeof samplePalette;
+	/** `parsePalette`: validates a palette spec; throws with the path of the field out of bounds. */
+	parsePalette: typeof parsePalette;
+	/** `generatePalette`: the 11 shades for one brand color. */
+	generatePalette: typeof generatePalette;
 }
 
 const PROPS = (['bg', 'border', 'fg'] as const).flatMap(p => [p, `${p}-soft`, `${p}-muted`, `${p}-accent`] as const);
@@ -119,8 +132,19 @@ export function createEngine(config: Config = {}, { metric = wcag2, ...options }
 		},
 
 		contrast: (fg, bg) => metric(parseColor(fg), parseColor(bg)),
+
+		resolvePalette: (spec, opts?: ResolvePaletteOptions) => resolvePalette(spec, { palettes, ...opts }),
+		fitPalette,
+		adjustCurves,
+		samplePalette,
+		parsePalette,
+		generatePalette,
 	};
 }
 
 export { createThemeProvider, type Palette, type Palettes, type ThemeProviderOptions } from './provider';
 export { parseColor, wcag2, type ContrastMetric, type Rgb } from './contrast';
+export {
+	resolvePalette, fitPalette, adjustCurves, samplePalette, parsePalette, generatePalette,
+	type ChannelCurve, type PaletteAdjust, type PaletteBase, type PaletteCurves, type PaletteSpec, type ResolvePaletteOptions, type SamplePaletteOptions
+} from './palette';

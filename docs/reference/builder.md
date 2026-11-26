@@ -115,7 +115,7 @@ setColor(name: string, value: ColorValue, options?: { utilities?: boolean }): Bu
 updateColor(name: string, updater: (palette: Map<ColorShade, string>, ctx: Context) => Map<ColorShade, string> | void): Builder;
 removeColor(name: string): Builder;
 
-type ColorValue = string | { vars: string, overrideVars?: OverrideVars } | Record<ColorShade, string>;
+type ColorValue = string | { vars: string, overrideVars?: OverrideVars } | Record<ColorShade, string> | PaletteSpec;
 
 interface OverrideVars {
 	variants?: string[];                                // every registered variant
@@ -129,6 +129,7 @@ interface OverrideVars {
 | `{ vars: '--name', overrideVars: { ... } }` | The same; the variant overrides come from `--name-{variant}-{prop}` too. See [Variant overrides at runtime](/guide/colors#variant-overrides-at-runtime). |
 | `{ 50: '...', ..., 950: '...' }` | As given. All 11 are needed. |
 | `'red'` | A copy of that palette, which has to exist at that point of `build` |
+| `{ seed: '#2563eb' }`, `{ palette: 'blue', adjust: { ... } }`, ... | A [palette spec](/reference/theme-engine#palette-specs), resolved at build time to literal hex shades. A `palette` base names a palette that exists at that point of `build`; without `adjust` and `pins` it is the same as the name. |
 
 - A value that gives no palette, such as an unknown name, logs an error and is skipped.
 - `updateColor` gets the shades as a `Map`. On Tailwind v3 its values are RGB channels (`239 68 68`).
@@ -140,7 +141,8 @@ every other color utility exist, with opacity modifiers. The default is off.
 - With `{ vars }` the utilities reference your variables directly (`background-color: var(--name-500)`), so
   they follow them at runtime, also inside a container that sets them again.
 - A palette name must be one of Tailwind's own palettes (`'red'`, `'slate'`, ...) to get utilities; for
-  another one, an error is logged and the color is added without them.
+  another one, an error is logged and the color is added without them. The same goes for the `palette` base of a
+  palette spec, which is resolved over Tailwind's own palettes for the utilities.
 - Tailwind resolves its theme before the builder exists. To know these colors in time, WindiUI first runs
   `build` on a builder that only notes `addColor`, `setColor` and `removeColor`; its `*Names()` return empty
   lists. So `build` runs twice, and a color that is only added depending on what `*Names()` return gets no
