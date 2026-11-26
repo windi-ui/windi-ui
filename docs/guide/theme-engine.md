@@ -554,7 +554,7 @@ colors.primary.outline.light.rest.bg; // '#ffffff': opacity 0, painted over the 
 ## Where it runs
 
 The entry has an ES module and a CommonJS build, and imports nothing from Tailwind or `node:*`. Bundled for a browser,
-it is about 47 kB minified and 16 kB gzipped; the two palette tables of `@windi-ui/tailwind/palettes` add 16 kB, 4 kB
+it is about 51 kB minified and 18 kB gzipped; the two palette tables of `@windi-ui/tailwind/palettes` add 16 kB, 4 kB
 gzipped, when imported. Node runs both without flags.
 
 See the [theme engine reference](/reference/theme-engine) for every function and type.

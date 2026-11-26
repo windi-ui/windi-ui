@@ -4,13 +4,26 @@ outline: [2, 3]
 
 # Changes in 0.9
 
-What you can observe when upgrading from 0.8. Class names, options, the builder API and the CSS are unchanged; every
-entry is something new.
+What you can observe when upgrading from 0.8. Class names, options and the builder API are unchanged; every
+entry is something new: the theme engine and the tools built on it, then palettes and states given where they are
+used.
 
 ## Upgrading from 0.8
 
-Nothing changes in an existing project: the built CSS is the same, and the new entries are only loaded when you
-import them. Each section below ends with its migration notes.
+Everything new in 0.9 is off until you use or configure it, and the CSS of an existing config is the same. The new
+entry points are only loaded when you import them. A few inputs that 0.8 ignored, or that its types rejected, now
+do something:
+
+| Change | Who sees it | To keep the 0.8 behaviour |
+| --- | --- | --- |
+| [A color can be a palette spec](#palette-specs) | An object without the 11 shades, such as `{ seed: '#2563eb' }`, given to `addColor`, `setColor`, `colors.default` or `colors.accent`, which 0.8 logged and left out (`colors.default` and `colors.accent`: a build error) | Remove the color |
+| [`c-[--name]` and `c-accent-[--name]` make a palette](#a-palette-at-the-call-site) | A class such as `c-[--brand]` in your content, which emitted nothing in 0.8 | Remove the class |
+| [A state can be any selector](#states-given-by-any-selector) | A `pseudos` key that is not a pseudo-class, such as `'[data-state=open]'`, which 0.8's types rejected and whose variable names were not valid CSS; `apply-v-[...]` with the name of such a state, which emitted nothing | None; 0.8's output for such a key was broken |
+
+`btn`, `badge`, `bg-v`, `text-v`, `border-v` and every other class paint what they painted in 0.8. The `states` and
+`manifest` option names, which 0.8 ignored in a config file, warned about in a JavaScript call and rejected in an
+`@plugin` block, are now options. Each section below ends with its
+migration notes.
 
 ## The theme engine
 
@@ -22,7 +35,8 @@ What the Tailwind plugin knows, palettes, variants and overrides, was only reach
   browsers. See the [Theme engine guide](/guide/theme-engine).
 - `engine.variants()` and `engine.colors()`, the names of the plugin's `v-*` and `c-*` classes.
 - `engine.resolve(variant, color)`: the shade, literal color and opacity of each color property, in light and dark
-  mode, at rest and on hover, with the overrides applied. A test compares it with the CSS the plugin emits.
+  mode, at rest, on hover and in the variant's other states, with the overrides applied. A test compares it with the
+  CSS the plugin emits.
 - `engine.contrast(fg, bg)`: the WCAG 2 contrast of two colors given as hex, `rgb()` or `oklch()`, or another metric
   given as `metric`. `parseColor`, `wcag2` and `createThemeProvider` are exported as well.
 - The `@windi-ui/tailwind/palettes` entry, with Tailwind's default palettes as literals: `tailwind4` and
@@ -33,7 +47,8 @@ What the Tailwind plugin knows, palettes, variants and overrides, was only reach
 See the [Theme engine API](/reference/theme-engine).
 
 **Migration:** none. To use the engine, add `@windi-ui/core` to the package that imports it, and
-`@windi-ui/tailwind` for Tailwind's palettes.
+`@windi-ui/tailwind` for Tailwind's palettes. The theme entry is about 18 kB gzipped for a browser, with everything
+below.
 
 ## Palette specs
 
@@ -55,7 +70,7 @@ A palette could only be its 11 shades, a palette name or CSS variables
 The shades a spec gives are fixed by a test, and a change to them is a breaking release. See
 [Build palettes](/guide/theme-engine#build-palettes) and [Palette specs](/reference/theme-engine#palette-specs).
 
-**Migration:** none. The theme entry is about 12 kB gzipped for a browser now, from 9 kB.
+**Migration:** none.
 
 ## Contrast calibration
 
@@ -78,8 +93,7 @@ With Tailwind's palettes and `{ text: 4.5 }`, every pair of the built-in and the
 calibration, and `v-solid` changes for the nine palettes where white on 600 fails, and for no other. See
 [Calibrate contrast](/guide/theme-engine#calibrate-contrast) and [Calibration](/reference/theme-engine#calibration).
 
-**Migration:** none. Nothing is calibrated unless you call `calibrate`. The theme entry is about 14 kB gzipped for a
-browser now, from 12 kB.
+**Migration:** none. Nothing is calibrated unless you call `calibrate`.
 
 ## Theme documents
 
@@ -103,10 +117,10 @@ Runtime theming had no single description of a theme, and no function that turne
 
 A browser test checks that `toCss` next to a build of `vars` colors paints as a static build of the same palettes
 and overrides, on Tailwind 4 and 3 and also on `<html class="dark">`, and that `reset` keeps a scope from the page
-theme. See
-[Theme documents](/guide/theme-engine#theme-documents) and [the reference](/reference/theme-engine#theme-documents).
+theme. See [Theme documents](/guide/theme-engine#theme-documents) and
+[the reference](/reference/theme-engine#theme-documents).
 
-**Migration:** none. The theme entry is about 16 kB gzipped for a browser now, from 14 kB.
+**Migration:** none.
 
 ## Manifest and generated types
 
@@ -131,8 +145,9 @@ New:
 Which variant and color pairs of a config fail 4.5:1 could only be answered by a script or a test matrix written by
 hand ([#52](https://github.com/windi-ui/windi-ui/issues/52)). New:
 
-- The `windiui` command in `@windi-ui/core`, with `windiui audit`. It loads the config file the plugin loads,
-  `.ts` and `.js` included, or the one `--config` names, and prints the contrast of every variant on every color,
+- The `windiui` command in `@windi-ui/core`, with `windiui audit`; run it as `npx @windi-ui/core audit`. Through the
+  project's `@windi-ui/tailwind`, it loads the config file the plugin loads, `.ts` and `.js` included, or the one
+  `--config` names, and takes Tailwind's palettes. It prints the contrast of every variant on every color,
   light and dark, at rest and in every state the variant declares, with a translucent background painted over the
   backdrops. `--text`, `--border`, `--backdrop-light` and `--backdrop-dark` set the policy, `--palettes` adds
   palettes of your own, and `--format` prints a `table`, `markdown` or `json`. It exits with 1 when a pair fails, so
@@ -193,9 +208,10 @@ windiui({
 
 The variables of a pseudo-class keep their names, such as `--wui-v-bg-\:hover`. Another state is named by the new
 [`states`](/reference/options#states) option, here `--wui-v-bg-open`, or else by its words, such as
-`--wui-v-bg-data-highlighted`, so no name needs a bracket escaped. `apply-v` takes the same names.
-[Calibration](/guide/theme-engine#calibrate-contrast) and [`windiui audit`](/guide/contrast-audit) check every
-declared state but a disabled one, light and dark, and place a fix under that state's selector, as
+`--wui-v-bg-data-highlighted`, so no name needs a bracket escaped. `apply-v` takes the same names, and so does the
+theme engine: `engine.resolve('outline', 'blue').light.open`, and a theme document's overrides take the states the
+variants have. [Calibration](/guide/theme-engine#calibrate-contrast) and [`windiui audit`](/guide/contrast-audit)
+check every declared state but a disabled one, light and dark, and place a fix under that state's selector, as
 `pseudos: { '[data-state=open]': { bg: '700' } }`; `overrideVars`' default, `'calibrated'`, forwards those values
 too. See [States](/guide/customizing#states).
 

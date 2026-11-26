@@ -14,7 +14,7 @@ the same `btn` takes every palette of your theme, in light and dark mode.
 [Installation](https://windi-ui.github.io/windi-ui/guide/installation) ·
 [Options](https://windi-ui.github.io/windi-ui/reference/options) ·
 [Builder API](https://windi-ui.github.io/windi-ui/reference/builder) ·
-[Changes in 0.8](https://windi-ui.github.io/windi-ui/changes-0.8)
+[Changes in 0.9](https://windi-ui.github.io/windi-ui/changes-0.9)
 
 ## Features
 
@@ -198,9 +198,9 @@ hover, with translucent backgrounds painted over the backdrop. It loads the conf
 with 1 when a pair fails, so it can gate CI:
 
 ```bash
-npx windiui audit --config ./windiui.config.ts --text 4.5 --border 3
-npx windiui audit --palettes ./palettes.json --format json   # or table (default), markdown
-npx windiui audit --fix   # prints the overrideVariant calls that calibration would add
+npx @windi-ui/core audit --config ./windiui.config.ts --text 4.5 --border 3
+npx @windi-ui/core audit --palettes ./palettes.json --format json   # or table (default), markdown
+npx @windi-ui/core audit --fix   # prints the overrideVariant calls that calibration would add
 ```
 
 ```text
@@ -212,6 +212,12 @@ solid    blue     light  rest   fg/bg   5.25   ok
 `--fix` prints calls such as `b.overrideVariant('solid', ['amber', 'yellow'], { bg: '700', pseudos: { ':hover': { bg: '800' } } });`,
 ready to paste into `build`. `engine.audit(policy)` gives the same matrix to a test of your own. See
 [Contrast audit](https://windi-ui.github.io/windi-ui/guide/contrast-audit).
+
+## Upgrading from 0.8
+
+Nothing to change: everything new in 0.9 is off until you use it, and an existing config builds the same CSS. See
+[Changes in 0.9](https://windi-ui.github.io/windi-ui/changes-0.9#upgrading-from-0-8) for the few inputs that 0.8
+ignored and that now do something, such as a `c-[--brand]` class.
 
 ## Upgrading from 0.7
 
