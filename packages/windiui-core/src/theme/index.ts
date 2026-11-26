@@ -4,6 +4,7 @@ import { parseColor, wcag2, type ContrastMetric } from './contrast';
 import { adjustCurves, fitPalette, generatePalette, isPaletteSpec, parsePalette, resolvePalette, samplePalette, seedAnchor, type PaletteSpec, type ResolvePaletteOptions } from './palette';
 import { createResolver, type ResolvedVariant } from './resolve';
 import { calibrate, literalPalette, type CalibrateOptions, type CalibrationPolicy, type CalibrationResult } from './calibrate';
+import { createDocuments, type StaticTheme, type ThemeDocument, type ToCssOptions, type ToStaticOptions } from './document';
 
 export interface EngineOptions extends ThemeProviderOptions {
 	/** The metric of `contrast`. Left out, the contrast ratio of WCAG 2. */
@@ -31,6 +32,24 @@ export interface Engine {
 	 * of the engine's config win over the result, which holds only the differences.
 	 */
 	calibrate(colors: string[] | Record<string, CalibrationColor>, policy: CalibrationPolicy, options?: CalibrateOptions): CalibrationResult;
+	/**
+	 * Validates a theme document, such as one read from JSON, and returns a copy: its `version`, each color's palette
+	 * spec, and overrides of known variants, with known props and shades as values. Throws with the path of the first
+	 * field that is wrong, an unknown key included.
+	 */
+	parseTheme(json: unknown): ThemeDocument;
+	/**
+	 * The CSS variables of a theme document, on `selector`, light and dark: the 11 shades of each of its colors, which
+	 * the config gives by `vars`, and the override variables each color given by `vars` forwards (`overrideVars`),
+	 * where they change what the build paints. The document is validated first. Throws for a color of the document
+	 * that the config does not give by `vars`.
+	 */
+	toCss(theme: ThemeDocument, options?: ToCssOptions): string;
+	/**
+	 * The literal colors of a theme document, as hex: for every color of the engine with literal shades and every
+	 * color of the document, every variant, mode, state and color property, with its opacity painted over a backdrop.
+	 */
+	toStatic(theme: ThemeDocument, options?: ToStaticOptions): StaticTheme;
 	/** `resolvePalette`, where a `palette` base names a palette of the engine unless `options` give other palettes. */
 	resolvePalette: typeof resolvePalette;
 	/** `fitPalette`: the curves nearest to a ramp. */
@@ -63,6 +82,7 @@ export function createEngine(config: Config = {}, { metric = wcag2, ...options }
 	const { colors, variants } = windiui.generator(createThemeProvider({ ...options, palettes }));
 	const { resolve, root } = createResolver(windiui.vars, colors, variants);
 	const isColor = (color: string) => colors.names(true).includes(color) && !color.startsWith('accent-');
+	const documents = createDocuments({ prefix: windiui.config.prefix, vars: windiui.vars, colors, variants, palettes, resolve, root, metric });
 
 	const colorNames = () => {
 		const names = colors.names();
@@ -104,6 +124,10 @@ export function createEngine(config: Config = {}, { metric = wcag2, ...options }
 			return calibrate({ variants: variants.names(), resolve, root, metric }, targets, policy, opts);
 		},
 
+		parseTheme: documents.parseTheme,
+		toCss: documents.toCss,
+		toStatic: documents.toStatic,
+
 		resolvePalette: (spec, opts?: ResolvePaletteOptions) => resolvePalette(spec, { palettes, ...opts }),
 		fitPalette,
 		adjustCurves,
@@ -119,6 +143,7 @@ export type {
 	CalibrateOptions, CalibrationCell, CalibrationCheck, CalibrationFix, CalibrationPolicy, CalibrationReportEntry, CalibrationResult,
 	CalibrationStrategy, CalibrationStrategyFunction
 } from './calibrate';
+export type { StaticMode, StaticState, StaticTheme, StaticVariant, ThemeCalibration, ThemeDocument, ToCssOptions, ToStaticOptions } from './document';
 export { parseColor, wcag2, type ContrastMetric, type Rgb } from './contrast';
 export {
 	resolvePalette, fitPalette, adjustCurves, samplePalette, parsePalette, generatePalette,

@@ -33,7 +33,7 @@ export const literal = (color: string) => /^[\d.]+ [\d.]+ [\d.]+$/.test(color) ?
 
 /**
  * Resolves variants as an element of a color reads them, over the generators of one build: `variant` on `color`,
- * whose shades are `palette`, with `extra` added under the color's overrides. `root` gives the literal of a shade of
+ * whose shades are `palette`, with `extra` added under the color's overrides and `over` over them. `root` gives the literal of a shade of
  * the root variables, such as `white` or `default-950`.
  */
 export function createResolver(vars: VarsProvider, colors: ColorsGenerator, variants: VariantsGenerator) {
@@ -46,9 +46,9 @@ export function createResolver(vars: VarsProvider, colors: ColorsGenerator, vari
 	const shadeRef = new RegExp(`^var\\(${vars.c('')}([^,()\\s]+)\\)$`);
 	const variantRef = vars.v('');
 
-	const resolve = (variant: string, color: string, palette: Partial<Palette>, extra?: VariantOverride): ResolvedVariant => {
+	const resolve = (variant: string, color: string, palette: Partial<Palette>, extra?: VariantOverride, over?: VariantOverride): ResolvedVariant => {
 		// A value the variant leaves out is the default variant's, as the `*` rule or the `var()` fallback gives it
-		const layers = [...new Set(['default', variant])].map(v => variants.colorValues(v, color, v === variant ? extra : undefined)!);
+		const layers = [...new Set(['default', variant])].map(v => v === variant ? variants.colorValues(v, color, extra, over)! : variants.colorValues(v, color)!);
 		const light = layers.reduce<Record<string, string>>((values, l) => ({ ...values, ...l.light }), {});
 		const dark = layers.reduce<Record<string, string>>((values, l) => ({ ...values, ...l.light, ...l.dark }), {});
 

@@ -136,6 +136,32 @@ background of yellow, overrides and dark values included. See
 [Utilities](https://windi-ui.github.io/windi-ui/guide/utilities) and
 [Sizes](https://windi-ui.github.io/windi-ui/guide/sizes).
 
+#### Runtime themes
+
+The theme engine, `@windi-ui/core/theme`, turns a theme document, plain JSON, into the CSS variables of the colors
+your config gives by `vars`, or into literal colors. It runs in Node, edge runtimes and browsers:
+
+```js
+import { createEngine } from '@windi-ui/core/theme';
+import { tailwind4 } from '@windi-ui/core/theme/palettes';
+import config from './windiui.config';
+
+const engine = createEngine(config, { palettes: tailwind4 });
+// Validated, with the path of the first field that is wrong; a theme from a database or a request is safe to render
+const theme = engine.parseTheme({ version: 1, colors: { primary: { seed: '#2563eb' } }, overrides: { solid: { primary: { bg: '700' } } } });
+
+// A server-rendered style tag, per brand or tenant
+const head = `<style>${engine.toCss(theme, { darkSelector: '.dark' })}</style>`;
+
+// A live preview of a draft in <div data-theme-preview>, which `reset` keeps from the page theme
+previewStyle.textContent = engine.toCss(draft, { selector: '[data-theme-preview]', darkSelector: '.dark', reset: true });
+
+// An email: literal hex for every color, variant, mode, state and property
+const { bg, fg } = engine.toStatic(theme).primary.solid.light.rest;
+```
+
+See the [theme engine guide](https://windi-ui.github.io/windi-ui/guide/theme-engine#theme-documents).
+
 ## Upgrading from 0.7
 
 See [Changes in 0.8](https://windi-ui.github.io/windi-ui/changes-0.8#upgrading-from-0-7). The one thing to check: 0.8

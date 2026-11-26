@@ -1,0 +1,36 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`toCss > writes the shades and the override variables that change, with the dark block compounded 1`] = `
+":root {
+  --wui-radius: 0.25rem;
+  --ui-color-primary-50: #f4f8ff;
+  --ui-color-primary-100: #e7efff;
+  --ui-color-primary-200: #d0e1ff;
+  --ui-color-primary-300: #adcaff;
+  --ui-color-primary-400: #86afff;
+  --ui-color-primary-500: #5f94ff;
+  --ui-color-primary-600: #3a78ff;
+  --ui-color-primary-700: #2563eb;
+  --ui-color-primary-800: #1a4bb9;
+  --ui-color-primary-900: #133889;
+  --ui-color-primary-950: #0f285d;
+  --ui-color-primary-solid-bg: var(--ui-color-primary-700);
+  --ui-color-primary-solid-bg-hover: var(--ui-color-primary-800);
+  --ui-color-secondary-50: #f2f6fd;
+  --ui-color-secondary-100: #dfe8f9;
+  --ui-color-secondary-200: #c6d9fa;
+  --ui-color-secondary-300: #a2c2f8;
+  --ui-color-secondary-400: #749ff0;
+  --ui-color-secondary-500: #5b7eef;
+  --ui-color-secondary-600: #4a62e3;
+  --ui-color-secondary-700: #3f4dc8;
+  --ui-color-secondary-800: #353ea3;
+  --ui-color-secondary-900: #2c337a;
+  --ui-color-secondary-950: #242950;
+}
+:root:where(.dark, .dark *) {
+  --ui-color-primary-outline-fg: var(--ui-color-primary-300);
+  --ui-color-primary-outline-fg-hover: var(--ui-color-primary-300);
+}
+"
+`;

@@ -94,7 +94,7 @@ type Paint = (fix: CalibrationFix) => Record<Prop | 'backdrop', Rgb>;
 const CELLS = [['light', 'rest'], ['light', 'hover'], ['dark', 'rest'], ['dark', 'hover']] as const;
 
 /** `color` at `alpha` over `under`, blended in sRGB as a browser does; throws without `under` unless it is opaque. */
-function over(color: Rgb, alpha: number, under?: Rgb) {
+export function over(color: Rgb, alpha: number, under?: Rgb) {
 	if (alpha === 1) return color;
 	if (!under) throw new Error('WindiUI: no backdrop.');
 	return color.map((x, i) => x * alpha + under[i] * (1 - alpha)) as Rgb;

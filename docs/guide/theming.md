@@ -181,7 +181,8 @@ the cost in CSS.
 
 To write the theme from code that has no Tailwind, such as a server that renders a `<style>` tag per tenant, the
 [theme engine](/guide/theme-engine) knows the palettes, variants and overrides of your config, and the contrast of
-each pair.
+each pair. Its `toCss` writes these variables from a [theme document](/guide/theme-engine#theme-documents), a
+JSON description of the theme, for the whole page or for a scope.
 
 ## Dark mode
 

@@ -345,7 +345,7 @@ function shade(vars: VarsProvider, key: string, value: string) {
 }
 
 /** Merges `source` into `target` in depth; `under` keeps the values `target` has. */
-function merge(target: Record<string, unknown>, source: object, under: boolean) {
+export function merge(target: Record<string, unknown>, source: object, under: boolean) {
 	for (const [key, value] of Object.entries(source)) {
 		if (value && typeof value === 'object') merge((target[key] ??= {}) as Record<string, unknown>, value as object, under);
 		else if (!under || !(key in target)) target[key] = value;
@@ -496,11 +496,25 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 	}
 
 	/**
+	 * The values of variant `name` that the palette `color` takes from override variables, as pairs of the key and the
+	 * variable, such as `['bg-:hover', '--ui-color-primary-solid-bg-hover']`; `undefined` when it forwards none of `name`.
+	 */
+	forwarded(name: string, color: string): [key: string, variable: string][] | undefined {
+		const alias = this.aliases.get(color);
+		if (!alias || (alias.variants && !alias.variants.includes(name))) return;
+
+		const { vars, props = 'calibrated' } = alias;
+		const values = this.values(name);
+		const keys = props === 'all' ? Object.keys({ ...values.light, ...values.dark }) : props === 'calibrated' ? CALIBRATED : props;
+		return keys.map(k => [k, `${vars}-${name}-${k.replace(/:/g, '')}`]);
+	}
+
+	/**
 	 * The values of a variant, and its overrides by color: `statics` as configured, `entries` with what a palette given
 	 * by variables forwards. `keys` get an override variable, which the colors of `varEntries` set.
-	 * @param extra an override of one color, as if it were set under the ones it has
+	 * @param extra overrides of one color: `over` as if it were set over the ones it has, then `override` under them
 	 */
-	private resolved(name: string, extra?: { color: string, override: VariantOverride }) {
+	private resolved(name: string, extra?: { color: string, override?: VariantOverride, over?: VariantOverride }) {
 		const values = this.values(name);
 
 		const statics = new Map<string, Flat>();
@@ -519,16 +533,17 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 		for (const [key, own] of Object.entries(this.items.get(name)!.colors ?? {})) {
 			for (const color of key.split(',').map(c => c.trim()).filter(this.hasColor)) add(color, own);
 		}
-		if (extra) add(extra.color, extra.override, true);
+		if (extra?.over) add(extra.color, extra.over);
+		if (extra?.override) add(extra.color, extra.override, true);
 
-		const forwarded = new Map<string, string[]>();
-		for (const [color, { variants, props = 'calibrated' }] of this.aliases) {
-			if (variants && !variants.includes(name)) continue;
-			forwarded.set(color, props === 'all' ? Object.keys({ ...values.light, ...values.dark }) : props === 'calibrated' ? CALIBRATED : props);
+		const forwarded = new Map<string, [string, string][]>();
+		for (const color of this.aliases.keys()) {
+			const pairs = this.forwarded(name, color);
+			if (pairs) forwarded.set(color, pairs);
 		}
 
 		const staticKeys = [...statics.values()].flatMap(f => [...Object.keys(f.light), ...Object.keys(f.dark)]);
-		const forwardedKeys = [...forwarded.values()].flat();
+		const forwardedKeys = [...forwarded.values()].flat().map(([k]) => k);
 
 		// A value the variant leaves out is the default variant's, which the variant now sets itself
 		const def = this.values('default');
@@ -540,13 +555,12 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 
 		const entries = new Map(statics);
 		const aliasEntries = new Map<string, Flat>();
-		for (const [color, keys] of forwarded) {
-			const { vars } = this.aliases.get(color)!;
+		for (const [color, pairs] of forwarded) {
 			const own = statics.get(color);
 			const entry: Flat = { light: {}, dark: {} };
-			for (const k of keys) {
+			for (const [k, variable] of pairs) {
 				// Unset, the variable is invalid, and the static override or the variant's value applies
-				const runtime = `var(${vars}-${name}-${k.replace(/:/g, '')}`;
+				const runtime = `var(${variable}`;
 				entry.light[k] = `${runtime}${own?.light[k] ? `, ${own.light[k]}` : ''})`;
 				if (own?.dark[k]) entry.dark[k] = `${runtime}, ${own.dark[k]})`;
 				else if (k in values.dark) entry.dark[k] = `${runtime})`;
@@ -601,14 +615,15 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 	 * The values of a variant on an element of `color`, its overrides applied as the `c-*` and `v-*` classes would
 	 * resolve them. `dark` holds the values that change in dark mode.
 	 * @param extra values for this color under its overrides, as a calibration would add them
+	 * @param over values for this color over its overrides, as a theme document sets them at runtime
 	 */
-	colorValues(name: string, color: string, extra?: VariantOverride): Flat | undefined {
+	colorValues(name: string, color: string, extra?: VariantOverride, over?: VariantOverride): Flat | undefined {
 		if (!this.items.has(name)) {
 			console.error(`Variant "${name}" not found.`);
 			return;
 		}
 
-		const { values, entries } = this.resolved(name, extra && { color, override: extra });
+		const { values, entries } = this.resolved(name, (extra ?? over) && { color, override: extra, over });
 		const entry = entries.get(color);
 		// An override that reads a variable which is not set leaves the variant's value, as the `var()` of the `v-*` class does
 		const or = (value: string, base: string) => {
