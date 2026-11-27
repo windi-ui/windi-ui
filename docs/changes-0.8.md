@@ -383,3 +383,15 @@ and `accent: indigo;`. The `ColorsGenerator` constructor takes the `colors` opti
 
 **Migration:** move a top-level `default` or `accent` into `colors`. The top-level options still work in 0.8 and
 are removed in 0.9; `colors.default` and `colors.accent` win over them.
+
+### `componentPrefix`
+
+The new [`componentPrefix`](/reference/options#componentprefix) option prefixes the class names of the components:
+`componentPrefix: 'wui'` makes them `wui-btn` and `wui-badge`
+([#87](https://github.com/windi-ui/windi-ui/issues/87)). A class of your own can then take a component with
+`@apply`, such as `.btn { @apply wui-btn; }` in `@layer components`, where the utilities on the element win over it
+on Tailwind v4, hover included ([Use the components in your own layer](/guide/components#use-the-components-in-your-own-layer)).
+
+Without the option the CSS is unchanged.
+
+**Migration:** none.

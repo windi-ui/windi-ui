@@ -74,6 +74,11 @@ export interface ColorsConfig {
 
 export interface ResolvedConfig {
 	prefix: string;
+	/**
+	 * Prefixes the class names of the components: `'wui'` makes `btn` and `badge` `wui-btn` and `wui-badge`. Left out,
+	 * they have none.
+	 */
+	componentPrefix?: string;
 	/** Where the root color and size variables are declared. More selectors let a scoped theme resolve them again. */
 	rootSelector: string;
 	colors: ColorsConfig;
@@ -118,8 +123,14 @@ export function resolveConfig(config: Config): ResolvedConfig {
 		debug = false
 	} = config;
 
+	// The dash is added: `wui-` would give `.wui--btn`, which nothing matches
+	if (config.componentPrefix && !/^(?![cvs]$)[a-z_]([\w-]*\w)?$/i.test(String(config.componentPrefix))) {
+		throw new Error(`WindiUI: \`componentPrefix\` "${config.componentPrefix}" is not a class-name prefix, or is \`c\`, \`v\` or \`s\`, which the color, variant and size classes take. Write it without the dash, such as \`wui\`.`);
+	}
+
 	return {
 		prefix,
+		componentPrefix: config.componentPrefix,
 		rootSelector,
 		// `colors.*` over the top-level options of 0.8.0
 		colors: { ...config.colors, default: config.colors?.default ?? config.default, accent: config.colors?.accent ?? config.accent },

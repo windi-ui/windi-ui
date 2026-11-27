@@ -60,7 +60,11 @@ state, or mark it important:
 <button class="btn bg-red-500!">Red</button>
 ```
 
-Tailwind v3 keeps components in their own layer, so a plain utility wins there.
+Or build your own `btn` in the components layer: see
+[Use the components in your own layer](#use-the-components-in-your-own-layer).
+
+Tailwind v3 emits components before utilities, so a plain utility wins there at rest. On hover `btn`'s `:hover`
+rule is more specific, so the same two fixes apply.
 :::
 
 ::: tip Border style
@@ -138,6 +142,35 @@ Inbox
 	<span class="badge v-solid c-red leading-none rounded-full absolute top-0 start-full -translate-x-1/2 -translate-y-1/2">32</span>
 </button>
 ```
+
+## Use the components in your own layer
+
+With [`componentPrefix`](/reference/options#componentprefix), a component gets a class name of its own, which a
+class of yours can take with `@apply`. Put that class in `@layer components`, and the utilities on the element win
+over it, including on hover:
+
+```css
+@plugin "@windi-ui/tailwind" {
+	component-prefix: wui;
+}
+
+@layer components {
+	.btn { @apply wui-btn; }
+	.badge { @apply wui-badge; }
+}
+```
+
+```html
+<button class="btn bg-red-500">Red, also on hover</button>
+```
+
+- `.btn` gets all of `wui-btn`: its style, its `:hover` rule and the dark values of the variant. `c-*`, `v-*` and
+  `s-*` work on it as before.
+- `.wui-btn` itself is only emitted where your content uses it.
+- On Tailwind v4 this is what makes `bg-red-500` win on hover: the components layer comes before the utilities
+  layer, whatever the specificity. Tailwind v3 has no cascade layers, so there `.btn:hover` still beats a plain
+  utility on hover.
+- Add your own declarations next to `@apply`, such as `.btn { @apply wui-btn; gap: 0.5rem; }`.
 
 ## Your own components
 
