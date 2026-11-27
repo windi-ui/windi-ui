@@ -32,7 +32,7 @@ export function create(config: Config) {
 		generator(theme: ThemeProvider): Generator {
 			const ctx = { vars, theme };
 			const variants = new VariantsGenerator(ctx, rConfig.variantScope, rConfig.overrideMode);
-			const colors = new ColorsGenerator(ctx, rConfig, variants);
+			const colors = new ColorsGenerator(ctx, rConfig.colors, variants, rConfig.debug);
 			const sizes = new SizesGenerator(ctx);
 			const components = new ComponentsGenerator({ ...ctx, colors, variants });
 

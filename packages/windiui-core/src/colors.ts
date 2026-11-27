@@ -1,6 +1,6 @@
 import { cssVars, type CSSVarName } from './vars';
 import { type BuilderContext, VarsGeneratorBase } from "./base";
-import type { ColorValue, Config } from "./config";
+import type { ColorValue, ColorsConfig } from "./config";
 import type { ApplyVariantMainProp, VariantsGenerator } from "./variants";
 import type { CSS } from "./types";
 
@@ -72,13 +72,16 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 	/** The colors with a `c-*` class: `colors.only` and those of the builder. Left out, all of them. */
 	private readonly only?: Set<string>;
 
-	/** @param variants gives the override variables of each `c-*` class */
-	constructor(ctx: BuilderContext, private readonly options: Pick<Config, 'default' | 'accent' | 'colors' | 'debug'>, private readonly variants: VariantsGenerator) {
+	/**
+	 * @param variants gives the override variables of each `c-*` class
+	 * @param debug logs a theme palette without all 11 shades
+	 */
+	constructor(ctx: BuilderContext, private readonly options: ColorsConfig, private readonly variants: VariantsGenerator, debug?: boolean) {
 		super(ctx);
-		this.colors = getColorMap(this.theme.colors(), options.debug);
+		this.colors = getColorMap(this.theme.colors(), debug);
 		this.items = this.colors.palette;
 
-		const only = options.colors?.only;
+		const only = options.only;
 		if (only) {
 			this.only = new Set(only);
 			// `:root` applies `default` and `accent` as `c-default` and `c-accent-accent`, with or without their classes
@@ -90,7 +93,7 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 			if (value == null) continue;
 
 			const palette = this.resolve(value);
-			if (!palette) throw new Error(`WindiUI: the \`${name}\` option does not give a palette.`);
+			if (!palette) throw new Error(`WindiUI: \`colors.${name}\` does not give a palette.`);
 			this.items.set(name, palette);
 			this.alias(name, value);
 		}
@@ -154,7 +157,7 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 
 	/** The names of `colors.only` that are not palettes. */
 	unknownOnly() {
-		return (this.options.colors?.only ?? []).filter(c => !this.items.has(c));
+		return (this.options.only ?? []).filter(c => !this.items.has(c));
 	}
 
 	cssVars(name: string) {

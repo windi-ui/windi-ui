@@ -150,7 +150,7 @@ resolved once. A container that sets those variables again keeps the colors of t
 
 ```ts
 windiui({
-	default: { vars: '--ui-color-neutral' },
+	colors: { default: { vars: '--ui-color-neutral' } },
 	rootSelector: ':root, [data-theme]',
 });
 ```

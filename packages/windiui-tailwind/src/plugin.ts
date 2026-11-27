@@ -89,11 +89,14 @@ function resolveOptions(options: PluginOptions = {}, strict = false): Config {
 		if (key === 'colors' && (typeof value === 'string' || Array.isArray(value))) inline[key] = { only: [value].flat() };
 	}
 
-	const { config: file, ...config } = inline as PluginOptions;
+	const { config: file, default: def, accent, ...config } = inline as PluginOptions;
+	// `default: slate;` of an `@plugin` block is `colors.default`, which a block cannot write as an object.
+	config.colors = { ...(def != null ? { default: def } : {}), ...(accent != null ? { accent } : {}), ...config.colors };
 	// A call with `build` is written in code, a plugin module or a Tailwind config, and is taken as the whole config.
 	if (file === false || (file == null && config.build) || isLoadingConfig()) return config;
 
-	return { ...loadWindiUIConfig({ config: file }).config, ...config };
+	const loaded = loadWindiUIConfig({ config: file }).config;
+	return { ...loaded, ...config, colors: { ...loaded.colors, ...config.colors } };
 }
 
 /**
@@ -157,7 +160,7 @@ function WindiUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof crea
 
 		for (const [name, shades] of Object.entries(mixReported ? {} : missing) as ['default' | 'accent', string[]][]) {
 			mixReported = true;
-			console.warn(`WindiUI: the theme's "${name}" palette has no shade ${shades.join(', ')}; ${shades.length > 1 ? 'these are' : 'it is'} taken from ${FALLBACK[name]}. Give it all 11 shades, or set the \`${name}\` option.`);
+			console.warn(`WindiUI: the theme's "${name}" palette has no shade ${shades.join(', ')}; ${shades.length > 1 ? 'these are' : 'it is'} taken from ${FALLBACK[name]}. Give it all 11 shades, or set \`colors.${name}\`.`);
 		}
 
 		// Tailwind puts a palette of the app's own theme over the one a plugin gives, so the option cannot replace it.
@@ -165,7 +168,7 @@ function WindiUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof crea
 			const theme = tw.theme<Record<string, string>>(`colors.${name}`, {});
 			if (Object.keys(palette).some(s => theme[s] !== palette[s])) {
 				mixReported = true;
-				console.warn(`WindiUI: the theme has a "${name}" palette of its own, which utilities such as \`bg-${name}-500\` keep using. The \`${name}\` option only sets \`c-${name}\` and the variables. Use one of the two.`);
+				console.warn(`WindiUI: the theme has a "${name}" palette of its own, which utilities such as \`bg-${name}-500\` keep using. \`colors.${name}\` only sets \`c-${name}\` and the variables. Use one of the two.`);
 			}
 		}
 
@@ -324,7 +327,7 @@ function WindiUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof crea
 					missing = {};
 					for (const name of ['default', 'accent'] as const) {
 						const shades = Object.keys(fallback[name]).filter(s => !theme.includes(`${name}-${s}`));
-						if (wiu.config[name] == null && shades.length && shades.length < 11) missing[name] = shades;
+						if (wiu.config.colors[name] == null && shades.length && shades.length < 11) missing[name] = shades;
 					}
 
 					utilities ??= utilityColors(wiu.config, inTheme);
@@ -344,8 +347,8 @@ function WindiUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof crea
 
 					// With an option the theme color follows the root variables, which hold the palette the option gives.
 					followed = {
-						...(wiu.config.default != null ? { default: follow('default-') } : {}),
-						...(wiu.config.accent != null ? { accent: follow('accent-') } : {}),
+						...(wiu.config.colors.default != null ? { default: follow('default-') } : {}),
+						...(wiu.config.colors.accent != null ? { accent: follow('accent-') } : {}),
 					};
 
 					return { ...own, c: follow(''), ...fallback, ...followed };

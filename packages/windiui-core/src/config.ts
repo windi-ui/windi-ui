@@ -61,6 +61,10 @@ export interface ColorOptions {
 }
 
 export interface ColorsConfig {
+	/** The palette behind `default`. Left out, it is a complete `default` palette of the theme, or else gray. */
+	default?: ColorValue;
+	/** The palette behind `accent`. Left out, it is a complete `accent` palette of the theme, or else blue. */
+	accent?: ColorValue;
 	/**
 	 * The palettes of the theme that get a `c-*` and a `c-accent-*` class; left out, all of them. Colors of the builder
 	 * always get theirs, and the root variables of `default` and `accent` stay.
@@ -72,11 +76,7 @@ export interface ResolvedConfig {
 	prefix: string;
 	/** Where the root color and size variables are declared. More selectors let a scoped theme resolve them again. */
 	rootSelector: string;
-	/** The palette behind `default`. Left out, it is a complete `default` palette of the theme, or else gray. */
-	default?: ColorValue;
-	/** The palette behind `accent`. Left out, it is a complete `accent` palette of the theme, or else blue. */
-	accent?: ColorValue;
-	colors?: ColorsConfig;
+	colors: ColorsConfig;
 	variantScope: VariantScope;
 	/** Per-color overrides of variants: `{ solid: { yellow: { bg: '700' }, 'amber,lime': { ... } } }`. */
 	overrides?: Record<string, Record<string, VariantOverride>>;
@@ -99,6 +99,10 @@ export interface ResolvedConfig {
 
 export type Config = Partial<Omit<ResolvedConfig, 'presets'>> & {
 	presets?: (Preset | PresetName)[];
+	/** @deprecated Use `colors.default`; removed in 0.9. */
+	default?: ColorValue;
+	/** @deprecated Use `colors.accent`; removed in 0.9. */
+	accent?: ColorValue;
 };
 
 export function resolveConfig(config: Config): ResolvedConfig {
@@ -117,9 +121,8 @@ export function resolveConfig(config: Config): ResolvedConfig {
 	return {
 		prefix,
 		rootSelector,
-		default: config.default,
-		accent: config.accent,
-		colors: config.colors,
+		// `colors.*` over the top-level options of 0.8.0
+		colors: { ...config.colors, default: config.colors?.default ?? config.default, accent: config.colors?.accent ?? config.accent },
 		variantScope,
 		overrides: config.overrides,
 		overrideMode,

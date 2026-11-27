@@ -19,7 +19,7 @@ export function palettes(compile: Compile) {
 
 	it('takes `default` and `accent` from a palette name', async () => {
 		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-		const css = await compile(used, {}, { default: 'slate', accent: 'indigo' });
+		const css = await compile(used, {}, { colors: { default: 'slate', accent: 'indigo' } });
 
 		for (const shade of ['50', '500', '950']) {
 			const slate = value(css, `--wui-c-${shade}`, '\\.c-slate');
@@ -36,8 +36,14 @@ export function palettes(compile: Compile) {
 		expect(css).toMatch(/\.text-accent-600\\\/50 \{[^}]*var\(--wui-c-accent-600\)/);
 	});
 
+	it('still takes the deprecated top-level `default` and `accent`, below `colors`', async () => {
+		const css = await compile(used, {}, { colors: { default: 'slate', accent: 'indigo' } });
+		expect(await compile(used, {}, { default: 'slate', accent: 'indigo' })).toBe(css);
+		expect(await compile(used, {}, { default: 'red', accent: 'indigo', colors: { default: 'slate' } })).toBe(css);
+	});
+
 	it('takes them from CSS variables and from the shades themselves', async () => {
-		const css = await compile(used, {}, { default: { vars: '--brand' }, accent: ramp });
+		const css = await compile(used, {}, { colors: { default: { vars: '--brand' }, accent: ramp } });
 
 		expect(value(css, '--wui-c-default-500')).toBe('var(--brand-500)');
 		expect(value(css, '--wui-c-500')).toBe('var(--brand-500)');
@@ -47,8 +53,8 @@ export function palettes(compile: Compile) {
 
 	it('rejects an option that gives no palette', async () => {
 		vi.spyOn(console, 'error').mockImplementation(() => {});
-		await expect(compile(used, {}, { default: 'nope' })).rejects.toThrow('`default` option');
-		await expect(compile(used, {}, { accent: { 500: '#000' } as never })).rejects.toThrow('`accent` option');
+		await expect(compile(used, {}, { colors: { default: 'nope' } })).rejects.toThrow('`colors.default`');
+		await expect(compile(used, {}, { colors: { accent: { 500: '#000' } as never } })).rejects.toThrow('`colors.accent`');
 	});
 
 	it('takes a complete palette of the theme, after the option', async () => {
@@ -62,7 +68,7 @@ export function palettes(compile: Compile) {
 		expect(warn).not.toHaveBeenCalled();
 
 		// The option sets the variables. Tailwind keeps the theme's own palette over a plugin's, so the utilities stay with it.
-		const option = await compile(used, config, { default: 'slate' });
+		const option = await compile(used, config, { colors: { default: 'slate' } });
 		expect(value(option, '--wui-c-default-500')).toBe(value(option, '--wui-c-500', '\\.c-slate'));
 		expect(option).toMatch(/\.bg-default-500 \{[^}]*(#060606|6 6 6)/);
 		expect(warn).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('the theme has a "default" palette of its own'));
@@ -106,7 +112,7 @@ export function palettesCss(compile: Compile & { css: CompileCss }) {
 
 	it('takes the palette names from the `@plugin` block', async () => {
 		expect(await compile.css('@plugin "@windi-ui/tailwind" { default: slate; accent: indigo; }', candidates))
-			.toBe(await compile(candidates, {}, { default: 'slate', accent: 'indigo' }));
+			.toBe(await compile(candidates, {}, { colors: { default: 'slate', accent: 'indigo' } }));
 	});
 
 	it('takes a complete `@theme` palette, and warns about one that is not', async () => {

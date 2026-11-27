@@ -64,6 +64,20 @@ it('lets inline options override the file, option by option', async () => {
 	expect(css).toContain('--inline-v-bg: var(--inline-c-white);');
 });
 
+it('merges `colors` of the file and of the block, key by key', async () => {
+	const expected = await plugin('{ default: slate; colors: slate; }');
+	write('windiui.config.json', { colors: { only: ['slate'] } });
+
+	expect(await plugin('{ default: slate; }')).toBe(expected);
+});
+
+it('reads the deprecated top-level `default` of a file', async () => {
+	const expected = await plugin('{ default: slate; }');
+	write('windiui.config.json', { default: 'slate' });
+
+	expect(await plugin()).toBe(expected);
+});
+
 it('searches for no file with `config: false`', async () => {
 	write('windiui.config.json', { prefix: 'found' });
 
