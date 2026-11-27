@@ -1,5 +1,6 @@
 import { expect, it, vi } from 'vitest';
 import type { Compile } from './helpers';
+import { light } from './overrides';
 
 /** Cases that hold on every supported Tailwind version; each fixture's test file runs them. */
 export function cases(compile: Compile) {
@@ -7,10 +8,28 @@ export function cases(compile: Compile) {
 	it('emits and logs nothing for unknown arbitrary values', async () => {
 		const logs = (['log', 'warn', 'error'] as const).map(m => vi.spyOn(console, m).mockImplementation(() => {}));
 
-		expect(await compile(['hidden', 'c-[foo]', 'v-[foo]', 's-[foo]'])).toBe(await compile(['hidden']));
+		expect(await compile(['hidden', 'c-[foo]', 'c-[#fff]', 'c-accent-[foo]', 'v-[foo]', 's-[foo]'])).toBe(await compile(['hidden']));
 		for (const log of logs) expect(log).not.toHaveBeenCalled();
 
 		vi.restoreAllMocks();
+	});
+
+	// #50
+	it('makes a palette of the `--name-{shade}` variables with `c-[--name]` and `c-accent-[--name]`', async () => {
+		const css = await compile(
+			['c-[--brand]', 'c-accent-[--brand]', 'md:c-[--brand]'],
+			{},
+			{ build: b => b.overrideVariant('solid', 'yellow', { bg: '700', 'bg-accent': '800' }) },
+			'.card { @apply c-[--brand]; }'
+		);
+
+		expect(light(css, '.c-\\[--brand\\]', '--wui-c-50')).toBe('var(--brand-50)');
+		expect(light(css, '.c-\\[--brand\\]', '--wui-cv-solid-bg')).toBe('initial');
+		expect(light(css, '.c-accent-\\[--brand\\]', '--wui-c-accent-950')).toBe('var(--brand-950)');
+		expect(light(css, '.c-accent-\\[--brand\\]', '--wui-cv-solid-bg-accent')).toBe('initial');
+		// the class, its `md:` copy and the `@apply` rule
+		expect(css.match(/--wui-c-950: var\(--brand-950\)/g)).toHaveLength(3);
+		expect(css).toContain('.md\\:c-\\[--brand\\]');
 	});
 
 	// #33: only an `@plugin` block is strict about it, as a JavaScript call ignored such an option in 0.7.

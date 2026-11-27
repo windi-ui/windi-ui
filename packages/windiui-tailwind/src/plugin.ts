@@ -31,6 +31,9 @@ const VARIANT_UTILS = { v: 'default', 'v-soft': 'soft', 'v-muted': 'muted', 'v-a
 
 type UtilExtra = { modifier: string | null };
 
+// `c-[--brand]` arrives as `--brand` on Tailwind 4 and as `var(--brand)` on Tailwind 3, like `c-(--brand)` on 4.
+const ARBITRARY_VARS = /^(?:var\((--[\w-]+)\)|(--[\w-]+))$/;
+
 // `{}` leaves an empty rule on Tailwind 3; `null` and `undefined` throw on Tailwind 4.
 const NOTHING = [] as unknown as CSSRuleObject;
 
@@ -258,9 +261,18 @@ function WindiUITailwindCSS(config: Config, ver?: 3 | 4): ReturnType<typeof crea
 			}
 		}
 
+		const namedColor = known(colorNames, (val) => applyDark(darkSelector, gt.colors.cssVars(val)));
+		const varsPalette = (accent: boolean) => (val: string) => {
+			const vars = ARBITRARY_VARS.exec(val);
+			return vars ? applyDark(darkSelector, gt.colors.varsCssVars(vars[1] ?? vars[2], accent)) : NOTHING;
+		};
+
 		tw.matchUtilities({
-			c: known(colorNames, (val) => applyDark(darkSelector, gt.colors.cssVars(val)))
+			c: (val, ext) => ARBITRARY_VARS.test(val) ? varsPalette(false)(val) : namedColor(val, ext)
 		}, { values: keyValuePairs(colorNames) });
+
+		// Tailwind reads `c-accent-[--brand]` as the root `c-accent` with an arbitrary value; named values stay `c`'s.
+		tw.matchUtilities({ 'c-accent': varsPalette(true) }, { values: {} });
 
 		tw.matchUtilities({
 			v: known(variantNames, (val) => applyDark(darkSelector, gt.variants.cssVars(val))),
