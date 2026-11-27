@@ -60,7 +60,9 @@ export interface TailwindV4Plugin {
 	config?: any;
 }
 
-const OPTIONS = ['prefix', 'componentPrefix', 'rootSelector', 'default', 'accent', 'colors', 'variantScope', 'overrides', 'overrideMode', 'states', 'variantUtilities', 'darkSelector', 'presets', 'build', 'safelist', 'manifest', 'debug', 'config'];
+// shortcut: `colorsDefault` and `colorsAccent` exist only because an `@plugin` block cannot write an object; remove them
+// for `colors.default` and `colors.accent` once Tailwind passes nested options to a plugin.
+const OPTIONS = ['prefix', 'componentPrefix', 'rootSelector', 'colors', 'colorsDefault', 'colorsAccent', 'variantScope', 'overrides', 'overrideMode', 'states', 'variantUtilities', 'darkSelector', 'presets', 'build', 'safelist', 'manifest', 'debug', 'config'];
 
 /**
  * Inline options over those of the config file. An `@plugin` block writes the names in kebab-case.
@@ -70,6 +72,10 @@ function resolveOptions(options: PluginOptions = {}, strict = false): Config {
 	const inline: Record<string, unknown> = {};
 	for (const [name, value] of Object.entries(options) as [string, unknown][]) {
 		const key = name.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());
+		// An error, not the warning of an unknown option: a config of 0.8 would otherwise silently get gray and blue
+		if (key === 'default' || key === 'accent') {
+			throw new Error(`WindiUI: the top-level \`${key}\` option moved to \`colors.${key}\` in 0.8.2 and was removed in 0.9. An \`@plugin\` block writes it \`colors-${key}\`.`);
+		}
 		if (!OPTIONS.includes(key)) {
 			const message = `WindiUI: unknown option "${name}". The options are: ${OPTIONS.join(', ')}.`;
 			if (strict) throw new Error(message);
@@ -93,9 +99,10 @@ function resolveOptions(options: PluginOptions = {}, strict = false): Config {
 		if (key === 'colors' && (typeof value === 'string' || Array.isArray(value))) inline[key] = { only: [value].flat() };
 	}
 
-	const { config: file, default: def, accent, ...config } = inline as PluginOptions;
-	// `default: slate;` of an `@plugin` block is `colors.default`, which a block cannot write as an object.
-	config.colors = { ...(def != null ? { default: def } : {}), ...(accent != null ? { accent } : {}), ...config.colors };
+	const { config: file, colorsDefault, colorsAccent, ...config } = inline as PluginOptions & Partial<Record<'colorsDefault' | 'colorsAccent', ColorValue>>;
+	// The `@plugin` block's aliases, see `OPTIONS`
+	if (colorsDefault != null) config.colors = { ...config.colors, default: colorsDefault };
+	if (colorsAccent != null) config.colors = { ...config.colors, accent: colorsAccent };
 	// A call with `build` is written in code, a plugin module or a Tailwind config, and is taken as the whole config.
 	if (file === false || (file == null && config.build) || isLoadingConfig()) return config;
 

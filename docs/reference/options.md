@@ -23,8 +23,8 @@ windiui({
 ```css [@plugin block (Tailwind v4)]
 @plugin "@windi-ui/tailwind" {
 	prefix: wui;
-	default: slate;
-	accent: indigo;
+	colors-default: slate;
+	colors-accent: indigo;
 	variant-scope: element;
 	dark-selector: .dark;
 }
@@ -58,7 +58,7 @@ All options are optional. The type is exported from `@windi-ui/core` as `Config`
 | [`prefix`](#prefix) | `'wui'` | `prefix: app;` | Prefix of the CSS variables |
 | [`componentPrefix`](#componentprefix) | none | `component-prefix: wui;` | Prefix of the component class names |
 | [`rootSelector`](#rootselector) | `':root'` | `root-selector: ":root, .scope";` | Where the root color and size variables are declared |
-| [`colors.default`, `colors.accent`](#default-and-accent) | the theme's, or `gray`, `blue` | `default: slate;` | The palettes behind `default` and `accent` |
+| [`colors.default`, `colors.accent`](#default-and-accent) | the theme's, or `gray`, `blue` | `colors-default: slate;` | The palettes behind `default` and `accent` |
 | [`colors`](#colors) | every palette | `colors: primary, error;` | Which palettes get a `c-*` class |
 | [`variantScope`](#variantscope) | `'element'` | `variant-scope: inherit;` | Where the `default` variant comes from, and whether a variant reaches the children |
 | [`overrides`](#overrides) | none | no | Values of a variant for some colors |
@@ -145,7 +145,9 @@ selector, not a theme scope.
 
 ## `default` and `accent`
 
-- Set as: `colors.default` and `colors.accent`; `default: slate;` and `accent: indigo;` in an `@plugin` block
+- Set as: `colors.default` and `colors.accent`; `colors-default: slate;` and `colors-accent: indigo;` in an `@plugin` block
+  only, which cannot write an object. Those two names are a workaround for the block, and go away for
+  `colors.*` if Tailwind ever passes nested options to a plugin.
 - Type: `string | { vars: string, overrideVars?: OverrideVars } | Record<shade, string>`
 - Default: none; a complete `default` or `accent` palette of the Tailwind theme, or else `gray` and `blue`
 
@@ -183,8 +185,6 @@ Things to know:
 - A complete theme palette may share shades with `gray` or `blue`; only a shade that is not set counts as
   missing.
 - On Tailwind v3 the variables behind `{ vars }` must hold RGB channels (`59 130 246`), as WindiUI's own do.
-- The top-level `default` and `accent` options of 0.8.0 still work, are deprecated, and are removed in 0.9.
-  `colors.default` and `colors.accent` win over them.
 
 The type is exported from `@windi-ui/core` as `ColorValue`.
 
@@ -215,7 +215,7 @@ windiui({ colors: { only: ['primary', 'secondary', 'success', 'warning', 'error'
 - [Overrides](#overrides) of a color without a class are left out, except those of `default` and `accent`, which
   `:root` applies.
 - A name that is not a palette, of the theme or of the builder, logs a warning once.
-- In an `@plugin` block, `colors:` takes the list itself, and `default:` and `accent:` are written next to it.
+- In an `@plugin` block, `colors:` takes the list itself, and `colors-default:` and `colors-accent:` are written next to it.
 - Left out, every palette gets its classes, as before.
 
 The type is exported from `@windi-ui/core` as `ColorsConfig`.

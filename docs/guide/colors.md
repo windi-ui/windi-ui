@@ -82,8 +82,8 @@ windiui({ colors: { default: 'slate', accent: 'indigo' } });
 
 ```css [@plugin block (Tailwind v4)]
 @plugin "@windi-ui/tailwind" {
-	default: slate;
-	accent: indigo;
+	colors-default: slate;
+	colors-accent: indigo;
 }
 ```
 

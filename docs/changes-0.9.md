@@ -4,21 +4,23 @@ outline: [2, 3]
 
 # Changes in 0.9
 
-What you can observe when upgrading from 0.8. Class names, options and the builder API are unchanged; every
-entry is something new: the theme engine and the tools built on it, then palettes and states given where they are
-used.
+What you can observe when upgrading from 0.8. Class names and the builder API are unchanged, and one deprecated
+option is removed; every other entry is something new: the theme engine and the tools built on it, then palettes and
+states given where they are used.
 
 ## Upgrading from 0.8
 
-Everything new in 0.9 is off until you use or configure it, and the CSS of an existing config is the same. The new
+Everything new in 0.9 is off until you use or configure it, and the CSS of an existing config is the same, once it
+no longer sets the [removed top-level `default` and `accent`](#the-top-level-default-and-accent-are-removed). The new
 entry points are only loaded when you import them. A few inputs that 0.8 ignored, or that its types rejected, now
-do something:
+do something, and one deprecated input is an error:
 
 | Change | Who sees it | To keep the 0.8 behaviour |
 | --- | --- | --- |
 | [A color can be a palette spec](#palette-specs) | An object without the 11 shades, such as `{ seed: '#2563eb' }`, given to `addColor`, `setColor`, `colors.default` or `colors.accent`, which 0.8 logged and left out (`colors.default` and `colors.accent`: a build error) | Remove the color |
 | [`c-[--name]` and `c-accent-[--name]` make a palette](#a-palette-at-the-call-site) | A class such as `c-[--brand]` in your content, which emitted nothing in 0.8 | Remove the class |
 | [A state can be any selector](#states-given-by-any-selector) | A `pseudos` key that is not a pseudo-class, such as `'[data-state=open]'`, which 0.8's types rejected and whose variable names were not valid CSS; `apply-v-[...]` with the name of such a state, which emitted nothing | None; 0.8's output for such a key was broken |
+| [The top-level `default` and `accent` are removed](#the-top-level-default-and-accent-are-removed) | A JavaScript config, config file, `safelistSource`, `createEngine` or `windiui` CLI config that sets `default` or `accent` at the top level, deprecated in 0.8.2, and `default:` or `accent:` of an `@plugin` block: a build error | Move them into `colors`: `colors: { default: 'slate', accent: 'indigo' }`, and `colors-default: slate;` in a block |
 
 `btn`, `badge`, `bg-v`, `text-v`, `border-v` and every other class paint what they painted in 0.8. The `states` and
 `manifest` option names, which 0.8 ignored in a config file, warned about in a JavaScript call and rejected in an
@@ -216,3 +218,26 @@ check every declared state but a disabled one, light and dark, and place a fix u
 too. See [States](/guide/customizing#states).
 
 **Migration:** none. The variables and the output of pseudo-classes are unchanged.
+
+## The top-level `default` and `accent` are removed
+
+0.8.2 moved the `default` and `accent` palettes into [`colors`](/reference/options#default-and-accent) and kept the
+top-level options as deprecated fallbacks ([#86](https://github.com/windi-ui/windi-ui/issues/86)). They are removed.
+A config that still sets them is a build error that names the new place, instead of falling back to `gray` and
+`blue`:
+
+```ts
+windiui({ default: 'slate', accent: 'indigo' });           // 0.8
+windiui({ colors: { default: 'slate', accent: 'indigo' } }); // 0.9
+```
+
+An `@plugin` block cannot write `colors` as an object, so for the block only the plugin takes two aliases,
+`colors-default` and `colors-accent`. They are a workaround, and go away for `colors.*` if Tailwind ever passes
+nested options to a plugin. A JavaScript call and a config file write `colors`, as above.
+
+```css
+@plugin "@windi-ui/tailwind" { default: slate; accent: indigo; }               /* 0.8 */
+@plugin "@windi-ui/tailwind" { colors-default: slate; colors-accent: indigo; } /* 0.9 */
+```
+
+**Migration:** move `default` and `accent` into `colors`; in an `@plugin` block, rename them `colors-default` and `colors-accent`.

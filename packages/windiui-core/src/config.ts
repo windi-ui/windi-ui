@@ -123,10 +123,6 @@ export interface ResolvedConfig {
 
 export type Config = Partial<Omit<ResolvedConfig, 'presets'>> & {
 	presets?: (Preset | PresetName)[];
-	/** @deprecated Use `colors.default`; removed in 0.9. */
-	default?: ColorValue;
-	/** @deprecated Use `colors.accent`; removed in 0.9. */
-	accent?: ColorValue;
 };
 
 export function resolveConfig(config: Config): ResolvedConfig {
@@ -147,12 +143,15 @@ export function resolveConfig(config: Config): ResolvedConfig {
 		throw new Error(`WindiUI: \`componentPrefix\` "${config.componentPrefix}" is not a class-name prefix, or is \`c\`, \`v\` or \`s\`, which the color, variant and size classes take. Write it without the dash, such as \`wui\`.`);
 	}
 
+	// An error, not a fallback: a config of 0.8.0 would otherwise silently get gray and blue
+	const moved = (['default', 'accent'] as const).find(key => (config as Record<string, unknown>)[key] != null);
+	if (moved) throw new Error(`WindiUI: the top-level \`${moved}\` option moved to \`colors.${moved}\` in 0.8.2 and was removed in 0.9.`);
+
 	return {
 		prefix,
 		componentPrefix: config.componentPrefix,
 		rootSelector,
-		// `colors.*` over the top-level options of 0.8.0
-		colors: { ...config.colors, default: config.colors?.default ?? config.default, accent: config.colors?.accent ?? config.accent },
+		colors: { ...config.colors },
 		variantScope,
 		overrides: config.overrides,
 		overrideMode,
