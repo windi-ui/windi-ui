@@ -55,6 +55,22 @@ export function applyV(compile: Compile) {
 		expect(css).toMatch(/(\.tab|&):focus-visible \{/);
 	});
 
+	it('builds a class of your own in the components layer from a component under `componentPrefix`', async () => {
+		const css = await compile(['btn', 'bg-red-500'], {}, { componentPrefix: 'wui', darkSelector: '.dark' }, '@layer components { .btn { @apply wui-btn; } }');
+
+		// Nothing uses `wui-btn` itself
+		expect(css).not.toContain('wui-btn');
+		expect(css).toMatch(/\.btn \{\s+position: relative;/);
+		expect(css).toMatch(/(\.btn|&):hover \{/);
+		// The dark value is the fallback of the default variant
+		expect(css).toContain('var(--wui-v-bg, var(--wui-v-on-light, var(--wui-c-white)) var(--wui-v-on-dark, var(--wui-c-950)))');
+		// Tailwind 4 keeps the layer; Tailwind 3 has none, and puts components before utilities
+		if (css.includes('@layer')) expect(css).toMatch(/@layer components \{\s+\.btn \{/);
+		else expect(css.indexOf('.btn')).toBeLessThan(css.indexOf('.bg-red-500'));
+		await expect(compile([], {}, { componentPrefix: 'wui-' })).rejects.toThrow('without the dash');
+		await expect(compile([], {}, { componentPrefix: 'v' })).rejects.toThrow('variant');
+	});
+
 	it('emits no color utilities from a variant unless `variantUtilities` asks', async () => {
 		expect(await compile(['bg-yellow', 'text-blue', 'border-red'])).toBe(await compile([]));
 	});

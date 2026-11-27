@@ -7,7 +7,7 @@ import { default as badge } from './badge';
 export class ComponentsGenerator extends BuilderBase<IComponent, ComponentBuilderContext> {
 	protected readonly items = new Map<string, IComponent>();
 
-	constructor(context: ComponentBuilderContext) {
+	constructor(context: ComponentBuilderContext, private readonly prefix?: string) {
 		super(context);
 		[button(context), badge(context)].forEach((component) => {
 			this.items.set(component.name, component);
@@ -16,7 +16,7 @@ export class ComponentsGenerator extends BuilderBase<IComponent, ComponentBuilde
 
 	*css() {
 		for (const [cName, component] of this.items) {
-			const cClass = `.${cName}`;
+			const cClass = `.${this.prefix ? `${this.prefix}-` : ''}${cName}`;
 			const css: CSS.Rules = { [cClass]: { ...component.style } };
 
 			if (component.pseudos) {

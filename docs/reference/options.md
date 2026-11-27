@@ -56,6 +56,7 @@ All options are optional. The type is exported from `@windi-ui/core` as `Config`
 | Option | Default | In an `@plugin` block | What it does |
 | --- | --- | --- | --- |
 | [`prefix`](#prefix) | `'wui'` | `prefix: app;` | Prefix of the CSS variables |
+| [`componentPrefix`](#componentprefix) | none | `component-prefix: wui;` | Prefix of the component class names |
 | [`rootSelector`](#rootselector) | `':root'` | `root-selector: ":root, .scope";` | Where the root color and size variables are declared |
 | [`colors.default`, `colors.accent`](#default-and-accent) | the theme's, or `gray`, `blue` | `default: slate;` | The palettes behind `default` and `accent` |
 | [`colors`](#colors) | every palette | `colors: primary, error;` | Which palettes get a `c-*` class |
@@ -76,11 +77,42 @@ All options are optional. The type is exported from `@windi-ui/core` as `Config`
 - Default: `'wui'`
 
 The prefix of every CSS variable WindiUI writes and reads: `--<prefix>-c-*`, `--<prefix>-v-*` and
-`--<prefix>-s-*`. It does not change class names; `c-*`, `v-*`, `s-*`, `btn` and `badge` stay the same.
+`--<prefix>-s-*`. It does not change class names: `c-*`, `v-*` and `s-*` stay the same, and the components
+follow [`componentPrefix`](#componentprefix).
 
 ```ts
 windiui({ prefix: 'app' }); // --app-c-500, --app-v-bg, --app-s-text
 ```
+
+## `componentPrefix`
+
+- Type: `string`
+- Default: none
+
+Prefixes the class name of every component, the built-in ones and those of the [builder](/reference/builder):
+`componentPrefix: 'wui'` makes `btn` and `badge` `wui-btn` and `wui-badge`. Their CSS is the same; nested rules such
+as `:hover` follow the class.
+
+```ts
+windiui({ componentPrefix: 'wui' }); // .wui-btn, .wui-badge
+```
+
+```css
+@plugin "@windi-ui/tailwind" {
+	component-prefix: wui;
+}
+```
+
+- Write it without the dash, which is added: `wui`, not `wui-`. A value that is not a class-name prefix, such as
+  `wui-` or `1`, throws an error. So do `c`, `v` and `s`, which the color, variant and size classes take.
+- It is separate from [`prefix`](#prefix): `prefix` names the CSS variables and is `wui` by default, this one
+  names the component classes and is empty by default. Give both the same value or different ones.
+- Tailwind's own `prefix` goes in front, as for any class: `tw-wui-btn` on Tailwind v3, `tw:wui-btn` on v4.
+- The builder still takes the name without it: `updateComponent('btn', ...)`, and `componentsNames()` returns
+  `btn`.
+
+Its use is a class of your own that takes the component with `@apply`, such as a `.btn` in `@layer components`.
+See [Use the components in your own layer](/guide/components#use-the-components-in-your-own-layer).
 
 ## `rootSelector`
 
@@ -601,6 +633,6 @@ These are not WindiUI options, but they shape its output:
 | The variant on an element, with its states | `.apply-v`, `.apply-v-[<props and states>]` |
 | Color utilities from a variant, with [`variantUtilities`](#variantutilities) | `.bg-<color>`, `.text-<color>`, `.border-<color>` |
 | Variant boundary | `.v-scope` (not with `variantScope: 'universal'`) |
-| Components | `.btn`, `.badge` and those you add |
+| Components | `.btn`, `.badge` and those you add, after [`componentPrefix`](#componentprefix) |
 
 As with any Tailwind utility, classes are only emitted when they are used in your content.

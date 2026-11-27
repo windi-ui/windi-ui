@@ -34,7 +34,7 @@ export function create(config: Config) {
 			const variants = new VariantsGenerator(ctx, rConfig.variantScope, rConfig.overrideMode);
 			const colors = new ColorsGenerator(ctx, rConfig.colors, variants, rConfig.debug);
 			const sizes = new SizesGenerator(ctx);
-			const components = new ComponentsGenerator({ ...ctx, colors, variants });
+			const components = new ComponentsGenerator({ ...ctx, colors, variants }, rConfig.componentPrefix);
 
 			const builder = createBuilder(colors, variants, sizes, components);
 			for (const preset of rConfig.presets) preset.build(builder);

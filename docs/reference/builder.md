@@ -22,7 +22,7 @@ Every `add*`, `set*`, `update*` and `remove*` method returns the builder.
 | `setSize(name, factory)` | The same, replacing a size of that name. |
 | `updateSize(name, updater)` | Change an existing size. |
 | `removeSize(name)` | Remove a size. |
-| `addComponent(name, factory)` | Register a component class `.<name>`. |
+| `addComponent(name, factory)` | Register a component class `.<name>`, or `.<componentPrefix>-<name>` with [`componentPrefix`](/reference/options#componentprefix). |
 | `setComponent(name, factory)` | The same, replacing a component of that name. |
 | `updateComponent(name, updater)` | Change an existing component. |
 | `removeComponent(name)` | Remove a component. |
