@@ -23,6 +23,24 @@ export const COLOR_SHADE_EX_REGEX = new RegExp(`^((?:(default|accent)-)?(${COLOR
 export const APPLY = { bg: 'applyBackgroundColor', border: 'applyBorderColor', text: 'applyTextColor' } as const;
 /** The variant variable that each main property of `apply-v`, `btn` and `variantUtilities` reads. */
 export const VAR_PROP = { bg: 'bg', border: 'border', text: 'fg' } as const;
+/** The palette `default` and `accent` each take when the theme has none of that name and no option names one. */
+export const FALLBACK_PALETTES = { default: 'gray', accent: 'blue' } as const;
+
+/**
+ * A color with an opacity, as Tailwind 4 paints it: `color-mix(in oklab, <color> 50%, transparent)`. A number is a
+ * fraction, a `var()` a fraction read at runtime, and no opacity or `100%` leaves the color as it is.
+ */
+// https://github.com/tailwindlabs/tailwindcss/blob/main/packages/tailwindcss/src/utilities.ts#L165C1-L182C2
+export function withAlpha(value: string, alpha?: number | string) {
+	if (alpha == null || alpha === '') return value;
+
+	const number = Number(alpha);
+	if (!Number.isNaN(number)) alpha = `${number * 100}%`;
+	if (alpha === '100%') return value;
+	if (typeof alpha === 'string' && alpha.startsWith('var(')) alpha = `calc(${alpha} * 100%)`;
+
+	return `color-mix(in oklab, ${value} ${alpha}, transparent)`;
+}
 const COLOR_PALETTE_REGEX = new RegExp(`^(.+)-(${COLOR_SHADE_REGEX.source})$`);
 
 const FLAT_COLORS: Record<string, string> = {

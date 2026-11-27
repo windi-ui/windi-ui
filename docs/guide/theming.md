@@ -177,6 +177,12 @@ The rose demo above does this: its solid button is on shade 800, and 900 on hove
 [Variant overrides at runtime](/guide/colors#variant-overrides-at-runtime) for the names, the dark mode rules and
 the cost in CSS.
 
+## Themes on the server
+
+To write the theme from code that has no Tailwind, such as a server that renders a `<style>` tag per tenant, the
+[theme engine](/guide/theme-engine) knows the palettes, variants and overrides of your config, and the contrast of
+each pair.
+
 ## Dark mode
 
 Nothing to set. The variants pick other shades of the same palette in dark mode, so the 11 variables are enough.

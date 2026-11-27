@@ -106,3 +106,18 @@ export function tailwind3(entry = '@windi-ui/tailwind'): Compile {
 		return result.css;
 	};
 }
+
+/** The theme engine of the built package, bundled for a browser into one script that sets the global `WindiUITheme`. */
+export async function bundleEngine() {
+	const { build } = await import('vite');
+	const output = await build({
+		configFile: false,
+		logLevel: 'silent',
+		build: {
+			write: false,
+			lib: { entry: resolve(import.meta.dirname, '../packages/windiui-core/dist/theme.mjs'), formats: ['iife'], name: 'WindiUITheme' },
+		},
+	}) as { output: { code: string, imports: string[] }[] }[];
+
+	return output[0].output[0];
+}

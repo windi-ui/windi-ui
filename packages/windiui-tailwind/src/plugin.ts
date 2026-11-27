@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import type createPluginType from 'tailwindcss/plugin';
 import type { CSSRuleObject, DarkModeConfig } from 'tailwindcss/types/config';
-import { create, type Builder, type Config, type ColorShade, type ColorValue, type ApplyVariantMainProp, type ApplyVariantSubProp } from "@windi-ui/core";
+import { create, FALLBACK_PALETTES as FALLBACK, type Builder, type Config, type ColorShade, type ColorValue, type ApplyVariantMainProp, type ApplyVariantSubProp } from "@windi-ui/core";
 import { loadWindiUIConfig } from './config';
 import { CONFIG, isLoadingConfig } from './utils/configState';
 import { classSource } from './safelist';
@@ -23,8 +23,6 @@ function keyValuePairs(
 		return acc;
 	}, {} as Record<string, string>);
 }
-
-const FALLBACK = { default: 'gray', accent: 'blue' } as const;
 
 const VARIANT_UTILS = { v: 'default', 'v-soft': 'soft', 'v-muted': 'muted', 'v-accent': 'accent' } as const;
 

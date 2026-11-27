@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module';
-import type { ThemeProvider, FontSize } from '@windi-ui/core';
+import { withAlpha, type ThemeProvider, type FontSize } from '@windi-ui/core';
 import type { CSS } from '@windi-ui/core';
 import type { default as Plugin } from 'tailwindcss/plugin';
 import type { default as WithAlphaVariable } from 'tailwindcss/lib/util/withAlphaVariable';
@@ -94,44 +94,21 @@ export class TailwindV4Theme extends TailwindTheme {
 	}
 
 	colorValue(value: string, alpha?: number | string): string {
-		return this.withAlpha(value, alpha);
+		return withAlpha(value, alpha);
 	}
 
 	applyTextColor(value: string, target: CSS.Properties, alpha?: number | string): void {
-		target.color = this.withAlpha(value, alpha);
+		target.color = withAlpha(value, alpha);
 	}
 
 	applyBackgroundColor(value: string, target: CSS.Properties, alpha?: number | string): void {
-		target.backgroundColor = this.withAlpha(value, alpha);
+		target.backgroundColor = withAlpha(value, alpha);
 	}
 
 	applyBorderColor(value: string, target: CSS.Properties, alpha?: number | string): void {
-		target.borderColor = this.withAlpha(value, alpha);
+		target.borderColor = withAlpha(value, alpha);
 	}
 
-	// https://github.com/tailwindlabs/tailwindcss/blob/main/packages/tailwindcss/src/utilities.ts#L165C1-L182C2
-	private withAlpha(value: string, alpha?: string | number): string {
-		if (alpha == null || alpha === '') return value;
-
-		// Convert numeric values (like `0.5`) to percentages (like `50%`) so they
-		// work properly with `color-mix`. Assume anything that isn't a number is
-		// safe to pass through as-is, like `var(--my-opacity)`.
-		const alphaAsNumber = Number(alpha);
-		if (!Number.isNaN(alphaAsNumber)) {
-			alpha = `${alphaAsNumber * 100}%`;
-		}
-
-		// No need for `color-mix` if the alpha is `100%`
-		if (alpha === '100%') {
-			return value;
-		}
-
-		if (typeof alpha === 'string' && alpha.startsWith('var(')) {
-			alpha = `calc(${alpha} * 100%)`;
-		}
-
-		return `color-mix(in oklab, ${value} ${alpha}, transparent)`;
-	}
 }
 
 export class TailwindV3Theme extends TailwindTheme {
