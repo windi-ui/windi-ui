@@ -11,8 +11,8 @@ function createEngine(config?: Config, options?: EngineOptions): Engine;
 
 Runs the [presets](/reference/options#presets), [`build`](/reference/options#build) and
 [`overrides`](/reference/options#overrides) of `config` as the plugin does, over the palettes of `options`. `config`
-is the object a [config file](/reference/config-file#config-file) exports. Options that only concern CSS, such as
-`darkSelector`, `variantScope` or `safelist`, change nothing here.
+is the object a [config file](/reference/config-file#config-file) exports. Options that only concern the Tailwind build, such as
+`darkSelector`, `variantScope`, `safelist` or `manifest`, change nothing here.
 
 ### `EngineOptions`
 
@@ -27,6 +27,7 @@ is the object a [config file](/reference/config-file#config-file) exports. Optio
 | --- | --- |
 | `variants()` | The names of the variants, as the plugin's `v-*` classes. |
 | `colors()` | The names of the colors, as the plugin's `c-*` classes. Each also has a `c-accent-*` class, which is not listed. With [`colors.only`](/reference/options#colors), the listed palettes and the colors of the builder. |
+| `manifest()` | The names the config registers, as the plugin's [`manifest`](/reference/options#manifest) option writes them. See [Manifest](#manifest). |
 | `resolve(variant, color)` | A [`ResolvedVariant`](#resolvedvariant). Throws for a variant or color that does not exist. |
 | `contrast(fg, bg)` | The contrast of two literal colors by the engine's metric: from 1 to 21 with WCAG 2. Throws for a value [`parseColor`](#parsecolor) does not read. |
 | `calibrate(colors, policy, options?)` | The overrides that make every variant on `colors` meet `policy`, and a report. See [Calibration](#calibration). |
@@ -260,6 +261,41 @@ the document gives, then the override variables `{vars}-{variant}-{prop}` that t
   background shows under a border in a browser; in sRGB.
 - Throws for a color it needs that is not literal, such as `accent-600` with an `accent` given by `vars` that the
   document leaves out.
+
+## Manifest
+
+```ts
+interface Manifest {
+	prefix: string;
+	colors: string[];      // sorted
+	variants: string[];
+	sizes: string[];
+	components: string[];  // classes, after componentPrefix
+	overrides: Record<string, string[]>;   // variant -> colors with an override of it, sorted
+}
+
+function manifestTypes(manifest: Manifest): string;
+```
+
+`engine.manifest()` returns the object the plugin's [`manifest`](/reference/options#manifest) option writes as JSON,
+for scripts, tests and tools that run without a build. It is the same object when the engine has the palettes of the
+theme the plugin builds with, such as `tailwind4` from `@windi-ui/tailwind/palettes` for Tailwind 4's default theme;
+a test compares the two on Tailwind 4 and 3. The fields are described with the option.
+
+`manifestTypes(manifest)` returns the declaration file the option writes: `WindiUIColor`, `WindiUIVariant` and
+`WindiUISize`, each a union of the names, or `never` for an empty list. `Manifest` and `manifestTypes` are exported
+from `@windi-ui/core` and `@windi-ui/core/theme`.
+
+```ts
+import { writeFileSync } from 'node:fs';
+import { createEngine, manifestTypes } from '@windi-ui/core/theme';
+import { tailwind4 } from '@windi-ui/tailwind/palettes';
+import config from './windiui.config';
+
+const manifest = createEngine(config, { palettes: tailwind4 }).manifest();
+writeFileSync('windiui.manifest.json', `${JSON.stringify(manifest, null, 2)}\n`);
+writeFileSync('src/windiui.d.ts', manifestTypes(manifest));
+```
 
 ## `createThemeProvider`
 

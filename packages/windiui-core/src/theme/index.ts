@@ -1,4 +1,4 @@
-import { create, type Config } from '../index';
+import { create, type Config, type Manifest } from '../index';
 import { FALLBACK_PALETTES } from '../colors';
 import { createThemeProvider, type Palette, type Palettes } from './provider';
 import { parseColor, wcag2, type ContrastMetric } from './contrast';
@@ -25,6 +25,11 @@ export interface Engine {
 	variants(): string[];
 	/** The names of the colors, as the `c-*` classes of the plugin; each also has a `c-accent-*` class. */
 	colors(): string[];
+	/**
+	 * The names the config registers, as the plugin's `manifest` option writes them: the prefix, the colors (sorted),
+	 * variants, sizes and components, and by variant the colors with an override. `manifestTypes` gives its types.
+	 */
+	manifest(): Manifest;
 	/**
 	 * What `variant` paints on an element of `color`: the shade, the literal color and the opacity of each color
 	 * property, in light and dark mode, at rest and in each state, with the overrides of the config applied.
@@ -82,7 +87,7 @@ export function createEngine(config: Config = {}, { metric = wcag2, ...options }
 	}
 
 	const windiui = create(config);
-	const { colors, variants } = windiui.generator(createThemeProvider({ palettes }));
+	const { colors, variants, manifest } = windiui.generator(createThemeProvider({ palettes }));
 	// Without them the shades of `default` and `accent` in the root variables are not literal colors
 	const missing = (Object.keys(FALLBACK_PALETTES) as (keyof typeof FALLBACK_PALETTES)[]).find(c => !colors.names(true).includes(c));
 	if (options.palettes && missing) throw new Error(`WindiUI: the palettes have no "${missing}" or "${FALLBACK_PALETTES[missing]}" palette; add one, or set \`colors.${missing}\`.`);
@@ -98,6 +103,7 @@ export function createEngine(config: Config = {}, { metric = wcag2, ...options }
 	return {
 		variants: () => variants.names(),
 		colors: colorNames,
+		manifest,
 
 		resolve(variant, color) {
 			if (!variants.names().includes(variant)) throw new Error(`WindiUI: unknown variant "${variant}".`);
@@ -150,6 +156,7 @@ export type {
 	CalibrationStrategy, CalibrationStrategyFunction
 } from './calibrate';
 export type { StaticMode, StaticState, StaticTheme, StaticVariant, ThemeCalibration, ThemeDocument, ToCssOptions, ToStaticOptions } from './document';
+export { manifestTypes, type Manifest } from '../manifest';
 export { parseColor, wcag2, type ContrastMetric, type Rgb } from './contrast';
 export {
 	resolvePalette, fitPalette, adjustCurves, samplePalette, parsePalette, generatePalette,

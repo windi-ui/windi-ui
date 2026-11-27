@@ -162,6 +162,35 @@ const { bg, fg } = engine.toStatic(theme).primary.solid.light.rest;
 
 See the [theme engine guide](https://windi-ui.github.io/windi-ui/guide/theme-engine#theme-documents).
 
+#### Typed props and a manifest
+
+The `manifest` option writes the names your config registers, for typed `color`, `variant` and `size` props, a
+component gallery, a safelist or a lint rule, so none of them is a copy that drifts. It is off by default, and a file
+is only written when its content changes, so a dev server does not rebuild in a loop:
+
+```js
+// windiui.config.js
+export default {
+	presets: ['nuxt-ui'],
+	manifest: { json: './windiui.manifest.json', dts: './src/windiui.d.ts' },
+};
+```
+
+```json
+{
+  "prefix": "wui",
+  "colors": ["accent", "amber", "blue", "...", "zinc"],
+  "variants": ["default", "solid", "outline", "light", "soft", "subtle", "ghost", "link"],
+  "sizes": ["default", "md", "xs", "sm", "lg", "xl"],
+  "components": ["btn", "badge"],
+  "overrides": {}
+}
+```
+
+The declaration file exports `WindiUIColor`, `WindiUIVariant` and `WindiUISize`, each a union of the names. Without a
+build, `engine.manifest()` returns the same object, and `safelistSource(manifest)` the `@source inline()` line. See
+[`manifest`](https://windi-ui.github.io/windi-ui/reference/options#manifest).
+
 ## Upgrading from 0.7
 
 See [Changes in 0.8](https://windi-ui.github.io/windi-ui/changes-0.8#upgrading-from-0-7). The one thing to check: 0.8
