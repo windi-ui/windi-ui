@@ -8,8 +8,8 @@ import { createEngine, type AuditCell, type AuditResult, type CalibrationPolicy,
 
 const USAGE = `Usage: windiui audit [options]
 
-Checks the contrast of every variant on every color of the WindiUI config, light and dark, at rest and on hover,
-and exits with 1 when a pair fails.
+Checks the contrast of every variant on every color of the WindiUI config, light and dark, at rest and in every
+state the variant declares, such as :hover or [data-state=open], and exits with 1 when a pair fails.
 
 Options:
   --config <file>           The config file; left out, the one the plugin finds

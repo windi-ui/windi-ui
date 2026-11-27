@@ -133,6 +133,27 @@ describe('calibrate', () => {
 		expect(shifted.report.filter(r => !r.strategy)).toEqual([]);
 	});
 
+	// #51: every state a variant declares, a pseudo-class and a selector that `states` names, but a disabled one
+	it('reports and fixes a failing declared state, in its own state, and `toCss` writes the fix', () => {
+		const config: Config = {
+			states: { open: '[data-state=open]' },
+			build: b => b
+				.addColor('primary', { vars: '--ui-color-primary', overrideVars: { variants: ['solid'] } })
+				.updateVariant('solid', (v, { vars }) => ({ ...v, pseudos: { ...v.pseudos, ':active': { bg: vars.color('500') }, '[data-state=open]': { bg: vars.color('400') }, '[data-disabled]': { bg: vars.color('300') } } })),
+		};
+		const states = createEngine(config, { palettes: tailwind4 });
+
+		const { cells, overrides } = states.audit({ text: 4.5 });
+		const blue = cells.filter(c => c.variant === 'solid' && c.color === 'blue' && c.mode === 'light');
+		expect(blue.map(c => [c.state, c.failing, c.fix])).toEqual([['rest', [], undefined], ['hover', [], undefined], ['active', ['text'], { bg: '600' }], ['open', ['text'], { bg: '600' }]]);
+		expect(overrides.solid.blue).toEqual({ pseudos: { ':active': { bg: '600' }, '[data-state=open]': { bg: '600' } } });
+		expect(createEngine({ ...config, overrides }, { palettes: tailwind4 }).audit({ text: 4.5 }).cells.filter(c => c.failing.length)).toEqual([]);
+
+		const css = states.toCss({ version: 1, colors: { primary: { seed: '#3b82f6' } } }, { calibrate: { text: 4.5 } });
+		expect(css).toContain('--ui-color-primary-solid-bg-active: var(--ui-color-primary-700);');
+		expect(css).toContain('--ui-color-primary-solid-bg-open: var(--ui-color-primary-700);');
+	});
+
 	it('rejects a color or a backdrop it cannot read', () => {
 		expect(() => engine.calibrate(['nope'], { text: 4.5 })).toThrow('WindiUI: unknown color "nope".');
 		const vars = createEngine({ build: b => b.addColor('brand', { vars: '--brand' }) }, { palettes: tailwind4 });

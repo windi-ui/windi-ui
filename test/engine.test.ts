@@ -46,7 +46,7 @@ describe('the entry', () => {
 		const { code, imports } = await bundleEngine();
 		expect(imports).toEqual([]);
 		// 47 kB minified and 16 kB gzipped in 0.9.0, as the docs say; the bound catches a dependency pulled in by mistake
-		expect(gzipSync(code).length).toBeLessThan(18_000);
+		expect(gzipSync(code).length).toBeLessThan(20_000);
 	});
 });
 

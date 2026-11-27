@@ -34,7 +34,8 @@ export interface CalibrationCell {
 	variant: string;
 	color: string;
 	mode: 'light' | 'dark';
-	state: 'rest' | 'hover';
+	/** `rest`, `hover` or another state the variant declares, by its name in `engine.resolve`, such as `active` or `open`. */
+	state: 'rest' | 'hover' | (string & {});
 	/** The colors of the cell, as `engine.resolve` gives them. */
 	values: ResolvedState;
 	/** The 11 shades of the color. */
@@ -60,7 +61,7 @@ export interface CalibrationReportEntry {
 	variant: string;
 	color: string;
 	mode: 'light' | 'dark';
-	state: 'rest' | 'hover';
+	state: CalibrationCell['state'];
 	/** The strategy that made the cell pass, by name, or the name of a function; left out when none did. */
 	strategy?: string;
 	/** The lowest contrast of each check of the policy after calibration, over the backdrops. */
@@ -78,7 +79,7 @@ export interface AuditCell {
 	variant: string;
 	color: string;
 	mode: 'light' | 'dark';
-	state: 'rest' | 'hover';
+	state: CalibrationCell['state'];
 	/** The lowest contrast of each check of the policy, over the backdrops. */
 	contrast: Partial<Record<CalibrationCheck, number>>;
 	/** The checks below the policy; empty when the cell passes. */
@@ -88,7 +89,7 @@ export interface AuditCell {
 }
 
 export interface AuditResult {
-	/** Every variant on every checked color, light and dark, at rest and on hover. */
+	/** Every variant on every checked color, light and dark, at rest, on hover and in every other state it declares. */
 	cells: AuditCell[];
 	/** The colors that are not checked, because their shades are not literal colors, such as those given by CSS variables. */
 	skipped: string[];
@@ -109,6 +110,8 @@ export interface CalibrationContext {
 	resolve(variant: string, color: string, palette: Palette, extra?: VariantOverride): ResolvedVariant;
 	/** The literal color of a shade of the root variables, such as `white`. */
 	root(shade: string): string | undefined;
+	/** The selector of a state by its name in `resolve`, such as `'[data-state=open]'` for `open`. */
+	selector(state: string): string | undefined;
 	metric: ContrastMetric;
 }
 
@@ -117,8 +120,6 @@ type State = CalibrationCell['state'];
 type Prop = keyof CalibrationFix;
 /** What a built-in strategy needs besides the cell: the colors of the cell over the first backdrop. */
 type Paint = (fix: CalibrationFix) => Record<Prop | 'backdrop', Rgb>;
-
-const CELLS = [['light', 'rest'], ['light', 'hover'], ['dark', 'rest'], ['dark', 'hover']] as const;
 
 /** `color` at `alpha` over `under`, blended in sRGB as a browser does; throws without `under` unless it is opaque. */
 export function over(color: Rgb, alpha: number, under?: Rgb) {
@@ -202,11 +203,14 @@ const STRATEGIES: Record<Exclude<CalibrationStrategy, CalibrationStrategyFunctio
 	},
 };
 
-/** Sets `fix` in `override` for one mode and state. */
-function set(override: VariantOverride, mode: Mode, state: State, fix: CalibrationFix) {
+/** A selector of a disabled element, which WCAG 1.4.3 exempts from contrast. */
+const DISABLED = /:disabled\b|\[(data-disabled|aria-disabled=["']?true)\b/;
+
+/** Sets `fix` in `override` for one mode, at rest or in the state of `selector`. */
+function set(override: VariantOverride, mode: Mode, selector: string | undefined, fix: CalibrationFix) {
 	if (!Object.keys(fix).length) return;
 	const inMode = mode === 'dark' ? override.dark ??= {} : override;
-	Object.assign(state === 'hover' ? ((inMode.pseudos ??= {})[':hover'] ??= {}) : inMode, fix);
+	Object.assign(selector ? ((inMode.pseudos ??= {})[selector] ??= {}) : inMode, fix);
 }
 
 /** The paths of the values of an override. */
@@ -223,13 +227,14 @@ function unset<T extends object>(value: T, [key, ...rest]: string[]): T {
 
 /** What a cell paints, to tell whether a fix changed it. */
 const painted = (resolved: ResolvedVariant, mode: Mode, state: State) => {
-	const { bg, fg, border } = resolved[mode][state];
+	const { bg, fg, border } = resolved[mode][state]!;
 	return [bg, fg, border].map(c => `${c.color} ${c.opacity}`).join();
 };
 
 /**
- * Checks `fg` on `bg` and the `border` of every variant on every target, light and dark, at rest and on hover, and
- * repairs a pair that fails the policy with the strategies of `options`. It only ever chooses shades.
+ * Checks `fg` on `bg` and the `border` of every variant on every target, light and dark, at rest and in every state
+ * the variant declares, and repairs a pair that fails the policy with the strategies of `options`. It only ever
+ * chooses shades.
  * @param audit collects every cell, as the build paints it, with the fix calibration gives it
  */
 export function calibrate(ctx: CalibrationContext, targets: CalibrationTarget[], policy: CalibrationPolicy, { strategy = 'shift-bg' }: CalibrateOptions = {}, audit?: AuditCell[]): CalibrationResult {
@@ -254,13 +259,19 @@ export function calibrate(ctx: CalibrationContext, targets: CalibrationTarget[],
 
 	for (const variant of ctx.variants) for (const { name, palette, anchor } of targets) {
 		const original = ctx.resolve(variant, name, palette);
+		// A state is set by its selector; the resolver gives `hover` whether a variant declares it or not
+		const selector = (state: State) => state === 'rest' ? undefined : ctx.selector(state) ?? `:${state}`;
+		// At rest first, as a fix there moves the states, then hover and the other states the variant declares but a
+		// disabled one, which WCAG exempts: `:disabled` or `[data-disabled]`, and not `:hover:not([data-disabled])`
+		const states = (mode: Mode) => ['rest', 'hover', ...Object.keys(original[mode]).filter(s => s !== 'rest' && s !== 'hover' && !DISABLED.test(selector(s)!.replace(/:not\([^)]*\)/g, '')))];
+		const cells = (['light', 'dark'] as const).flatMap(mode => states(mode).map(state => [mode, state] as const));
 		let current = original;
 		let override: VariantOverride = {};
 		// The strategy whose fix changed a cell before its turn
 		const cause = new Map<string, string>();
 
 		const cell = (resolved: ResolvedVariant, mode: Mode, state: State) => {
-			const values = resolved[mode][state];
+			const values = resolved[mode][state]!;
 			const color = (prop: Prop, fix: CalibrationFix) => {
 				const shade = fix[prop];
 				return parseColor(shade == null ? values[prop].color : index(shade) < 0 ? ctx.root(shade) ?? '' : palette[shade as ColorShade]);
@@ -292,30 +303,33 @@ export function calibrate(ctx: CalibrationContext, targets: CalibrationTarget[],
 		};
 
 		/**
-		 * A hover shade of its own that plays the same part as the shade a fix moves at rest, darker or lighter than
-		 * what it is checked against in both states, moves by as many steps, so the state keeps its offset.
+		 * A shade of its own in a state, such as hover, that plays the same part as the shade a fix moves at rest,
+		 * darker or lighter than what it is checked against in both, moves by as many steps, so the state keeps its
+		 * offset. The fixes by state.
 		 */
 		const follow = (trial: VariantOverride, mode: Mode, fix: CalibrationFix) => {
 			const moved = ctx.resolve(variant, name, palette, trial);
-			const hover: CalibrationFix = {};
-			try {
-				const [rest, hovered] = (['rest', 'hover'] as const).map(st => cell(current, mode, st).paint({}));
-				for (const [prop, shade] of Object.entries(fix) as [Prop, ExColorShade][]) {
-					const [from, to, h] = [index(current[mode].rest[prop].shade), index(shade), index(current[mode].hover[prop].shade)];
-					// A hover value that refers to the value at rest has moved with it already
-					if (from < 0 || to < 0 || h < 0 || moved[mode].hover[prop].shade !== current[mode].hover[prop].shade) continue;
+			return states(mode).slice(1).map(state => {
+				const own: CalibrationFix = {};
+				try {
+					const [rest, inState] = ['rest', state].map(st => cell(current, mode, st).paint({}));
+					for (const [prop, shade] of Object.entries(fix) as [Prop, ExColorShade][]) {
+						const [from, to, h] = [index(current[mode].rest[prop].shade), index(shade), index(current[mode][state]![prop].shade)];
+						// A value in the state that refers to the value at rest has moved with it already
+						if (from < 0 || to < 0 || h < 0 || moved[mode][state]![prop].shade !== current[mode][state]![prop].shade) continue;
 
-					const against = prop === 'fg' ? 'bg' : prop === 'bg' ? 'fg' : 'backdrop';
-					const darker = (colors: typeof rest) => luminance(colors[prop]) < luminance(colors[against]);
-					if (darker(rest) === darker(hovered)) hover[prop] = COLOR_SHADES[Math.min(COLOR_SHADES.length - 1, Math.max(0, h + to - from))];
+						const against = prop === 'fg' ? 'bg' : prop === 'bg' ? 'fg' : 'backdrop';
+						const darker = (colors: typeof rest) => luminance(colors[prop]) < luminance(colors[against]);
+						if (darker(rest) === darker(inState)) own[prop] = COLOR_SHADES[Math.min(COLOR_SHADES.length - 1, Math.max(0, h + to - from))];
+					}
+				} catch {
+					// A color that is not literal is not checked, nor followed
 				}
-			} catch {
-				// A color that is not literal is not checked, nor followed
-			}
-			return hover;
+				return [state, own] as const;
+			});
 		};
 
-		for (const [mode, state] of CELLS) {
+		for (const [mode, state] of cells) {
 			const { cell: now } = cell(current, mode, state);
 			let used: string | undefined;
 			if (!now.failing().length) {
@@ -328,15 +342,15 @@ export function calibrate(ctx: CalibrationContext, targets: CalibrationTarget[],
 					if (!fix || !Object.keys(fix).length) continue;
 
 					const trial = structuredClone(override);
-					set(trial, mode, state, fix);
-					if (state === 'rest') set(trial, mode, 'hover', follow(trial, mode, fix));
+					set(trial, mode, selector(state), fix);
+					if (state === 'rest') for (const [st, moved] of follow(trial, mode, fix)) set(trial, mode, selector(st), moved);
 
 					// Applied as an override, the fix may not take, under an explicit override of the same value
 					const resolved = ctx.resolve(variant, name, palette, trial);
 					if (cell(resolved, mode, state).cell.failing().length) continue;
 
 					used = typeof s === 'function' ? s.name || 'custom' : s;
-					for (const [m, st] of CELLS) {
+					for (const [m, st] of cells) {
 						if (painted(resolved, m, st) !== painted(current, m, st) && !cause.has(`${m} ${st}`)) cause.set(`${m} ${st}`, used);
 					}
 					override = trial;
@@ -357,9 +371,9 @@ export function calibrate(ctx: CalibrationContext, targets: CalibrationTarget[],
 
 		if (Object.keys(override).length) (overrides[variant] ??= {})[name] = override;
 
-		if (audit) for (const [mode, state] of CELLS) {
+		if (audit) for (const [mode, state] of cells) {
 			const { cell: before, contrast } = cell(original, mode, state);
-			const after = current[mode][state];
+			const after = current[mode][state]!;
 			const fix: CalibrationFix = Object.fromEntries((['bg', 'fg', 'border'] as const)
 				.filter(p => after[p].shade !== before.values[p].shade).map(p => [p, after[p].shade]));
 			const fixed = Object.keys(fix).length > 0 && !cell(current, mode, state).cell.failing().length;

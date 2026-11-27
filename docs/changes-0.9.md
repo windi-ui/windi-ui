@@ -63,10 +63,10 @@ A per-color override fixed a color that needs other shades, but someone had to k
 ([#47](https://github.com/windi-ui/windi-ui/issues/47)). New:
 
 - `engine.calibrate(colors, policy, { strategy })` in `@windi-ui/core/theme`. For every variant on each color, light
-  and dark, at rest and on hover, it checks `fg` on `bg` (`text`) and a visible `border` against the backdrop
-  (`border`), with a translucent background painted over `backdrops`. It repairs a failing pair by choosing other
-  shades, and returns only the differences, in the shape of the `overrides` option, with a report of the strategy
-  each cell used.
+  and dark, at rest and in every state the variant declares, such as `:hover`, it checks `fg` on `bg` (`text`) and
+  a visible `border` against the backdrop (`border`), with a translucent background painted over `backdrops`. It
+  repairs a failing pair by choosing other shades, and returns only the differences, in the shape of the `overrides`
+  option, with a report of the strategy each cell used.
 - The strategies `'shift-bg'` (the default), `'flip-fg'` and `'anchor-seed'`, a function of your own, or a list
   tried in order. The policy takes a `metric`, for a contrast function other than WCAG 2.
 - `calibrate(policy, options?)` on the builder, which fills the overrides of the build's palettes once the build is
@@ -133,10 +133,10 @@ hand ([#52](https://github.com/windi-ui/windi-ui/issues/52)). New:
 
 - The `windiui` command in `@windi-ui/core`, with `windiui audit`. It loads the config file the plugin loads,
   `.ts` and `.js` included, or the one `--config` names, and prints the contrast of every variant on every color,
-  light and dark, at rest and on hover, with a translucent background painted over the backdrops. `--text`,
-  `--border`, `--backdrop-light` and `--backdrop-dark` set the policy, `--palettes` adds palettes of your own, and
-  `--format` prints a `table`, `markdown` or `json`. It exits with 1 when a pair fails, so it can gate CI, and with
-  2 on an error.
+  light and dark, at rest and in every state the variant declares, with a translucent background painted over the
+  backdrops. `--text`, `--border`, `--backdrop-light` and `--backdrop-dark` set the policy, `--palettes` adds
+  palettes of your own, and `--format` prints a `table`, `markdown` or `json`. It exits with 1 when a pair fails, so
+  it can gate CI, and with 2 on an error.
 - `--fix`, which prints the `overrideVariant` calls calibration would add, ready to paste into `build`.
 - `engine.audit(policy)` in `@windi-ui/core/theme`, the same matrix for a test of your own, with the `AuditCell` and
   `AuditResult` types.
@@ -169,3 +169,34 @@ variants such as `md:c-[--brand]` and in `@apply`. Any other arbitrary value, su
 nothing. See [A palette at the call site](/guide/colors#a-palette-at-the-call-site).
 
 **Migration:** none. `c-[--name]` emitted nothing in 0.8.
+
+## States given by any selector
+
+`pseudos` only took pseudo-classes, so a variant could not describe the open, selected or invalid look that
+headless component libraries mark with attributes ([#51](https://github.com/windi-ui/windi-ui/issues/51)). It now
+takes any selector of the element, in `pseudos`, `dark.pseudos`, overrides and a component's
+`applyVariantPseudos`:
+
+```ts
+windiui({
+	states: { open: '[data-state=open]' },
+	build: b => b.updateVariant('outline', (v, { vars }) => ({
+		...v,
+		pseudos: { ...v.pseudos, '[data-state=open]': { bg: vars.color('100'), 'bg-opacity': '1' } },
+	})),
+});
+```
+
+```html
+<button class="v-outline apply-v-[hover,open]" data-state="open">...</button>
+```
+
+The variables of a pseudo-class keep their names, such as `--wui-v-bg-\:hover`. Another state is named by the new
+[`states`](/reference/options#states) option, here `--wui-v-bg-open`, or else by its words, such as
+`--wui-v-bg-data-highlighted`, so no name needs a bracket escaped. `apply-v` takes the same names.
+[Calibration](/guide/theme-engine#calibrate-contrast) and [`windiui audit`](/guide/contrast-audit) check every
+declared state but a disabled one, light and dark, and place a fix under that state's selector, as
+`pseudos: { '[data-state=open]': { bg: '700' } }`; `overrideVars`' default, `'calibrated'`, forwards those values
+too. See [States](/guide/customizing#states).
+
+**Migration:** none. The variables and the output of pseudo-classes are unchanged.

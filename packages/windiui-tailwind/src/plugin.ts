@@ -60,7 +60,7 @@ export interface TailwindV4Plugin {
 	config?: any;
 }
 
-const OPTIONS = ['prefix', 'componentPrefix', 'rootSelector', 'default', 'accent', 'colors', 'variantScope', 'overrides', 'overrideMode', 'variantUtilities', 'darkSelector', 'presets', 'build', 'safelist', 'manifest', 'debug', 'config'];
+const OPTIONS = ['prefix', 'componentPrefix', 'rootSelector', 'default', 'accent', 'colors', 'variantScope', 'overrides', 'overrideMode', 'states', 'variantUtilities', 'darkSelector', 'presets', 'build', 'safelist', 'manifest', 'debug', 'config'];
 
 /**
  * Inline options over those of the config file. An `@plugin` block writes the names in kebab-case.
@@ -81,7 +81,7 @@ function resolveOptions(options: PluginOptions = {}, strict = false): Config {
 		if (key === 'build' && value != null && typeof value !== 'function') {
 			throw new Error('WindiUI: `build` is a function, which an `@plugin` block cannot hold. Put it in a config file or a plugin module.');
 		}
-		if ((key === 'overrides' || key === 'variantUtilities' || key === 'manifest') && value != null && (typeof value !== 'object' || Array.isArray(value))) {
+		if ((key === 'overrides' || key === 'states' || key === 'variantUtilities' || key === 'manifest') && value != null && (typeof value !== 'object' || Array.isArray(value))) {
 			throw new Error(`WindiUI: \`${key}\` is an object, which an \`@plugin\` block cannot hold. Put it in a config file or a plugin module.`);
 		}
 

@@ -1,5 +1,5 @@
 import { COLOR_SHADES, COLOR_SHADE_EX_REGEX, type ColorShade, type ColorsGenerator, type ExColorShade } from '../colors';
-import { ACCENT_KEY, type VariantOverride, type VariantProperties, type VariantsGenerator } from '../variants';
+import { ACCENT_KEY, splitKey, stateKey, type VariantOverride, type VariantProperties, type VariantsGenerator } from '../variants';
 import type { VarsProvider } from '../vars';
 import { literal } from './palette';
 import type { Palette } from './provider';
@@ -19,7 +19,10 @@ export interface ResolvedColor {
 /** The colors of a variant on one color, in one mode and state. */
 export type ResolvedState = Record<ColorProperty, ResolvedColor>;
 
-/** The states of a variant: at rest, on hover, and in every other state the variant sets, by name without the colon. */
+/**
+ * The states of a variant: at rest, on hover, and in every other state the variant sets, by its name in variable names
+ * without the colon, such as `focus-visible`, or `open` for a state that the `states` option names.
+ */
 export type ResolvedMode = Record<'rest' | 'hover', ResolvedState> & Partial<Record<string, ResolvedState>>;
 
 export interface ResolvedVariant {
@@ -83,9 +86,9 @@ export function createResolver(vars: VarsProvider, colors: ColorsGenerator, vari
 				return [prop, { shade: shade as ExColorShade, color: own ?? value, opacity }];
 			})) as ResolvedState;
 
-			const pseudos = new Set(Object.keys(values).flatMap(k => /-:([\w-]+)$/.exec(k)?.[1] ?? []));
-			pseudos.add('hover');
-			return Object.fromEntries([['rest', state('')], ...[...pseudos].map(p => [p, state(`-:${p}`)])]) as ResolvedMode;
+			const states = new Set(Object.keys(values).flatMap(k => splitKey(k)[1] ?? []));
+			states.add(':hover');
+			return Object.fromEntries([['rest', state('')], ...[...states].map(s => [stateKey(s), state(`-${s}`)])]) as ResolvedMode;
 		};
 
 		return { light: resolveMode(light), dark: resolveMode(dark) };

@@ -30,7 +30,20 @@ export interface VariantProperties {
 	'fg-opacity'?: OpacityValue;
 }
 
-type VariantPseudos = Partial<Record<CSS.SimplePseudos, Partial<VariantProperties>>>;
+/** States of headless component libraries, offered by autocomplete. */
+type CommonState =
+	| '[data-state=open]' | '[data-state=closed]' | '[data-state=checked]' | '[data-state=active]' | '[data-state=on]'
+	| '[data-highlighted]' | '[data-selected]' | '[data-disabled]' | '[data-placeholder]'
+	| '[aria-invalid=true]' | '[aria-selected=true]' | '[aria-expanded=true]' | '[aria-checked=true]'
+	| '[aria-pressed=true]' | '[aria-current=page]';
+
+/**
+ * A state of a variant: a pseudo-class such as `':hover'`, or any selector the element itself can match, such as
+ * `'[data-state=open]'` or `':hover:not([data-disabled])'`.
+ */
+export type VariantState = CSS.SimplePseudos | CommonState | (string & {});
+
+type VariantPseudos = Partial<Record<VariantState, Partial<VariantProperties>>>;
 export interface Variant extends VariantProperties {
 	pseudos?: VariantPseudos;
 	dark?: Omit<Partial<Variant>, 'dark' | 'colors'>;
@@ -46,13 +59,14 @@ type WithShades<T> = { [K in keyof T]?: NonNullable<T[K]> extends string ? T[K] 
  */
 export type VariantOverride = WithShades<Omit<Variant, 'colors'>>;
 
-export type VariantProperty = keyof VariantProperties | `${keyof VariantProperties}-${CSS.SimplePseudos}`;
+/** A property, or its value in a state: `bg-:hover` for a pseudo-class, `bg-open` for a state named `open`. */
+export type VariantProperty = keyof VariantProperties | `${keyof VariantProperties}-${CSS.SimplePseudos}` | `${keyof VariantProperties}-${string & {}}`;
 export type ApplyVariantMainProp = 'bg' | 'border' | 'text';
 export type ApplyVariantSubProp = 'soft' | 'muted' | 'accent' | 'default';
 export type ApplyVariantProp = ApplyVariantMainProp | `${ApplyVariantMainProp}-${Exclude<ApplyVariantSubProp, 'default'>}`;
 
 export type ApplyVariant = boolean | ApplyVariantProp[];
-export type ApplyVariantPseudos = Partial<Record<CSS.SimplePseudos, ApplyVariant>> | CSS.SimplePseudos[] | false;
+export type ApplyVariantPseudos = Partial<Record<VariantState, ApplyVariant>> | VariantState[] | false;
 
 export interface VariantCssVars extends VariantVars {
 	'@dark'?: VariantVars;
@@ -64,8 +78,11 @@ export interface VariantCssVars extends VariantVars {
 type Values = Record<string, string>;
 interface Flat { light: Values, dark: Values }
 
-const CALIBRATED = ['bg', 'fg', 'border', 'bg-:hover', 'fg-:hover', 'border-:hover'];
-export const ACCENT_KEY = /^(bg|border|fg)-accent(-:|$)/;
+export const ACCENT_KEY = /^(bg|border|fg)-accent(-|$)/;
+/** The property of a key: `bg-soft` of `bg-soft-:hover` and of `bg-soft-open`. */
+const PROP_KEY = /^(bg|border|fg)(-(soft|muted|accent|opacity))?(?=-|$)/;
+/** A pseudo-class or pseudo-element without arguments, whose state keeps its name, escaped: `--wui-v-bg-\:hover`. */
+const SIMPLE_PSEUDO = /^::?[\w-]+$/;
 
 const APPLY_PROPS = (['bg', 'border', 'text'] as const).flatMap(p => [p, `${p}-soft`, `${p}-muted`, `${p}-accent`] as const);
 /** The states `apply-v-[...]` takes, by name without the colon. */
@@ -310,20 +327,23 @@ export function mainVariants(vars: VarsProvider): Record<string, Variant> {
 	};
 }
 
-/** @param fill whether a state refers to the base value of each property it leaves out */
-function flatten(vars: VarsProvider, props: Omit<Partial<Variant>, 'dark' | 'colors'>, fill = true): Values {
+/**
+ * @param fill whether a state refers to the base value of each property it leaves out
+ * @param stateName the name of a state in the keys
+ */
+function flatten(vars: VarsProvider, props: Omit<Partial<Variant>, 'dark' | 'colors'>, fill = true, stateName = (state: string) => state): Values {
 	const { pseudos: vPseudos, ...vProps } = props;
 	const cssObj = vProps as Values;
 
 	if (vPseudos) {
 		const propKeys = fill ? Object.keys(vProps) as (keyof VariantProperties)[] : [];
 		for (const vpk in vPseudos) {
-			const vp = vPseudos[vpk as CSS.SimplePseudos];
+			const vp = vPseudos[vpk];
 			if (vp) {
 				const vpPropKeys = new Set([...Object.keys(vp) as (keyof VariantProperties)[], ...propKeys]);
 				for (const vppk of vpPropKeys) {
 					// A reference, not a copy: it resolves on the element, so a dark block or an override of the base value reaches the state
-					cssObj[`${vppk}-${vpk}`] = vp[vppk] ?? vars.variant(vppk);
+					cssObj[`${vppk}-${stateName(vpk)}`] = vp[vppk] ?? vars.variant(vppk);
 				}
 			}
 		}
@@ -332,13 +352,31 @@ function flatten(vars: VarsProvider, props: Omit<Partial<Variant>, 'dark' | 'col
 	return cssObj;
 }
 
+/** `bg`, `fg` and `border` at rest, on hover and in every state the variant declares: the values calibration sets. */
+function calibrated({ light, dark }: Flat) {
+	const states = new Set([':hover', ...Object.keys({ ...light, ...dark }).flatMap(k => splitKey(k)[1] ?? [])]);
+	return ['', ...[...states].map(s => `-${s}`)].flatMap(s => ['bg', 'fg', 'border'].map(p => `${p}${s}`));
+}
+
 function getCssVars(vars: VarsProvider, props: Omit<Partial<Variant>, 'dark' | 'colors'>) {
 	return cssVars(flatten(vars, props), n => vars.v(n));
 }
 
+/** The property of a key and its state: `['bg-soft', ':hover']` of `bg-soft-:hover`, `['bg', 'open']` of `bg-open`. */
+export function splitKey(key: string): [prop: string, state?: string] {
+	const prop = PROP_KEY.exec(key)?.[0] ?? key;
+	return key.length > prop.length ? [prop, key.slice(prop.length + 1)] : [prop];
+}
+
+/** The name of a state in `engine.resolve`: its name in variable names without the colon, `hover` of `:hover`. */
+export function stateKey(state: string) {
+	return state.replace(/^:+/, '');
+}
+
 /** An override value: a shade of the color, of the accent color for an `-accent` property, or the value as written. */
 function shade(vars: VarsProvider, key: string, value: string) {
-	if (key.includes('opacity') || !COLOR_SHADE_EX_REGEX.test(value))
+	// The property, not the whole key: a state may be named `low-opacity`
+	if (PROP_KEY.exec(key)?.[0].endsWith('opacity') || !COLOR_SHADE_EX_REGEX.test(value))
 		return value;
 
 	return ACCENT_KEY.test(key) && /^\d/.test(value) ? vars.color.accent(value as ColorShade) : vars.color(value as ExColorShade);
@@ -372,16 +410,43 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 	protected readonly items: Map<string, Variant>;
 	/** Palettes given by CSS variables that also take their overrides from variables. */
 	private readonly aliases = new Map<string, OverrideVars & { vars: string }>();
+	/** The selectors of the `states` option, by name. */
+	private readonly states = new Map<string, string>();
+	/** The names of the `states` option, by selector. */
+	private readonly stateNames = new Map<string, string>();
+	/** The states already reported for a name that another state has. */
+	private readonly clashes = new Set<string>();
 	/** Whether a color is applied anywhere; the overrides of the others are left out. Set by `colors.only`. */
 	hasColor = (_color: string) => true;
 
-	constructor(ctx: BuilderContext, private readonly scope: VariantScope = 'universal', private readonly mode: OverrideMode = 'vars') {
+	/** @param states selectors of states, by name: `{ open: '[data-state=open]' }` */
+	constructor(ctx: BuilderContext, private readonly scope: VariantScope = 'universal', private readonly mode: OverrideMode = 'vars', states: Record<string, string> = {}) {
 		super(ctx);
 		this.items = new Map([
 			['default', defaultVariant(this.vars)],
 			...Object.entries(mainVariants(this.vars))
 		]);
+
+		for (const [name, selector] of Object.entries(states)) {
+			// A name ends variable names and is an `apply-v` token, where a level or a property would read the same; `rest` is the state without one
+			if (!/^[\w-]+$/.test(name) || /^(soft|muted|accent|opacity)(-|$)/.test(name) || name === 'rest' || (APPLY_PROPS as string[]).includes(name)) {
+				console.error(`WindiUI: "${name}" cannot name a state. A name is made of letters, digits, "-" and "_", and is not "rest", a property or a level such as "soft".`);
+				continue;
+			}
+
+			this.states.set(name, selector);
+			if (!SIMPLE_PSEUDO.test(selector)) this.stateNames.set(selector, name);
+		}
 	}
+
+	/**
+	 * The name of a state in variable names: a simple pseudo-class as it is, any other selector by its name in
+	 * `states`, or else by its words, so that `[data-state=open]` is `data-state-open`.
+	 */
+	private readonly stateName = (state: string) => SIMPLE_PSEUDO.test(state)
+		? state
+		// shortcut: a selector whose words are a level, such as `.soft`, reads as that level; name it in `states` when one is needed.
+		: this.stateNames.get(state) ?? state.replace(/[^\w-]+/g, '-').replace(/^-|-$/g, '');
 
 	cssVars(name: string): VariantCssVars {
 		const variant = this.items.get(name);
@@ -493,7 +558,7 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 
 	private values(name: string): Flat {
 		const { dark = {}, colors: _, ...props } = this.items.get(name)!;
-		return { light: flatten(this.vars, props), dark: flatten(this.vars, dark) };
+		return { light: flatten(this.vars, props, true, this.stateName), dark: flatten(this.vars, dark, true, this.stateName) };
 	}
 
 	/**
@@ -506,7 +571,7 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 
 		const { vars, props = 'calibrated' } = alias;
 		const values = this.values(name);
-		const keys = props === 'all' ? Object.keys({ ...values.light, ...values.dark }) : props === 'calibrated' ? CALIBRATED : props;
+		const keys = props === 'all' ? Object.keys({ ...values.light, ...values.dark }) : props === 'calibrated' ? calibrated(values) : props;
 		return keys.map(k => [k, `${vars}-${name}-${k.replace(/:/g, '')}`]);
 	}
 
@@ -528,7 +593,7 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 			const ownDark = (k: string) => k in values.dark || (!(k in values.light) && k in def.dark);
 			const set = { light: (k: string) => k in before.light, dark: (k: string) => k in before.dark || (k in before.light && !ownDark(k)) };
 			for (const [mode, props] of [['light', light], ['dark', dark]] as const) {
-				for (const [k, v] of Object.entries(flatten(this.vars, props as Partial<Variant>, false))) {
+				for (const [k, v] of Object.entries(flatten(this.vars, props as Partial<Variant>, false, this.stateName))) {
 					if (!under || !set[mode](k)) flat[mode][k] = shade(this.vars, k, v);
 				}
 			}
@@ -552,7 +617,7 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 		// A value the variant leaves out is the default variant's, which the variant now sets itself
 		for (const k of [...staticKeys, ...forwardedKeys]) {
 			if (k in values.light) continue;
-			values.light[k] = def.light[k] ?? this.vars.variant(k.replace(/-:.*$/, '') as VariantProperty);
+			values.light[k] = def.light[k] ?? this.vars.variant(PROP_KEY.exec(k)![0] as VariantProperty);
 			if (k in def.dark && !(k in values.dark)) values.dark[k] = def.dark[k];
 		}
 
@@ -606,12 +671,45 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 	applyCss(list?: string): CSS.Properties | undefined {
 		const tokens = list ? list.split(',').map(t => t.trim()) : [];
 		const props = tokens.filter((t): t is ApplyVariantProp => (APPLY_PROPS as string[]).includes(t));
-		const states = tokens.map(t => `:${t}` as CSS.SimplePseudos).filter(s => APPLY_STATES.includes(s));
-		if (props.length + states.length !== tokens.length)
+		const states = tokens.filter(t => !(APPLY_PROPS as string[]).includes(t)).map(t => this.stateOf(t));
+		if (!states.every((s): s is string => s !== undefined))
 			return;
 
 		const v = props.length ? props : true;
 		return this.withFallback(this.apply(v, Object.fromEntries((states.length ? states : [':hover']).map(s => [s, v]))));
+	}
+
+	/**
+	 * The selector of an `apply-v` state: a name of `states`, a state that a variant declares by its name in variable
+	 * names, without the colon, or a pseudo-class of the list.
+	 */
+	private stateOf(token: string) {
+		return this.states.get(token)
+			?? this.stateSelector(token)
+			?? APPLY_STATES.find(s => s === `:${token}`);
+	}
+
+	/** The selector of a declared state by its name in `engine.resolve`: `':active'` for `active`, `'[data-state=open]'` for `open`. */
+	stateSelector(name: string) {
+		return this.declaredStates().find(s => stateKey(this.stateName(s)) === name);
+	}
+
+	/**
+	 * The states that the variants and their overrides declare in `pseudos`, such as `':hover'` or `'[data-state=open]'`.
+	 * Two states of the same name in `engine.resolve`, such as `:invalid` and `[aria-invalid=true]` named `invalid`, are reported.
+	 */
+	declaredStates() {
+		const blocks = [...this.items.values()].flatMap(v => [v, v.dark, ...Object.values(v.colors ?? {}).flatMap(o => [o, o.dark])]);
+		const states = [...new Set(blocks.flatMap(b => Object.keys(b?.pseudos ?? {})))];
+		const byKey = new Map<string, string>();
+		for (const s of states) {
+			const key = stateKey(this.stateName(s));
+			const other = byKey.get(key);
+			if (other && !this.clashes.has(s)) console.error(`WindiUI: the states "${other}" and "${s}" are both named "${key}"; name one of them otherwise in \`states\`.`);
+			if (other) this.clashes.add(s);
+			byKey.set(key, s);
+		}
+		return states;
 	}
 
 	/**
@@ -686,7 +784,7 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 	}
 
 	apply(v: ApplyVariant = true, pseudos?: ApplyVariantPseudos, target: CSS.Properties = {}) {
-		const appl = (pV: ApplyVariant, pTarget: CSS.Properties, pseudo?: CSS.SimplePseudos) => {
+		const appl = (pV: ApplyVariant, pTarget: CSS.Properties, pseudo?: VariantState) => {
 			if (pV === false)
 				return pTarget;
 			if (pV === true)
@@ -717,14 +815,14 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 				pseudos = pseudos.reduce((acc, p) => {
 					acc[p] = true;
 					return acc;
-				}, {} as Record<CSS.SimplePseudos, ApplyVariant>);
+				}, {} as Record<VariantState, ApplyVariant>);
 			}
 
 			for (const pseudo in pseudos) {
-				const pV = pseudos[pseudo as CSS.SimplePseudos];
+				const pV = pseudos[pseudo];
 				if (pV) {
 					const pTarget = (target[`&${pseudo}`] ??= {}) as CSS.Properties;
-					appl(pV, pTarget, pseudo as CSS.SimplePseudos);
+					appl(pV, pTarget, pseudo);
 				}
 			}
 		}
@@ -732,13 +830,14 @@ export class VariantsGenerator extends VarsGeneratorBase<Variant, VariantCssVars
 		return target;
 	}
 
-	private vApplyProp(mProp: ApplyVariantMainProp, sProp?: ApplyVariantSubProp, target: CSS.Properties = {}, pseudo?: CSS.SimplePseudos, alpha?: string) {
+	private vApplyProp(mProp: ApplyVariantMainProp, sProp?: ApplyVariantSubProp, target: CSS.Properties = {}, pseudo?: VariantState, alpha?: string) {
 		const mvp = VAR_PROP[mProp];
 		const vp = (sProp && sProp !== 'default') ? `${mvp}-${sProp}` as const : mvp;
+		const state = pseudo && this.stateName(pseudo);
 
-		const aVar = pseudo ? `${mvp}-opacity-${pseudo}` as const : `${mvp}-opacity` as const;
+		const aVar = state ? `${mvp}-opacity-${state}` as const : `${mvp}-opacity` as const;
 
-		const key = pseudo ? `${vp}-${pseudo}` as const : vp;
+		const key = state ? `${vp}-${state}` as const : vp;
 		// A state that the default variant has no value for is set by the variants that have one; elsewhere it is the base value,
 		// except under such a variant in the `universal` scope, whose `*` rule does not reset it
 		const vVal = this.vars.variant(key, !pseudo || key in this.values('default').light ? undefined : this.vars.variant(vp));
