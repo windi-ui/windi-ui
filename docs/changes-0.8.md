@@ -372,3 +372,14 @@ A Tailwind v4 `@custom-variant dark` with no `darkMode` or `darkSelector` is exp
 it as `&:not(.light, .light *)` to get the same result ([Dark mode](/guide/dark-mode)).
 
 **Migration:** none.
+
+## Changes in 0.8.2
+
+### `default` and `accent` move into `colors`
+
+The palettes behind `default` and `accent` are set in the [`colors`](/reference/options#colors) option, next to
+`only`: `colors: { default: 'slate', accent: { vars: '--brand' } }`. An `@plugin` block keeps `default: slate;`
+and `accent: indigo;`. The `ColorsGenerator` constructor takes the `colors` option and an optional `debug` flag.
+
+**Migration:** move a top-level `default` or `accent` into `colors`. The top-level options still work in 0.8 and
+are removed in 0.9; `colors.default` and `colors.accent` win over them.

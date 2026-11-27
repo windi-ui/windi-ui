@@ -71,13 +71,13 @@ Both are added to your theme, so `bg-default-100` and `text-accent-600` work as 
 
 ### Choosing the two palettes
 
-Set the [`default` and `accent` options](/reference/options#default-and-accent) to the name of a palette of
+Set [`colors.default` and `colors.accent`](/reference/options#default-and-accent) to the name of a palette of
 your theme:
 
 ::: code-group
 
 ```ts [JavaScript]
-windiui({ default: 'slate', accent: 'indigo' });
+windiui({ colors: { default: 'slate', accent: 'indigo' } });
 ```
 
 ```css [@plugin block (Tailwind v4)]
@@ -93,8 +93,10 @@ In JavaScript an option also takes CSS variables or the 11 shades themselves:
 
 ```ts
 windiui({
-	default: { vars: '--ui-color-neutral' },             // var(--ui-color-neutral-50) ... var(--ui-color-neutral-950)
-	accent: { 50: '#eef2ff', /* ... */ 950: '#1e1b4b' },
+	colors: {
+		default: { vars: '--ui-color-neutral' },             // var(--ui-color-neutral-50) ... var(--ui-color-neutral-950)
+		accent: { 50: '#eef2ff', /* ... */ 950: '#1e1b4b' },
+	},
 });
 ```
 
@@ -140,7 +142,7 @@ and they are set independently: `c-blue c-accent-amber` is a blue element with a
   applies.
 
 `:root` sets the `accent` palette, so without a `c-accent-*` class the accent is blue, or the palette of the
-[`accent` option](/reference/options#default-and-accent).
+[`colors.accent`](/reference/options#default-and-accent) option.
 
 ## Custom palettes
 
@@ -280,7 +282,7 @@ setup, with a live demo:
 
   ```ts
   windiui({
-  	default: { vars: '--ui-color-neutral' },
+  	colors: { default: { vars: '--ui-color-neutral' } },
   	rootSelector: ':root, [data-theme-scope]',
   });
   ```
@@ -324,7 +326,7 @@ builder.setColor('primary', {
 - Where the variant has a dark value, the dark block of the class reads the variable without the static
   fallback, so the variant's dark shade applies while it is unset. The variable is the same in both modes; set
   it per mode if the value differs.
-- The `default` and `accent` options take it too: `default: { vars: '--ui-color-neutral', overrideVars: {} }`
+- `colors.default` and `colors.accent` take it too: `default: { vars: '--ui-color-neutral', overrideVars: {} }`
   forwards them on the root.
 - It works with every [`overrideMode`](/reference/options#overridemode): a palette given by variables always
   uses override variables.

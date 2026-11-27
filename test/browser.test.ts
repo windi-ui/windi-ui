@@ -158,7 +158,7 @@ describe.skipIf(!browser)('in a browser', () => {
 
 		beforeAll(async () => {
 			const css = await compile(palette.match(/[^\s"<>=]+/g)!, {}, {
-				default: { vars: '--ui-color-primary' },
+				colors: { default: { vars: '--ui-color-primary' } },
 				rootSelector: ':root, [data-theme-scope]',
 				build: builder => builder.addColor('primary', { vars: '--ui-color-primary' }, { utilities: true }),
 			});

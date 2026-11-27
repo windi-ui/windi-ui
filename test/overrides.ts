@@ -142,8 +142,8 @@ export function overrides(compile: Compile) {
 		expect(light(all, '.c-accent-primary', '--wui-cv-solid-border-accent-\\:hover')).toBe('var(--ui-color-primary-solid-border-accent-hover)');
 	});
 
-	it('forwards them on the root for the `default` option', async () => {
-		const css = await run(() => {}, { default: { vars: '--ui-color-neutral', overrideVars: { variants: ['solid'], props: ['bg'] } } });
+	it('forwards them on the root for `colors.default`', async () => {
+		const css = await run(() => {}, { colors: { default: { vars: '--ui-color-neutral', overrideVars: { variants: ['solid'], props: ['bg'] } } } });
 
 		expect(light(css, ':root', '--wui-cv-solid-bg')).toBe('var(--ui-color-neutral-solid-bg)');
 		expect(light(css, '.c-yellow', '--wui-cv-solid-bg')).toBe('initial');
