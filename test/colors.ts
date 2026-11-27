@@ -36,12 +36,6 @@ export function palettes(compile: Compile) {
 		expect(css).toMatch(/\.text-accent-600\\\/50 \{[^}]*var\(--wui-c-accent-600\)/);
 	});
 
-	it('still takes the deprecated top-level `default` and `accent`, below `colors`', async () => {
-		const css = await compile(used, {}, { colors: { default: 'slate', accent: 'indigo' } });
-		expect(await compile(used, {}, { default: 'slate', accent: 'indigo' })).toBe(css);
-		expect(await compile(used, {}, { default: 'red', accent: 'indigo', colors: { default: 'slate' } })).toBe(css);
-	});
-
 	it('takes them from CSS variables and from the shades themselves', async () => {
 		const css = await compile(used, {}, { colors: { default: { vars: '--brand' }, accent: ramp } });
 
@@ -110,8 +104,8 @@ export function palettes(compile: Compile) {
 export function palettesCss(compile: Compile & { css: CompileCss }) {
 	const theme = (shades: readonly Shade[]) => `@theme { ${shades.map(s => `--color-default-${s}: ${ramp[s]};`).join(' ')} }`;
 
-	it('takes the palette names from the `@plugin` block', async () => {
-		expect(await compile.css('@plugin "@windi-ui/tailwind" { default: slate; accent: indigo; }', candidates))
+	it('takes the palette names from `colors-default` and `colors-accent` of the `@plugin` block', async () => {
+		expect(await compile.css('@plugin "@windi-ui/tailwind" { colors-default: slate; colors-accent: indigo; }', candidates))
 			.toBe(await compile(candidates, {}, { colors: { default: 'slate', accent: 'indigo' } }));
 	});
 

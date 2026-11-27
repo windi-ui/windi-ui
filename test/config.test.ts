@@ -65,17 +65,17 @@ it('lets inline options override the file, option by option', async () => {
 });
 
 it('merges `colors` of the file and of the block, key by key', async () => {
-	const expected = await plugin('{ default: slate; colors: slate; }');
+	const expected = await plugin('{ colors-default: slate; colors: slate; }');
 	write('windiui.config.json', { colors: { only: ['slate'] } });
 
-	expect(await plugin('{ default: slate; }')).toBe(expected);
+	expect(await plugin('{ colors-default: slate; }')).toBe(expected);
 });
 
-it('reads the deprecated top-level `default` of a file', async () => {
-	const expected = await plugin('{ default: slate; }');
+it('rejects the top-level `default` of a file and of a block, removed in 0.9', async () => {
+	await expect(plugin('{ default: slate; }')).rejects.toThrow('An `@plugin` block writes it `colors-default`');
 	write('windiui.config.json', { default: 'slate' });
 
-	expect(await plugin()).toBe(expected);
+	await expect(plugin()).rejects.toThrow('moved to `colors.default`');
 });
 
 it('searches for no file with `config: false`', async () => {
