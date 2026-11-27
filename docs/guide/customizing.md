@@ -128,6 +128,9 @@ This site overrides `solid` for yellow as in the first line:
 - `addVariant` and `updateVariant` take the same under `colors`, by color name, where `'amber,lime'` names two:
   `{ bg: ..., colors: { yellow: { bg: '700' }, 'amber,lime': { bg: '700' } } }`.
 
+To have them computed instead, `calibrate({ text: 4.5 })` fills these overrides for every color that fails a
+contrast policy, and leaves yours as they are. See [Calibrate contrast](/guide/theme-engine#calibrate-contrast).
+
 The [`overrides`](/reference/options#overrides) option takes them as data, for a JSON config. It is applied
 after `build`:
 

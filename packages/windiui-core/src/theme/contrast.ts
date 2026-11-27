@@ -57,7 +57,7 @@ export function parseOklch(value: string): Lch | undefined {
 }
 
 /** The relative luminance of WCAG 2. */
-function luminance(rgb: Rgb) {
+export function luminance(rgb: Rgb) {
 	const [r, g, b] = rgb.map(toLinear);
 	return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }

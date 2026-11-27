@@ -45,7 +45,7 @@ describe('the entry', () => {
 	it('bundles for a browser into one script', async () => {
 		const { code, imports } = await bundleEngine();
 		expect(imports).toEqual([]);
-		// 34 kB minified and 12 kB gzipped in 0.9.0, as the docs say; the bound catches a dependency pulled in by mistake
+		// 40 kB minified and 14 kB gzipped in 0.9.0, as the docs say; the bound catches a dependency pulled in by mistake
 		expect(gzipSync(code).length).toBeLessThan(16_000);
 	});
 });
