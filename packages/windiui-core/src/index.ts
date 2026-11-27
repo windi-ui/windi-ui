@@ -63,5 +63,6 @@ export { definePreset, type Preset, type PresetOptions } from './preset';
 export type { ColorOptions, ColorsConfig, ColorValue, Config, DarkSelectorOption, OverrideMode, OverrideVars, PresetName, VariantScope };
 export type * from './types';
 export { FALLBACK_PALETTES, withAlpha, type ColorShade, type ExColorShade } from './colors';
+export type { PaletteSpec } from './theme/palette';
 export type { Size, SizeProperty } from './size';
 export type { Variant, VariantOverride, VariantProperties as VariantProps, ApplyVariant, ApplyVariantMainProp, ApplyVariantSubProp, ApplyVariantProp } from './variants';

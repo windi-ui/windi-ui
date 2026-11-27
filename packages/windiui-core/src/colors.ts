@@ -3,6 +3,8 @@ import { type BuilderContext, VarsGeneratorBase } from "./base";
 import type { ColorValue, ColorsConfig } from "./config";
 import type { ApplyVariantMainProp, VariantsGenerator } from "./variants";
 import type { CSS } from "./types";
+import type { Palette } from "./theme/provider";
+import { isPaletteSpec, resolvePalette } from "./theme/palette";
 
 export type ColorShade = '50' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900' | '950';
 export type ExColorShade = ColorShade | `default-${ColorShade}` | `accent-${ColorShade}` | 'black' | 'white';
@@ -127,6 +129,23 @@ export class ColorsGenerator extends VarsGeneratorBase<Map<ColorShade, string>, 
 
 		if ('vars' in value) {
 			return new Map(COLOR_SHADES.map(s => [s, `var(${value.vars}-${s})`]));
+		}
+
+		if (isPaletteSpec(value)) {
+			// Unadjusted, a palette is an alias: its shades as the theme gives them, variables included
+			if ('palette' in value && !value.adjust && !value.pins) return this.resolve(value.palette);
+
+			const named = 'palette' in value ? this.items.get(value.palette) : undefined;
+			// Tailwind 3's theme gives a color as its channels, `r g b`
+			const literal = (color: string) => /^[\d.]+ [\d.]+ [\d.]+$/.test(color) ? `rgb(${color})` : color;
+			const palettes = named && 'palette' in value ? { [value.palette]: Object.fromEntries([...named].map(([s, c]) => [s, literal(c)])) as Palette } : undefined;
+			try {
+				const shades = resolvePalette(value, { palettes });
+				return new Map(COLOR_SHADES.map(s => [s, this.theme.toColor?.(shades[s]) ?? shades[s]]));
+			} catch (e) {
+				console.error((e as Error).message);
+				return;
+			}
 		}
 
 		const missing = COLOR_SHADES.filter(s => !value[s]);
