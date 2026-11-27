@@ -1,0 +1,37 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`fails on the \`nuxt-ui\` preset, and \`--fix\` prints the calls that make it pass 1`] = `
+"b.overrideVariant('default', ['orange', 'amber', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky'], { border: '600' });
+b.overrideVariant('default', 'yellow', { border: '700' });
+b.overrideVariant('default', ['blue', 'indigo', 'violet', 'purple', 'accent'], { dark: { border: '600' } });
+b.overrideVariant('default', ['slate', 'gray', 'zinc', 'neutral', 'stone', 'mauve', 'olive', 'mist', 'taupe', 'default'], { dark: { border: '500' } });
+b.overrideVariant('solid', ['orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky'], { bg: '700', pseudos: { ':hover': { bg: '800' } } });
+b.overrideVariant('outline', ['red', 'fuchsia', 'pink', 'rose'], { pseudos: { ':hover': { fg: '700' } } });
+b.overrideVariant('outline', ['orange', 'amber', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky'], { fg: '700' });
+b.overrideVariant('outline', 'yellow', { fg: '700', border: '700' });
+b.overrideVariant('light', ['red', 'orange', 'amber', 'yellow', 'lime', 'emerald', 'teal', 'cyan', 'sky', 'fuchsia', 'pink', 'rose'], { fg: '700', pseudos: { ':hover': { bg: '700' } }, dark: { pseudos: { ':hover': { bg: '700' } } } });
+b.overrideVariant('light', 'green', { fg: '800', pseudos: { ':hover': { bg: '700' } }, dark: { pseudos: { ':hover': { bg: '700' } } } });
+b.overrideVariant('light', ['blue', 'accent'], { fg: '700' });
+b.overrideVariant('subtle', ['red', 'fuchsia', 'pink', 'rose'], { border: '500', dark: { border: '700' } });
+b.overrideVariant('subtle', ['orange', 'amber', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky'], { border: '600', dark: { border: '700' } });
+b.overrideVariant('subtle', 'yellow', { border: '700', dark: { border: '700' } });
+b.overrideVariant('subtle', ['blue', 'violet', 'purple', 'accent'], { border: '500', dark: { border: '600' } });
+b.overrideVariant('subtle', 'indigo', { border: '400', dark: { border: '600' } });
+b.overrideVariant('subtle', ['slate', 'gray', 'zinc', 'neutral', 'stone', 'mauve', 'olive', 'mist', 'taupe', 'default'], { border: '500', dark: { border: '500' } });
+"
+`;
+
+exports[`fails on the default config, and \`--fix\` prints the calls that make it pass 1`] = `
+"b.overrideVariant('default', ['orange', 'amber', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky'], { border: '600' });
+b.overrideVariant('default', 'yellow', { border: '700' });
+b.overrideVariant('default', ['blue', 'indigo', 'violet', 'purple', 'accent'], { dark: { border: '600' } });
+b.overrideVariant('default', ['slate', 'gray', 'zinc', 'neutral', 'stone', 'mauve', 'olive', 'mist', 'taupe', 'default'], { dark: { border: '500' } });
+b.overrideVariant('solid', ['orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky'], { bg: '700', pseudos: { ':hover': { bg: '800' } } });
+b.overrideVariant('outline', ['red', 'fuchsia', 'pink', 'rose'], { pseudos: { ':hover': { fg: '700' } } });
+b.overrideVariant('outline', ['orange', 'amber', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky'], { fg: '700' });
+b.overrideVariant('outline', 'yellow', { fg: '700', border: '700' });
+b.overrideVariant('light', ['red', 'orange', 'amber', 'yellow', 'lime', 'emerald', 'teal', 'cyan', 'sky', 'fuchsia', 'pink', 'rose'], { fg: '700', pseudos: { ':hover': { bg: '700' } }, dark: { pseudos: { ':hover': { bg: '700' } } } });
+b.overrideVariant('light', 'green', { fg: '800', pseudos: { ':hover': { bg: '700' } }, dark: { pseudos: { ':hover': { bg: '700' } } } });
+b.overrideVariant('light', ['blue', 'accent'], { fg: '700' });
+"
+`;

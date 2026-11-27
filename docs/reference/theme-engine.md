@@ -31,6 +31,7 @@ is the object a [config file](/reference/config-file#config-file) exports. Optio
 | `resolve(variant, color)` | A [`ResolvedVariant`](#resolvedvariant). Throws for a variant or color that does not exist. |
 | `contrast(fg, bg)` | The contrast of two literal colors by the engine's metric: from 1 to 21 with WCAG 2. Throws for a value [`parseColor`](#parsecolor) does not read. |
 | `calibrate(colors, policy, options?)` | The overrides that make every variant on `colors` meet `policy`, and a report. See [Calibration](#calibration). |
+| `audit(policy)` | The contrast matrix of `policy` for every color, with the fix of each cell that fails. See [Audit](#audit). |
 | `parseTheme(json)`, `toCss(theme, options?)`, `toStatic(theme, options?)` | A theme document validated, as CSS variables, or as literal colors. See [Theme documents](#theme-documents). |
 | `resolvePalette`, `generatePalette`, `fitPalette`, `adjustCurves`, `samplePalette`, `parsePalette` | See [Palette specs](#palette-specs). |
 
@@ -170,6 +171,41 @@ names a function by its `name`, or `custom`.
   variant has no dark value, of its own or, for a property it leaves out, of the `default` variant.
 - The result is deterministic: the same engine, colors, policy and options give the same overrides and report.
 - `report` has an entry for each cell that failed before calibration, or on its turn after a fix to another cell.
+
+### Audit
+
+`engine.audit`, the matrix that [`windiui audit`](/guide/contrast-audit) prints, for a test of your own:
+
+```ts
+engine.audit(policy: CalibrationPolicy): AuditResult;
+
+interface AuditResult {
+	cells: AuditCell[];  // by variant, then color, then light rest, light hover, dark rest, dark hover
+	skipped: string[];   // the colors whose shades are not literal, which are not checked
+	overrides: Record<string, Record<string, VariantOverride>>; // what calibrate would add
+}
+
+interface AuditCell {
+	variant: string;
+	color: string;
+	mode: 'light' | 'dark';
+	state: 'rest' | 'hover';
+	contrast: { text?: number; border?: number }; // as the build paints the cell, the lowest over the backdrops
+	failing: ('text' | 'border')[]; // the checks below the policy; empty when the cell passes
+	fix?: CalibrationFix; // the shades calibration gives the cell, when it changes any and the cell then passes
+}
+```
+
+It checks every color of [`colors()`](#engine) with literal shades, with the checks and backdrops of
+[calibration](#checks), and calibrates them with the default strategy, `shift-bg`, for `fix` and `overrides`. A cell
+that fails without a `fix` is one calibration cannot repair. Where calibration leaves out the checks that need a
+default backdrop that is not literal, the audit throws, so that it never counts a cell it did not check as passing:
+give the backdrops in the policy.
+
+```ts
+const failing = engine.audit({ text: 4.5 }).cells.filter(c => c.failing.length);
+expect(failing).toEqual([]);
+```
 
 ## Theme documents
 

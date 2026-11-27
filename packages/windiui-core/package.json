@@ -47,5 +47,8 @@
 	],
 	"dependencies": {
 		"csstype": "^3.2.4"
+	},
+	"bin": {
+		"windiui": "./dist/cli.mjs"
 	}
 }
