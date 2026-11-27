@@ -9,8 +9,8 @@ It is `@windi-ui/core/theme`: plain TypeScript with no Tailwind, no DOM and no N
 edge runtimes and browsers. It runs your presets and `build` on the generators the plugin uses, so the two agree.
 
 ::: info New in 0.9
-The theme engine so far: variants, contrast, palettes and contrast calibration. Theme documents build on it; see the
-[roadmap](https://github.com/windi-ui/windi-ui/issues/26).
+The theme engine so far: variants, contrast, palettes, contrast calibration and theme documents. See the
+[roadmap](https://github.com/windi-ui/windi-ui/issues/26) for what comes next.
 :::
 
 ## Install
@@ -391,10 +391,158 @@ option, wherever it is called, over every color with a class and literal shades.
 is left out: its colors are only known at runtime, where the engine calibrates it. Explicit overrides win, as above,
 and a pair it cannot repair is logged.
 
+## Theme documents
+
+Runtime theming needs one description of a theme that a server, a theme editor and an email renderer all read. A
+**theme document** is that description, as plain JSON:
+
+```json
+{
+	"version": 1,
+	"colors": {
+		"primary": { "seed": "#2563eb" },
+		"default": { "palette": "slate" },
+		"secondary": { "palette": "blue", "adjust": { "saturation": -20, "hue": 8 } }
+	},
+	"radius": "0.25rem",
+	"overrides": { "solid": { "primary": { "bg": "700" } } }
+}
+```
+
+- `version` is `1`, the only version so far.
+- `colors` has a [palette spec](#build-palettes) for each color.
+- `radius` is a length in `px`, `rem` or `em`. `toCss` writes it as `--wui-radius` (with your
+  [`prefix`](/reference/options#prefix)). Nothing in WindiUI reads it; your own CSS can, such as
+  `rounded-(--wui-radius)`.
+- `overrides` has the shape of the [`overrides`](/reference/options#overrides) option, with shades as values:
+  `'700'`, `'accent-600'`, `'white'`, and opacities such as `'0.5'`.
+
+A gallery of presets is a list of such files, and import, export or a link that shares a theme are a
+`JSON.stringify` away. The library does not narrow the document; a theme editor can expose less of it.
+
+### Validate a document
+
+`parseTheme` checks a document from outside, such as a request body or a saved theme, against the engine, and
+returns a copy. It throws with the path of the first field that is wrong:
+
+```ts
+const theme = engine.parseTheme(JSON.parse(body));
+// WindiUI: invalid theme at `overrides.solid.primary.bg`: must be a shade, such as `700`, `accent-600` or `white`.
+```
+
+It checks the `version`, each palette spec as [`parsePalette`](#store-the-recipe) does, the variants of `overrides`
+against the engine's, their props and their values, and rejects a key it does not know. `toCss` and `toStatic`
+validate the document they get as well.
+
+### Write the CSS
+
+`toCss` turns a document into CSS variables, for the colors your config gives by
+[`vars`](/guide/colors#palettes-that-change-at-runtime):
+
+```ts [windiui.config.ts]
+export default defineConfig({
+	colors: { default: { vars: '--ui-color-default' } },
+	build: b => b
+		.addColor('primary', { vars: '--ui-color-primary', overrideVars: {} })
+		.addColor('secondary', { vars: '--ui-color-secondary' }),
+});
+```
+
+```ts
+engine.toCss(theme, { darkSelector: '.dark' });
+```
+
+```css
+:root {
+  --wui-radius: 0.25rem;
+  --ui-color-default-50: oklch(98.4% 0.003 247.858);
+  /* ... */
+  --ui-color-primary-50: #f4f8ff;
+  /* ... */
+  --ui-color-primary-950: #0f285d;
+  --ui-color-primary-solid-bg: var(--ui-color-primary-700);
+  --ui-color-secondary-50: #f2f6fd;
+  /* ... */
+}
+```
+
+- Each color of the document gets its 11 shades. A color that the config does not give by `vars` throws: there is
+  no variable to write.
+- Each color that the config gives with [`overrideVars`](/guide/colors#variant-overrides-at-runtime) gets the
+  override variables it forwards, where the document's overrides change what the build paints. A value that no
+  variable carries, of a variant or a prop the color does not forward, cannot reach the CSS and is left out; use
+  [`toStatic`](#literal-colors) or forward it.
+- The document's overrides win over the config's, as a variable set at runtime wins over a static override.
+- Dark mode has a block of its own where a value differs: with `darkSelector: '.dark'`, it is
+  `:root:where(.dark, .dark *)`. The block always compounds the selector with the dark selector, because
+  `:where(.dark, .dark *)` alone has no specificity, so `<html class="dark">` would keep the light value. Left out,
+  dark mode is the `prefers-color-scheme` media query.
+- The output only holds values the engine writes. Every color of the document is read and written again, so a string
+  of the document never reaches the CSS as it was, and the same document always gives the same CSS.
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `selector` | `':root'` | Where the variables are declared; a list too. |
+| `darkSelector` | `'media'` | A selector such as `'.dark'`, compounded with `selector`, or `'media'`. |
+| `reset` | `false` | Writes `initial` for every override variable it does not set, so that a scope does not take the page's. |
+| `always` | `[]` | Override variables written even where they equal the variant's shade, as `'variant.prop'`: `['solid.bg', 'outline.fg']`, for CSS of your own that reads them. |
+| `calibrate` | none | A [calibration](#calibrate-contrast) policy, with `strategy`. It runs on the colors of the document first, and the document's overrides win over its result. |
+| `channels` | `false` | Writes each shade as RGB channels, `37 99 235`, which is what the variables of a palette hold on Tailwind 3. |
+
+On the server, render the CSS into the page:
+
+```ts
+const css = engine.toCss(engine.parseTheme(tenant.theme), { darkSelector: '.dark', calibrate: { text: 4.5 } });
+const head = `<style id="theme">${css}</style>`;
+```
+
+`toCss` takes some milliseconds of CPU, so compute the CSS when the theme is saved, or cache it per tenant, rather
+than on every render.
+
+### Preview a theme in a scope
+
+A theme editor previews a draft inside the page, next to the page's own theme. Write it on the preview container,
+with `reset` so that an override of the page theme does not reach into it:
+
+```ts
+preview.textContent = engine.toCss(draft, { selector: '[data-theme-preview]', darkSelector: '.dark', reset: true });
+```
+
+```html
+<div data-theme-preview>
+	<button class="btn c-primary v-solid">Save</button>
+</div>
+```
+
+With a `default` or `accent` given by `vars`, name the container in
+[`rootSelector`](/reference/options#rootselector) too, so that WindiUI's root variables are declared again from the
+draft's shades.
+
+### Literal colors
+
+An email client does not support CSS variables. `toStatic` gives the literal colors of a theme instead, as hex, for
+every color, variant, mode, state and color property:
+
+```ts
+const colors = engine.toStatic(theme);
+
+colors.primary.solid.light.rest.bg;   // '#2563eb', shade 700 by the document's override
+colors.primary.solid.light.hover.fg;  // '#f4f8ff'
+colors.primary.outline.light.rest.bg; // '#ffffff': opacity 0, painted over the backdrop
+```
+
+- Each color of the engine with literal shades is there, with the document's palette where it gives one, and each
+  color of the document. A palette given by `vars` that the document leaves out has no literal colors and is left
+  out.
+- A color with an opacity is painted over the backdrop, `white` in light mode and `default-950` in dark, or the
+  `backdrop` you give: `{ backdrop: { light: '#f8fafc' } }`. Text and borders are painted over the background, which
+  a browser paints under the border too.
+- `calibrate` calibrates the colors of the document first, as with `toCss`, so the email matches the page.
+
 ## Where it runs
 
 The entry has an ES module and a CommonJS build, and imports nothing from Tailwind or `node:*`. Bundled for a browser,
-it is about 40 kB minified and 14 kB gzipped; the two palette tables of `@windi-ui/tailwind/palettes` add 16 kB, 4 kB
+it is about 47 kB minified and 16 kB gzipped; the two palette tables of `@windi-ui/tailwind/palettes` add 16 kB, 4 kB
 gzipped, when imported. Node runs both without flags.
 
 See the [theme engine reference](/reference/theme-engine) for every function and type.

@@ -30,6 +30,7 @@ is the object a [config file](/reference/config-file#config-file) exports. Optio
 | `resolve(variant, color)` | A [`ResolvedVariant`](#resolvedvariant). Throws for a variant or color that does not exist. |
 | `contrast(fg, bg)` | The contrast of two literal colors by the engine's metric: from 1 to 21 with WCAG 2. Throws for a value [`parseColor`](#parsecolor) does not read. |
 | `calibrate(colors, policy, options?)` | The overrides that make every variant on `colors` meet `policy`, and a report. See [Calibration](#calibration). |
+| `parseTheme(json)`, `toCss(theme, options?)`, `toStatic(theme, options?)` | A theme document validated, as CSS variables, or as literal colors. See [Theme documents](#theme-documents). |
 | `resolvePalette`, `generatePalette`, `fitPalette`, `adjustCurves`, `samplePalette`, `parsePalette` | See [Palette specs](#palette-specs). |
 
 ### `ResolvedVariant`
@@ -168,6 +169,97 @@ names a function by its `name`, or `custom`.
   variant has no dark value, of its own or, for a property it leaves out, of the `default` variant.
 - The result is deterministic: the same engine, colors, policy and options give the same overrides and report.
 - `report` has an entry for each cell that failed before calibration, or on its turn after a fix to another cell.
+
+## Theme documents
+
+`engine.parseTheme`, `engine.toCss` and `engine.toStatic`. For a walkthrough see
+[Theme documents](/guide/theme-engine#theme-documents).
+
+```ts
+engine.parseTheme(json: unknown): ThemeDocument;
+engine.toCss(theme: ThemeDocument, options?: ToCssOptions): string;
+engine.toStatic(theme: ThemeDocument, options?: ToStaticOptions): StaticTheme;
+
+interface ThemeDocument {
+	version: 1;
+	colors?: Record<string, PaletteSpec>; // by color name
+	radius?: string;                      // a length, written as --wui-radius
+	overrides?: Record<string, Record<string, VariantOverride>>; // by variant, then color: shades as values
+}
+
+type ThemeCalibration = CalibrationPolicy & CalibrateOptions; // text, border, backdrops, metric and strategy
+
+interface ToCssOptions {
+	selector?: string;              // default ':root'
+	darkSelector?: string;          // a selector, or 'media' (the default)
+	reset?: boolean;                // default false
+	always?: string[];              // 'variant.prop', such as 'solid.bg' or 'solid.bg-:hover'
+	calibrate?: ThemeCalibration;
+	channels?: boolean;             // default false
+}
+
+interface ToStaticOptions {
+	backdrop?: { light?: string; dark?: string }; // default 'white' and 'default-950'
+	calibrate?: ThemeCalibration;
+}
+
+type StaticTheme = Record<string, Record<string, StaticVariant>>; // by color, then variant
+interface StaticVariant { light: StaticMode; dark: StaticMode }
+type StaticMode = Record<'rest' | 'hover', StaticState> & Partial<Record<string, StaticState>>;
+type StaticState = Record<ColorProperty, string>; // hex
+```
+
+### `parseTheme`
+
+`parseTheme` returns a copy of the document, and throws ``WindiUI: invalid theme at `<path>`: <problem>.`` for the
+first of these it finds. `toCss` and `toStatic` run it on the document they get.
+
+| Field | Bounds |
+| --- | --- |
+| The document | An object with `version`, and `colors`, `radius` and `overrides` at most. |
+| `version` | `1`. |
+| `colors` | Color names (a letter, then letters, digits, `_` or `-`), each with a palette spec that [`parsePalette`](#validation) accepts and whose `palette`, if any, is one of the engine's; its path follows the color's, as in `colors.primary.adjust.hue`. |
+| `radius` | `0`, or a number with `px`, `rem` or `em`. |
+| `overrides` | Variants of the engine; under each, color names or comma lists of them, each color under one key only; under each, an override. |
+| An override | The color properties of a variant (`bg`, `bg-soft`, ..., `fg-accent`) with a shade of `ExColorShade` as value, the opacities (`bg-opacity`, `border-opacity`, `fg-opacity`) with `'0'`, `'1'` or `'0.<digits>'`, `pseudos` with states such as `':hover'` (a colon, then letters and `-`) of properties, and `dark`, which takes the same but `dark`. |
+
+### `toCss`
+
+The variables, on `selector`, in this order for each color of the engine: the 11 shades `{vars}-{shade}` of a color
+the document gives, then the override variables `{vars}-{variant}-{prop}` that the color forwards with
+[`overrideVars`](/guide/colors#variant-overrides-at-runtime). `radius` comes first, as `--{prefix}-radius`.
+
+- A color of the document must be one the config gives by `vars`: its 11 shades are `var({vars}-{shade})`. Any other
+  throws.
+- A shade is written as hex, or as `oklch()` when the palette gives it so, or as RGB channels with `channels`. Every
+  color is parsed and written again, so the CSS holds no string of the document.
+- An override variable is written where its value, with the document applied, differs from its value while the
+  variable is unset, as the build paints it. Its value is `var({vars}-{shade})` for a shade of the color (`accent-N`
+  for an `-accent` prop), a root variable such as `var(--wui-c-white)` for another shade, or the opacity. A root
+  variable resolves where `selector` declares it, so `accent-600` on a non-`-accent` prop is the accent there, not
+  that of a `c-accent-*` class below.
+- What the document overrides wins over the config's overrides. A value the color does not forward has no variable
+  and is left out.
+- `always` writes the variable of a `'variant.prop'` for every color that forwards it, even where it is unchanged.
+- `reset` writes `initial` for every override variable of every color with `overrideVars` that it does not set.
+- Dark: the variable is the same in both modes. The dark block sets it where the dark value differs from the light
+  one, and writes `initial` where the light block set it and dark mode needs it unset. With a selector, the block is
+  each selector of `selector` compounded with `:where(<dark>, <dark> *)`; with `'media'`, `selector` inside
+  `@media (prefers-color-scheme: dark)`. A block with nothing to write is left out.
+- With `calibrate`, the colors of the document are [calibrated](#calibration) with the document's overrides applied,
+  and the result goes under them.
+- The output is deterministic, and independent of the order of the document's keys.
+
+### `toStatic`
+
+- The colors are those of the engine whose shades are literal colors, with the document's palette where it gives
+  one, then the colors of the document the engine does not have.
+- The values are those [`resolve`](#resolvedvariant) gives, with the document's overrides over the config's and the
+  calibration under them. A shade of `default` or `accent` is the document's palette when it gives one.
+- `bg` props are painted at their opacity over the backdrop, `fg` and `border` props over the painted `bg`, as the
+  background shows under a border in a browser; in sRGB.
+- Throws for a color it needs that is not literal, such as `accent-600` with an `accent` given by `vars` that the
+  document leaves out.
 
 ## `createThemeProvider`
 
