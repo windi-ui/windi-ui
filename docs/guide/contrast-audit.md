@@ -5,18 +5,19 @@ answer that by reading the config, and a test matrix written by hand drifts. `wi
 matrix from the config the plugin loads, and exits with 1 when a pair fails, so it can gate CI.
 
 ::: info New in 0.9
-The `windiui` command comes with `@windi-ui/core`. Add it to your dependencies beside `@windi-ui/tailwind`, so that
-your package manager links the command. It runs on the [theme engine](/guide/theme-engine) and its
+The `windiui` command comes with `@windi-ui/core`. `npx @windi-ui/core audit` runs it; a bare `npx windiui` may run
+an unrelated npm package of that name. With `@windi-ui/core` in your dependencies beside `@windi-ui/tailwind`,
+`windiui audit` also runs in a package.json script. It runs on the [theme engine](/guide/theme-engine) and its
 [calibration](/guide/theme-engine#calibrate-contrast).
 :::
 
 ## Run it
 
 ```sh
-npx windiui audit
-npx windiui audit --config ./windiui.config.ts --text 4.5 --border 3
-npx windiui audit --palettes ./palettes.json --format json
-npx windiui audit --fix
+npx @windi-ui/core audit
+npx @windi-ui/core audit --config ./windiui.config.ts --text 4.5 --border 3
+npx @windi-ui/core audit --palettes ./palettes.json --format json
+npx @windi-ui/core audit --fix
 ```
 
 It loads the [config file](/reference/config-file#config-file) the plugin finds from the working directory, or the
@@ -112,7 +113,7 @@ The non-zero exit fails the job when a change to a palette, a variant or a prese
 
 ```yaml
 - name: Contrast audit
-  run: npx windiui audit --text 4.5 --border 3
+  run: npx @windi-ui/core audit --text 4.5 --border 3
 ```
 
 `--format markdown >> "$GITHUB_STEP_SUMMARY"` puts the matrix in the summary of a GitHub Actions job. WindiUI's own
